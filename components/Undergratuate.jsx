@@ -52,7 +52,7 @@ const createStyle = (colors) => {
       paddingHorizontal: 10,
       paddingVertical: 20,
       backgroundColor: colors.bg,
-      marginBottom: 20
+      paddingBottom: 20
     },
     column: {
       marginRight: 10,

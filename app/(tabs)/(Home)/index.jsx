@@ -5,6 +5,7 @@ import ShowCase from '../../../components/Showcase'
 import useTheme from '../../../hooks/usetheme'
 import AcademicFacilities from "../../../components/AcademicFacilities"
 import AcademicPrograms from '../../../components/AcademicPrograms'
+import AcademicInstitutions from '../../../components/AcademicInstitutions'
 
 
 const Home = () => {
@@ -28,6 +29,9 @@ const Home = () => {
             <Text style={styles.academicProgramsTitle}>Academic Programs</Text>
             <AcademicPrograms/>
         </View>
+
+        /*Academic Institutions Setion */
+        <AcademicInstitutions/>
         
     </ScrollView>
   )
@@ -53,7 +57,7 @@ const createStyle = (colors) => {
             fontSize: 26
         },
         topbarcontainer:{
-            minHeight: 310,
+            minHeight: 380,
             paddingHorizontal: 10
         },
         academicProgramsTitle:{

@@ -13,23 +13,26 @@ function MyTabs() {
     <View style={styles.container}>
       <Tab.Navigator
         screenOptions={{
+        swipeEnabled: false,
         tabBarActiveTintColor: colors.text,
         tabBarInActiveTintColor: colors.textMuted,
         // tabBarScrollEnabled: true,
+        elevation: 0,
+        shadowOpacity: 0,
         tabBarLabelStyle: { 
           fontSize: 14,
+          fontWeight: 'bold'
           
         },
         tabBarIndicatorStyle: { 
           backgroundColor: colors.primary
+          
         },
         tabBarStyle: { 
           backgroundColor: colors.bg,
-          elevation: 5,
+          elevation: 0,
           shadowOffset: 0,
           shadowOpacity: 0,
-          borderBottomWidth: 0.5,
-          borderColor: colors.text
         },
       }}
       >
@@ -44,7 +47,7 @@ function MyTabs() {
 const styles = StyleSheet.create({
   container: {
     flex: 1, // ✅ ensures tabs take full screen height
-    backgroundColor: '#f8f8f8',
+    backgroundColor: '#fff',
   },
 });
 

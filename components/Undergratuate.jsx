@@ -1,20 +1,17 @@
 import React from 'react';
-import { View, Text, FlatList, StyleSheet, ImageBackground } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Image } from 'react-native';
 import useTheme from '../hooks/usetheme';
 
-const facilities = [
-  { id: '1', name: 'Smart Classes', image: require('../assets/images/smartclasses.jpg') },
-  { id: '2', name: 'SIMAD Library', image: require('../assets/images/simadlibrary.jpg') },
-  { id: '3', name: 'Nap Room', image: require('../assets/images/naproom.webp') },
-  { id: '4', name: 'Computer Labs', image: require('../assets/images/computerlabs.jpeg') },
-  { id: '5', name: 'Research Center', image: require('../assets/images/researchcenter.jpg') },
-  { id: '6', name: 'Fabrican Lab', image: require('../assets/images/fablab.jpg') },
-  { id: '7', name: 'Laboratoties', image: require('../assets/images/laboratories.avif') },
-  { id: '8', name: 'Student Loan', image: require('../assets/images/studentloan.jpg') },
-  { id: '9', name: 'Co-Working Space', image: require('../assets/images/coworkingspace.jpg') },
+const schools = [
+  { id: '1', name: 'School of Accountancy', icon: require('../assets/icons/desktop-computer.png') },
+  { id: '2', name: 'School of Computing', icon: require('../assets/icons/desktop-computer.png') },
+  { id: '3', name: 'School of Economics', icon: require('../assets/icons/desktop-computer.png') },
+  { id: '4', name: 'School of Education', icon: require('../assets/icons/desktop-computer.png') },
+  { id: '5', name: 'School of Law', icon: require('../assets/icons/desktop-computer.png') },
+  { id: '6', name: 'School of Medicine', icon: require('../assets/icons/desktop-computer.png') },
 ];
 
-// ✅ Split into chunks of 2 for vertical stacking inside each horizontal column
+// ✅ Split into chunks of 2 for two rows per column
 const chunkArray = (array, size) => {
   const result = [];
   for (let i = 0; i < array.length; i += size) {
@@ -23,79 +20,72 @@ const chunkArray = (array, size) => {
   return result;
 };
 
-export default function TwoRowHorizontalList() {
-  const chunkedTools = chunkArray(facilities, 2);
-
-  const {colors} = useTheme();
+export default function HorizontalTwoRowGrid() {
+  const { colors } = useTheme();
   const styles = createStyle(colors);
 
-  return (
-    <View style={{ padding: 10 }}>
+  const chunkedSchools = chunkArray(schools, 2); // 2 items per column
 
-      <FlatList
-        data={chunkedTools}
-        horizontal
-        keyExtractor={(item, index) => `col-${index}`}
-        showsHorizontalScrollIndicator={false}
-        renderItem={({ item: column }) => (
-          <View style={styles.column}>
-            {column.map((facility) => (
-              <ImageBackground
-                key={facility.id}
-                source={facility.image}
-                style={styles.background}
-                imageStyle={styles.imageStyle} // For rounded corners
-              >
-                <View style={styles.overlay}>
-                  <Text style={styles.title}>{facility.name}</Text>
-                </View>
-              </ImageBackground>
-            ))}
-          </View>
-        )}
-      />
-    </View>
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.scrollContainer}
+    >
+      {chunkedSchools.map((column, index) => (
+        <View key={`col-${index}`} style={styles.column}>
+          {column.map((item) => (
+            <View key={item.id} style={styles.card}>
+              <Image source={item.icon} style={styles.icon} />
+              <Text style={styles.title}>{item.name}</Text>
+            </View>
+          ))}
+        </View>
+      ))}
+    </ScrollView>
   );
 }
 
 const createStyle = (colors) => {
-    const styles = StyleSheet.create({
-    header: {
-        fontSize: 18,
-        fontWeight: '500',
-        marginBottom: 10,
-        color: colors.text
+  return StyleSheet.create({
+    scrollContainer: {
+      paddingHorizontal: 10,
+      paddingVertical: 20,
+      backgroundColor: colors.bg,
+      marginBottom: 20
     },
     column: {
-        marginRight: 8,
-        justifyContent: 'space-between',
+      marginRight: 10,
+      justifyContent: 'space-between',
     },
-    background: {
-        width: 120,
-        height: 90,
-        marginBottom: 10,
-        justifyContent: 'flex-end',
+    card: {
+      backgroundColor: colors.surface,
+      width: 140,
+      height: 100,
+      borderRadius: 10,
+      padding: 10,
+      marginBottom: 10,
+      alignItems: 'center',
+      justifyContent: 'center',
+      // shadowColor: '#000',
+      // shadowOpacity: 0.1,
+      // shadowOffset: { width: 0, height: 2 },
+      // shadowRadius: 4,
+      // elevation: 3,
+      borderWidth: 1,
+      borderColor: colors.border,
     },
-    imageStyle: {
-        borderRadius: 10,
-        borderColor: colors.border,
-        borderWidth: 2
-    },
-    overlay: {
-        backgroundColor: 'rgba(0,0,0,0.4)',
-        padding: 5,
-        borderBottomLeftRadius: 10,
-        borderBottomRightRadius: 10,
+    icon: {
+      width: 40,
+      height: 40,
+      marginBottom: 8,
+      resizeMode: 'contain',
     },
     title: {
-        color: colors.white,
-        fontSize: 14,
-        fontWeight: "500",
-        textAlign: 'center',
+      fontSize: 13,
+      fontWeight: '500',
+      color: colors.text,
+      textAlign: 'center',
     },
-    });
-
-    return styles;
-
-
-}
+  });
+};

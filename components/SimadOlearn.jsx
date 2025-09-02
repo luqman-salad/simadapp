@@ -3,12 +3,10 @@ import { View, Text, ScrollView, StyleSheet, Image } from 'react-native';
 import useTheme from '../hooks/usetheme';
 
 const schools = [
-  { id: '1', name: 'School of Accountancy', icon: require('../assets/icons/desktop-computer.png') },
-  { id: '2', name: 'School of Computing', icon: require('../assets/icons/desktop-computer.png') },
-  { id: '3', name: 'School of Economics', icon: require('../assets/icons/desktop-computer.png') },
-  { id: '4', name: 'School of Education', icon: require('../assets/icons/desktop-computer.png') },
-  { id: '5', name: 'School of Law', icon: require('../assets/icons/desktop-computer.png') },
-  { id: '6', name: 'School of Medicine', icon: require('../assets/icons/desktop-computer.png') },
+  { id: '1', name: 'Undergratuate Programs', icon: require('../assets/icons/desktop-computer.png') },
+  { id: '2', name: 'Postgratuate Porgrams', icon: require('../assets/icons/desktop-computer.png') },
+  { id: '3', name: 'Diploma programs', icon: require('../assets/icons/desktop-computer.png') },
+  { id: '4', name: 'English Language Skills', icon: require('../assets/icons/desktop-computer.png') },
 ];
 
 // ✅ Split into chunks of 2 for two rows per column
@@ -49,19 +47,23 @@ export default function HorizontalTwoRowGrid() {
 const createStyle = (colors) => {
   return StyleSheet.create({
     scrollContainer: {
-      paddingHorizontal: 10,
+    //   paddingHorizontal: 10,
       paddingVertical: 20,
       backgroundColor: colors.bg,
-      paddingBottom: 20
+      paddingBottom: 20,
+      width: "100%",
+      alignItems: "center",
+      justifyContent: "center",
     },
     column: {
       marginRight: 10,
       justifyContent: 'space-between',
+      
     },
     card: {
       backgroundColor: colors.surface,
-      width: 140,
-      height: 100,
+      width: "100%",
+      height: 110,
       borderRadius: 10,
       padding: 10,
       marginBottom: 10,

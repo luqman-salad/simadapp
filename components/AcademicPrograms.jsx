@@ -2,7 +2,8 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import Undergratuate from './Undergratuate';
-import ShowCase from './Showcase';
+import Postgratuate from './Postgratuate';
+import SimadOlearn from './SimadOlearn';
 import useTheme from '../hooks/usetheme';
 
 const Tab = createMaterialTopTabNavigator();
@@ -37,8 +38,8 @@ function MyTabs() {
       }}
       >
         <Tab.Screen name="Undergratuate" component={Undergratuate} />
-        <Tab.Screen name="Postgratuate" component={ShowCase} />
-        <Tab.Screen name=" SIMAD OLearn" component={ShowCase} />
+        <Tab.Screen name="Postgratuate" component={Postgratuate} />
+        <Tab.Screen name="SimadOlearn" component={SimadOlearn} />
       </Tab.Navigator>
     </View>
   );
@@ -46,8 +47,7 @@ function MyTabs() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1, // ✅ ensures tabs take full screen height
-    backgroundColor: '#fff',
+    flex: 1, 
   },
 });
 

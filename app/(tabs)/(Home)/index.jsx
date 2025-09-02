@@ -24,7 +24,7 @@ const Home = () => {
         <ShowCase/>
         <AcademicFacilities/>
         
-        <View style={styles.sectionContainer}>
+        <View style={[styles.sectionContainer, styles.topBarContainer]}>
             <Text style={styles.sectionTitle}>Academic Programs</Text>
             <AcademicPrograms/>
         </View>
@@ -68,13 +68,16 @@ const createStyle = (colors) => {
         },
         sectionContainer: {
             paddingHorizontal: 10,
-            marginBottom: 10
+            marginBottom: 0
         },
         sectionTitle: {
             fontSize: 18,
             fontWeight: '500',
             marginBottom: 10,
             color: colors.text,
+        },
+        topBarContainer:{
+            minHeight: 340
         }
     });
 };

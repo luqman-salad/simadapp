@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from 'react-native';
 import useTheme from '../hooks/usetheme';
 import simadLogo from '../assets/images/react-logo.png';
 import { Ionicons } from '@expo/vector-icons';
@@ -37,44 +37,59 @@ const eventData = [
     time: '12:51:20 PM',
     location: 'Main Campus',
   },
+  {
+    id: '5',
+    title: 'University Cultural Week',
+    logo: simadLogo,
+    date: 'Sep 22, 2025, All Week',
+    time: '12:51:20 PM',
+    location: 'Main Campus',
+  },
 ];
+
+// Extracted the render logic into a separate function
+const renderEventCard = ({ item, styles }) => (
+  <TouchableOpacity key={item.id} style={styles.card} activeOpacity={0.8}>
+    <View style={styles.leftColumn}>
+      <Image source={item.logo} style={styles.logo} />
+    </View>
+    <View style={styles.rightColumn}>
+      <Text style={styles.cardTitle}>{item.title}</Text>
+      <View style={styles.detailRow}>
+        <Ionicons name='calendar-outline' style={styles.detailIcon} />
+        <Text style={styles.detailText}>{item.date}</Text>
+      </View>
+      <View style={styles.detailRow}>
+        <Ionicons name='time-outline' style={styles.detailIcon} />
+        <Text style={styles.detailText}>{item.time}</Text>
+      </View>
+      <View style={styles.detailRow}>
+        <Ionicons name='location-outline' style={styles.detailIcon} />
+        <Text style={styles.detailText}>{item.location}</Text>
+      </View>
+    </View>
+  </TouchableOpacity>
+);
 
 export default function EventCardList() {
   const { colors } = useTheme();
   const styles = createStyle(colors);
 
   return (
-    <ScrollView style={styles.container}>
-      {eventData.map((event) => (
-        <TouchableOpacity key={event.id} style={styles.card} activeOpacity={0.8}>
-          <View style={styles.leftColumn}>
-            <Image source={event.logo} style={styles.logo} />
-          </View>
-          <View style={styles.rightColumn}>
-            <Text style={styles.cardTitle}>{event.title}</Text>
-            <View style={styles.detailRow}>
-              <Ionicons name='calendar-outline' style={styles.detailIcon}/>
-              <Text style={styles.detailText}>{event.date}</Text>
-            </View>
-            <View style={styles.detailRow}>
-              <Ionicons name='time-outline' style={styles.detailIcon}/>
-              <Text style={styles.detailText}>{event.time}</Text>
-            </View>
-            <View style={styles.detailRow}>
-              <Ionicons name='location-outline' style={styles.detailIcon}/>
-              <Text style={styles.detailText}>{event.location}</Text>
-            </View>
-          </View>
-        </TouchableOpacity>
-      ))}
-    </ScrollView>
+    <FlatList
+      data={eventData}
+      renderItem={({ item }) => renderEventCard({ item, styles })}
+      keyExtractor={item => item.id}
+      contentContainerStyle={styles.listContainer}
+      showsVerticalScrollIndicator={false}
+    />
   );
 }
 
 const createStyle = (colors) => {
   return StyleSheet.create({
-    container: {
-      flex: 1,
+    listContainer: {
+      flexGrow: 1, // Ensures content fills the available space
       backgroundColor: colors.bg,
       padding: 10,
     },
@@ -91,10 +106,10 @@ const createStyle = (colors) => {
       },
       shadowOpacity: 0.1,
       shadowRadius: 3.84,
-      elevation: 5,
+      elevation: 3,
     },
     leftColumn: {
-      marginRight: 15, 
+      marginRight: 15,
       justifyContent: "center",
       alignItems: "center",
     },

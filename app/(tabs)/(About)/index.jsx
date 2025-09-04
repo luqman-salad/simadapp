@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, ImageBackground, Dimensions, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Dimensions, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import useTheme from '../../../hooks/usetheme';
 
 const { width } = Dimensions.get('window');
@@ -38,13 +38,17 @@ const cardData = [
 ];
 
 export default function ImageGrid() {
-  const {colors} = useTheme();
+  const { colors } = useTheme();
   const styles = createStyle(colors);
+  const router = useRouter();
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {cardData.map((item) => (
         <TouchableOpacity
           key={item.id}
+          onPress={() => router.push(`/(details)/${item.id}`)}
+
         >
           <ImageBackground
             source={item.image}

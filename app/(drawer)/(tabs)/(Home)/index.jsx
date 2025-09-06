@@ -1,0 +1,93 @@
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import ShowCase from '../../../../components/Showcase';
+import useTheme from '../../../../hooks/usetheme';
+import AcademicFacilities from '../../../../components/AcademicFacilities';
+import AcademicPrograms from '../../../../components/AcademicPrograms';
+import AcademicInstitutions from '../../../../components/AcademicInstitutions';
+import InternationalPartners from '../../../../components/InternationalPartners';
+import SimadInNumbers from '../../../../components/SimadInNumbers';
+import { useRouter } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
+
+
+const Home = () => {
+    const { colors } = useTheme();
+    const styles = createStyle(colors);
+    const navigation = useNavigation();
+
+  return (
+    <ScrollView style={styles.container}>
+        <View style={styles.topbarmenu}>
+            <TouchableOpacity 
+                onPress={() => navigation.openDrawer()}
+            >
+                <Ionicons name='menu' style={styles.icon}/>
+            </TouchableOpacity>
+            <TouchableOpacity>
+                <Ionicons name='notifications-outline' style={styles.icon}/>
+            </TouchableOpacity>
+            
+        </View>
+
+        <ShowCase/>
+        <AcademicFacilities/>
+        
+        <View style={[styles.sectionContainer, styles.topBarContainer]}>
+            <Text style={styles.sectionTitle}>Academic Programs</Text>
+            <AcademicPrograms/>
+        </View>
+
+        <View style={styles.sectionContainer}>
+            <Text style={styles.sectionTitle}>Academic Institutions</Text>
+            <AcademicInstitutions/>
+        </View>
+
+        <View style={styles.sectionContainer}>
+            <Text style={styles.sectionTitle}>International Partners</Text>
+            <InternationalPartners/>
+        </View>
+
+        <View style={styles.sectionContainer}>
+            <Text style={styles.sectionTitle}>SIMAD In Numbers</Text>
+            <SimadInNumbers/>
+        </View>
+    </ScrollView>
+  );
+};
+
+export default Home;
+
+const createStyle = (colors) => {
+    return StyleSheet.create({
+        container: {
+            backgroundColor: colors.bg,
+            flex: 1
+        },
+        topbarmenu: {
+            paddingHorizontal: 20,
+            marginTop: 20,
+            marginBottom: 10,
+            flexDirection: "row",
+            justifyContent: "space-between"
+        },
+        icon: {
+            fontSize: 26,
+            color: colors.text
+        },
+        sectionContainer: {
+            paddingHorizontal: 10,
+            marginBottom: 0
+        },
+        sectionTitle: {
+            fontSize: 18,
+            fontWeight: '500',
+            marginBottom: 10,
+            color: colors.text,
+        },
+        topBarContainer:{
+            minHeight: 340
+        }
+    });
+};

@@ -25,12 +25,12 @@ const CustomeDrawer = (props) => {
         </View>
         <DrawerItemList {...props}/>
       </DrawerContentScrollView>
-      <View style={styles.footer}>
+      {/* <View style={styles.footer}>
         <TouchableOpacity style={styles.footerLoutbtn}>
             <Ionicons name='information-circle-outline' style={styles.logouticon}/>
             <Text style={styles.logoutxt}>Support</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
     </View>
   )
 }

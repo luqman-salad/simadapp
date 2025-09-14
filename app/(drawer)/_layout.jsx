@@ -27,8 +27,8 @@ export default function Layout() {
         //   ),
         drawerStyle:{
           backgroundColor: colors.bg,
-          top: 20,
-          bottom: 20,
+          // top: 20,
+          // bottom: 20,
         }
       }}
     >

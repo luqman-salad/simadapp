@@ -60,13 +60,6 @@ export default function Layout() {
             <Ionicons name="location-outline" size={size} color={color} />
           ),
       }}/>
-      <Drawer.Screen name='events' options={{
-        // headerShown: false,
-        title: "Events",
-        drawerIcon: ({ size, color }) => (
-            <Ionicons name="chatbox-ellipses-outline" size={size} color={color} />
-          ),
-      }}/>
       <Drawer.Screen name='student' options={{
         // headerShown: false,
         title: "Student",

@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 const semesters = [
   { label: 'Fall 2024', value: 'fall_2024' },
   { label: 'Spring 2024', value: 'spring_2024' },
+
 ];
 
 const allResults = {

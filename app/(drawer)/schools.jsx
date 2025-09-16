@@ -1,8 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { useNavigation } from '@react-navigation/native';
 import { useCallback, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import ExpandableProgramList from '../../components/ExpandableProgramList';
+import { Header } from '../../components/Headrer';
 import useTheme from '../../hooks/usetheme';
 
 // Data for the main categories
@@ -105,7 +107,8 @@ const academicCategories = [
 const AcademicProgramsScreen = ({ navigation }) => {
   const { colors } = useTheme();
   const styles = createStyle(colors);
-  
+  const navigationTab = useNavigation();
+
   const bottomSheetRef = useRef(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
 
@@ -126,11 +129,16 @@ const AcademicProgramsScreen = ({ navigation }) => {
     bottomSheetRef.current?.close();
   };
 
-  
+
 
   return (
     <View style={styles.container}>
-
+      <Header
+        title="Schools"
+        showLeftIcon
+        leftIconName="menu"
+        onLeftIconPress={() => navigationTab.openDrawer()}
+      />
       {/* Academic Programs Section */}
       <View style={styles.academicProgramsHeader}>
         <Ionicons name="library-outline" size={24} color={colors.primary} style={styles.academicIcon} />
@@ -178,8 +186,8 @@ const AcademicProgramsScreen = ({ navigation }) => {
                   programCategory={programCategory}
                   iconName={
                     selectedCategory.id === 'postgraduate' ? 'laptop-outline' :
-                    selectedCategory.id === 'undergraduates' ? 'book-outline' :
-                    'document-text-outline'
+                      selectedCategory.id === 'undergraduates' ? 'book-outline' :
+                        'document-text-outline'
                   }
                 />
               ))}
@@ -192,92 +200,92 @@ const AcademicProgramsScreen = ({ navigation }) => {
 };
 
 const createStyle = (colors) => {
-    return StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  
-  
-  academicProgramsHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    paddingVertical: 20,
-  },
-  academicIcon: {
-    marginRight: 10,
-  },
-  academicTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: colors.text,
-  },
-  cardsContainer: {
-    padding: 16,
-  },
-  card: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 20,
-    borderRadius: 12,
-    marginBottom: 15,
-    // shadowColor: '#000',
-    // shadowOffset: { width: 0, height: 2 },
-    // shadowOpacity: 0.1,
-    // shadowRadius: 4,
-    // elevation: 3,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border
-  },
-  cardContent: {
-    flex: 1,
-    marginRight: 10,
-  },
-  cardTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: colors.text,
-    marginBottom: 5,
-  },
-  cardDescription: {
-    fontSize: 14,
-    color: colors.text,
-    opacity: 0.8,
-  },
-  icon:{
-    color: colors.text
-  },
-  // Bottom Sheet Styles
-  bottomSheetHandle: {
-    backgroundColor: colors.surface,
-    width: 60,
-    borderRadius: 5,
-  },
-  bottomSheetBackground: {
-    borderRadius: 20,
-  },
-  bottomSheetContent: {
-    flex: 1,
-    paddingHorizontal: 16,
-  },
-  bottomSheetHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 15,
-    paddingTop: 5,
-  },
-  bottomSheetTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: colors.text,
-  },
-  bottomSheetScrollContent: {
-    paddingBottom: 20,
-  },
-});
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.bg,
+    },
+
+
+    academicProgramsHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: 16,
+      paddingVertical: 20,
+    },
+    academicIcon: {
+      marginRight: 10,
+    },
+    academicTitle: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      color: colors.text,
+    },
+    cardsContainer: {
+      padding: 16,
+    },
+    card: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: 20,
+      borderRadius: 12,
+      marginBottom: 15,
+      // shadowColor: '#000',
+      // shadowOffset: { width: 0, height: 2 },
+      // shadowOpacity: 0.1,
+      // shadowRadius: 4,
+      // elevation: 3,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border
+    },
+    cardContent: {
+      flex: 1,
+      marginRight: 10,
+    },
+    cardTitle: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      color: colors.text,
+      marginBottom: 5,
+    },
+    cardDescription: {
+      fontSize: 14,
+      color: colors.text,
+      opacity: 0.8,
+    },
+    icon: {
+      color: colors.text
+    },
+    // Bottom Sheet Styles
+    bottomSheetHandle: {
+      backgroundColor: colors.surface,
+      width: 60,
+      borderRadius: 5,
+    },
+    bottomSheetBackground: {
+      borderRadius: 20,
+    },
+    bottomSheetContent: {
+      flex: 1,
+      paddingHorizontal: 16,
+    },
+    bottomSheetHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 15,
+      paddingTop: 5,
+    },
+    bottomSheetTitle: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      color: colors.text,
+    },
+    bottomSheetScrollContent: {
+      paddingBottom: 20,
+    },
+  });
 }
 export default AcademicProgramsScreen;

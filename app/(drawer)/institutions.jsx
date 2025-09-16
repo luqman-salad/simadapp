@@ -1,7 +1,10 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons'; // For the institution icon
+import { useNavigation } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Header } from '../../components/Headrer';
 import useTheme from '../../hooks/usetheme'; // Assuming you have this hook for theme colors
+
 const institutionsData = [
   {
     id: '1',
@@ -78,10 +81,17 @@ const InstitutionCard = ({ item, colors, styles }) => {
 const Institutions = ({ navigation }) => {
   const { colors } = useTheme();
   const styles = createStyle(colors);
+  const navigationTab = useNavigation();
+
 
   return (
     <View style={styles.container}>
-
+      <Header
+        title="Institutions"
+        showLeftIcon
+        leftIconName="menu"
+        onLeftIconPress={() => navigationTab.openDrawer()}
+      />
 
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.sectionHeader}>

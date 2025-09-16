@@ -1,15 +1,13 @@
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import React from 'react';
-import { Ionicons } from '@expo/vector-icons';
-import ShowCase from '../../../../components/Showcase';
-import useTheme from '../../../../hooks/usetheme';
-import AcademicFacilities from '../../../../components/AcademicFacilities';
-import AcademicPrograms from '../../../../components/AcademicPrograms';
-import AcademicInstitutions from '../../../../components/AcademicInstitutions';
-import InternationalPartners from '../../../../components/InternationalPartners';
-import SimadInNumbers from '../../../../components/SimadInNumbers';
-import { useRouter } from 'expo-router';
 import { useNavigation } from '@react-navigation/native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import AcademicFacilities from '../../../../components/AcademicFacilities';
+import AcademicInstitutions from '../../../../components/AcademicInstitutions';
+import AcademicPrograms from '../../../../components/AcademicPrograms';
+import { Header } from '../../../../components/Headrer';
+import InternationalPartners from '../../../../components/InternationalPartners';
+import ShowCase from '../../../../components/Showcase';
+import SimadInNumbers from '../../../../components/SimadInNumbers';
+import useTheme from '../../../../hooks/usetheme';
 
 
 const Home = () => {
@@ -17,9 +15,19 @@ const Home = () => {
     const styles = createStyle(colors);
     const navigation = useNavigation();
 
-  return (
-    <ScrollView style={styles.container}>
-        <View style={styles.topbarmenu}>
+    return (
+        <>
+            <Header
+                title=""
+                showLeftIcon
+                leftIconName="menu"
+                showNotifiction
+                NotificationItemCount={2}
+                onLeftIconPress={() => navigation.openDrawer()}
+            />
+            <ScrollView style={styles.container}>
+
+                {/* <View style={styles.topbarmenu}>
             <TouchableOpacity 
                 onPress={() => navigation.openDrawer()}
             >
@@ -29,32 +37,35 @@ const Home = () => {
                 <Ionicons name='notifications-outline' style={styles.icon}/>
             </TouchableOpacity>
             
-        </View>
+        </View> */}
 
-        <ShowCase/>
-        <AcademicFacilities/>
-        
-        <View style={[styles.sectionContainer, styles.topBarContainer]}>
-            <Text style={styles.sectionTitle}>Academic Programs</Text>
-            <AcademicPrograms/>
-        </View>
+                <ShowCase />
+                <AcademicFacilities />
 
-        <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>Academic Institutions</Text>
-            <AcademicInstitutions/>
-        </View>
+                <View style={[styles.sectionContainer, styles.topBarContainer]}>
+                    <Text style={styles.sectionTitle}>Academic Programs</Text>
+                    <AcademicPrograms />
+                </View>
 
-        <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>International Partners</Text>
-            <InternationalPartners/>
-        </View>
+                <View style={styles.sectionContainer}>
+                    <Text style={styles.sectionTitle}>Academic Institutions</Text>
+                    <AcademicInstitutions />
+                </View>
 
-        <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>SIMAD In Numbers</Text>
-            <SimadInNumbers/>
-        </View>
-    </ScrollView>
-  );
+                <View style={styles.sectionContainer}>
+                    <Text style={styles.sectionTitle}>International Partners</Text>
+                    <InternationalPartners />
+                </View>
+
+                <View style={styles.sectionContainer}>
+                    <Text style={styles.sectionTitle}>SIMAD In Numbers</Text>
+                    <SimadInNumbers />
+                </View>
+            </ScrollView>
+
+        </>
+
+    );
 };
 
 export default Home;
@@ -86,7 +97,7 @@ const createStyle = (colors) => {
             marginBottom: 10,
             color: colors.text,
         },
-        topBarContainer:{
+        topBarContainer: {
             minHeight: 340
         }
     });

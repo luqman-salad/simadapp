@@ -279,9 +279,10 @@
 
 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Header } from '../../components/Headrer';
 import useTheme from '../../hooks/usetheme';
-
 const facultyData = [
     { id: '1', name: 'Dr. Abdishakur', title: 'Professor of Computer Science', image: require('../../assets/images/fablab.jpg') },
     { id: '2', name: 'Dr. Luqman', title: 'Professor of Business Administration', image: require('../../assets/images/fablab.jpg') },
@@ -373,6 +374,12 @@ const InstitutionsInfo = ({ route }) => {
 
     return (
         <View style={styles.container}>
+            <Header
+                title="Institutions Ara"
+                showLeftIcon
+                leftIconName="chevron-back"
+                onLeftIconPress={() => router.back()}
+            />
             <ScrollView contentContainerStyle={styles.scrollViewContent}>
                 <View style={styles.headerBackground}>
                     {details.image && (

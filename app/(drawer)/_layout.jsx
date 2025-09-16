@@ -15,20 +15,25 @@ export default function Layout() {
       screenOptions={{
         drawerActiveTintColor: colors.primary,
         drawerInactiveTintColor: colors.textMuted,
-        // headerLeft: () => (
-        //     <Ionicons
-        //       name="arrow-back"
-        //       size={24}
-        //       color="black"
-        //       style={{ marginLeft: 20 }}
 
-        //     />
-        //   ),
         drawerStyle: {
-          backgroundColor: colors.bg,
-          // top: 20,
-          // bottom: 20,
-        }
+          // Add top and bottom margins
+          marginTop: 10,
+          marginBottom: 10,
+          // Add a background color to be visible behind the border radius
+          // backgroundColor: colors.bg,
+          // Apply border radius to specific corners
+          borderTopRightRadius: 30,
+          borderBottomRightRadius: 30,
+        },
+        drawerContentContainerStyle: {
+          backgroundColor: 'transparent',
+        },
+        sceneContainerStyle: {
+          backgroundColor: 'transparent',
+        },
+        drawerType: 'slide',
+        overlayColor: 'rgba(0, 0, 0, 0.3)', // Optional: Adds a dimming effect
       }}
     >
       <Drawer.Screen name='(tabs)' options={{

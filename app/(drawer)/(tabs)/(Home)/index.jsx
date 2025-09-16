@@ -27,17 +27,7 @@ const Home = () => {
             />
             <ScrollView style={styles.container}>
 
-                {/* <View style={styles.topbarmenu}>
-            <TouchableOpacity 
-                onPress={() => navigation.openDrawer()}
-            >
-                <Ionicons name='menu' style={styles.icon}/>
-            </TouchableOpacity>
-            <TouchableOpacity>
-                <Ionicons name='notifications-outline' style={styles.icon}/>
-            </TouchableOpacity>
-            
-        </View> */}
+
 
                 <ShowCase />
                 <AcademicFacilities />

@@ -66,7 +66,6 @@ const InstitutionCard = ({ item, colors, styles }) => {
             { opacity: pressed ? 0.7 : 1 }
           ]}
           onPress={() => {
-            // Navigate to InstitutionsInfo and pass the item's ID
             router.push('/(screens)/institutionsInfo');
           }}
 

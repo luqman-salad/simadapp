@@ -85,7 +85,21 @@ const StudentDashboardScreen = ({ navigation }) => {
               </TouchableOpacity>
             ))}
           </View>
+
+          {/* Logout button */}
+        <View style={styles.logoutbtnContainer}>
+            <TouchableOpacity 
+                style={styles.logoutbtn}
+                onPress={() => router.push("student")}
+            >
+                <Ionicons name='log-out-outline' size={28} style={styles.logoutIcon} />
+                <Text style={styles.logoutBtnText}>Logout</Text>
+            </TouchableOpacity>
         </View>
+
+        </View>
+
+        
       </ScrollView>
     </SafeAreaView>
   );
@@ -223,6 +237,23 @@ const createStyle = (colors) => {
     textAlign: 'center',
     marginTop: 4,
   },
+  logoutbtn:{
+    flexDirection: "row",
+    gap: 10,
+    backgroundColor: colors.danger,
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  logoutBtnText:{
+    color: colors.white,
+    fontWeight: "bold",
+    fontSize: 18
+  },
+  logoutIcon:{
+    color: colors.white
+  }
 });
 }
 

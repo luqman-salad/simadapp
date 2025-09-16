@@ -18,13 +18,13 @@ export default function Layout() {
 
         drawerStyle: {
           // Add top and bottom margins
-          marginTop: 10,
-          marginBottom: 10,
+          // marginTop: 10,
+          // marginBottom: 10,
           // Add a background color to be visible behind the border radius
           // backgroundColor: colors.bg,
           // Apply border radius to specific corners
-          borderTopRightRadius: 30,
-          borderBottomRightRadius: 30,
+          // borderTopRightRadius: 30,
+          // borderBottomRightRadius: 30,
         },
         drawerContentContainerStyle: {
           backgroundColor: 'transparent',

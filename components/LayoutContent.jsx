@@ -20,15 +20,15 @@ export default function RootLayout() {
             <Stack.Screen name="(auth)" />
             <Stack.Screen name="(screens)/SchoolInfoScreen"
               options={{
-                // title: "Institutions Ara"
-                headerShown: false
+                title: "Institutions Ara"
+                // headerShown: false
 
               }}
             />
             <Stack.Screen name="(screens)/institutionsInfo"
               options={{
-                // title: "Institutions Ara"
-                headerShown: false
+                title: "Institutions Ara"
+                // headerShown: false
 
               }}
             />
@@ -40,50 +40,50 @@ export default function RootLayout() {
             />
             <Stack.Screen name="(screens)/stdExams"
               options={{
-                // title: "Exams"
-                headerShown: false
+                title: "Exams"
+                // headerShown: false
               }}
             />
             <Stack.Screen name="(screens)/stdFinances"
               options={{
-                // title: "Finances"
-                headerShown: false
+                title: "Finances"
+                // headerShown: false
               }}
             />
             <Stack.Screen name="(screens)/stdSchechule"
               options={{
-                // title: "Schedule"
-                headerShown: false
+                title: "Schedule"
+                // headerShown: false
               }}
             />
             <Stack.Screen name="(screens)/stdAttendence"
               options={{
-                // title: "Attendences"
-                headerShown: false
+                title: "Attendences"
+                // headerShown: false
               }}
             />
             <Stack.Screen name="(screens)/stdResources"
               options={{
-                // title: "Resources"
-                headerShown: false
+                title: "Resources"
+                // headerShown: false
               }}
             />
             <Stack.Screen name="(screens)/stdSupport"
               options={{
-                // title: "Support"
-                headerShown: false
+                title: "Support"
+                // headerShown: false
               }}
             />
             <Stack.Screen name="(screens)/stdNews"
               options={{
-                // title: "News"
-                headerShown: false
+                title: "News"
+                // headerShown: false
               }}
             />
             <Stack.Screen name="(screens)/stdProfile"
               options={{
-                // title: "Profile"
-                headerShown: false
+                title: "Profile"
+                // headerShown: false
               }}
             />
 

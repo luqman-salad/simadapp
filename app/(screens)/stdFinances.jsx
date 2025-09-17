@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, ScrollView, Ale
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
+import useTheme from '../../hooks/usetheme';
 
 // Dummy data for transactions
 const allTransactions = [
@@ -59,6 +60,9 @@ const MyFinancesScreen = () => {
   // Bottom sheet state and references
   const bottomSheetRef = useRef(null);
   const snapPoints = useMemo(() => ['70%', '85%'], []);
+
+  const { colors } = useTheme();
+  const styles = createStyle(colors);
 
   const handleOpenTransactions = useCallback(() => {
     bottomSheetRef.current?.expand();
@@ -159,10 +163,11 @@ const MyFinancesScreen = () => {
 };
 
 // Main screen styles
-const styles = StyleSheet.create({
+const createStyle = (colors) => {
+    return StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f0f0f5',
+    backgroundColor: colors.bg,
   },
   scrollViewContent: {
     padding: 20,
@@ -173,35 +178,35 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: '500',
+    color: colors.text,
     marginBottom: 5,
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: colors.text,
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
     borderRadius: 15,
     padding: 20,
     marginBottom: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 5,
+    shadowRadius: 3,
+    elevation: 3,
   },
   cardHeader: {
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: colors.border,
     paddingBottom: 10,
     marginBottom: 15,
   },
   cardTitle: {
     fontSize: 20,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: '400',
+    color: colors.text,
   },
   summaryItem: {
     flexDirection: 'row',
@@ -211,7 +216,7 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: 16,
-    color: '#555',
+    color: colors.text,
   },
   summaryValue: {
     fontSize: 16,
@@ -223,15 +228,15 @@ const styles = StyleSheet.create({
   remainingBalanceValue: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#e74c3c', // Red color
+    color: colors.danger,
   },
   divider: {
     height: 1,
-    backgroundColor: '#eee',
+    backgroundColor: colors.border,
     marginVertical: 10,
   },
   button: {
-    backgroundColor: '#2ecc71', // Green color
+    backgroundColor: colors.primary,
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
@@ -240,7 +245,7 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
   },
   transactionItem: {
     flexDirection: 'row',
@@ -251,28 +256,29 @@ const styles = StyleSheet.create({
   transactionTitle: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#333',
+    color: colors.text,
   },
   transactionDate: {
     fontSize: 12,
-    color: '#999',
+    color: colors.text,
   },
   transactionAmount: {
     fontSize: 16,
     fontWeight: '600',
   },
   negativeAmount: {
-    color: '#e74c3c', // Red
+    color: colors.danger, // Red
   },
   positiveAmount: {
-    color: '#27ae60', // Green
+    color: colors.primary, // Green
   },
   viewAllText: {
-    color: '#3498db', // Blue
+    color: colors.secondary, // Blue
     textAlign: 'center',
     marginTop: 10,
   },
 });
+}
 
 // Styles for the new bottom sheet
 const transactionsBottomSheetStyles = StyleSheet.create({

@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Header } from '../../components/Headrer';
 import useTheme from '../../hooks/usetheme'; // Assuming you have this hook for theme colors
+import useInstitutionsStore from '../../store/institutionsStore';
 
 const institutionsData = [
   {
@@ -53,6 +54,12 @@ const institutionsData = [
 
 const InstitutionCard = ({ item, colors, styles }) => {
   const router = useRouter();
+  const {setSelectedInstitutionTitle} = useInstitutionsStore();
+
+  const handlePress = (item) => {
+    setSelectedInstitutionTitle(item);
+    router.push('/(screens)/institutionsInfo');
+  }
 
   return (
     <View style={styles.card}>
@@ -65,9 +72,7 @@ const InstitutionCard = ({ item, colors, styles }) => {
             styles.takeATourButton,
             { opacity: pressed ? 0.7 : 1 }
           ]}
-          onPress={() => {
-            router.push('/(screens)/institutionsInfo');
-          }}
+          onPress={() => handlePress(item.title)}
 
         >
           <Text style={styles.takeATourButtonText}>Take a Tour</Text>

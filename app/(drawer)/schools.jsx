@@ -1,200 +1,148 @@
 import { Ionicons } from '@expo/vector-icons';
-import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { useNavigation } from '@react-navigation/native';
-import { useCallback, useRef, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import ExpandableProgramList from '../../components/ExpandableProgramList';
+import { useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Header } from '../../components/Headrer';
+import ProgramsBottomSheet from '../../components/ProgramsBottomSheet';
 import useTheme from '../../hooks/usetheme';
 
-// Data for the main categories
-const academicCategories = [
-  {
-    id: 'postgraduate',
-    title: 'Postgraduate',
-    description: "Explore our Master's programs.",
-    color: '#6F4EAE', // Purple
-    icon: 'school-outline', // Example icon
-    programs: [
+const programsData = {
+  Postgraduate: {
+    title: 'Postgraduate Programs',
+    color: '#f1f8f2', // Indigo 500
+    subPrograms: [
       {
-        categoryTitle: 'SIMAD Master Programs',
-        available: 12,
-        subPrograms: [
-          'Master of Science in Finance',
-          'Master of Business Administration (MBA)',
-          'Master of Science in IT',
-          'Master of Science in Accounting',
-          'Master of procurement and logistics',
-          'Master of Art in Public Policy',
-          'Master of Education',
-          'Master of Computer Science',
-          'Master of Data Sciecne',
-          'Master of Science in Telecommunication & Networking',
-          'Master of Arts in international Relations & Diplomacy'
-        ],
+        id: '1', name: 'SIMAD Master Programs', type: 'category', programs: [
+          { id: '1a', name: 'Master of Business Administration (MBA)', icon: 'flask-outline' },
+          { id: '1b', name: 'Master of Science in IT', icon: 'server-outline' },
+        ]
       },
       {
-        categoryTitle: 'Open University Malaysia programs',
-        available: 12,
-        subPrograms: [],
-      },
-    ],
+        id: '2', name: 'Open University Malaysia programs', type: 'category', programs: [
+          { id: '2a', name: 'Master of Islamic Finance', icon: 'book-outline' },
+          { id: '2b', name: 'Master of Education', icon: 'pencil-outline' },
+        ]
+      }
+    ]
   },
-  {
-    id: 'undergraduates',
-    title: 'Undergraduates',
-    description: "Discover our Bachelor's degrees.",
-    color: '#34A853', // Green
-    icon: 'book-outline', // Example icon
-    programs: [
+  Undergraduate: {
+    title: 'Undergraduate Programs',
+    color: '#f1f8f2', // Emerald 500
+    subPrograms: [
       {
-        categoryTitle: 'School of Accountancy',
-        available: 3,
-        subPrograms: [
-          'Bachelor of Business Administration',
-          'Bachelor of Computer Science',
-          'Bachelor of Public Health',
-        ],
+        id: '3', name: 'Faculty of Economics', type: 'category', programs: [
+          { id: '3a', name: 'Bachelor of Science in Economics', icon: 'cash-outline' },
+          { id: '3b', name: 'Bachelor of Business Administration', icon: 'briefcase-outline' },
+        ]
       },
       {
-        categoryTitle: 'School of Computing',
-        available: 3,
-        subPrograms: [],
+        id: '4', name: 'Faculty of Computing', type: 'category', programs: [
+          { id: '4a', name: 'Bachelor of Science in IT', icon: 'desktop-outline' },
+          { id: '4b', name: 'Bachelor of Software Engineering', icon: 'code-slash-outline' },
+        ]
       },
-      {
-        categoryTitle: 'School of Economics',
-        available: 4,
-        subPrograms: [],
-      },
-      {
-        categoryTitle: 'School of Education',
-        available: 4,
-        subPrograms: [],
-      },
-      {
-        categoryTitle: 'School of Engineering',
-        available: 2,
-        subPrograms: [],
-      },
-      {
-        categoryTitle: 'School of Law',
-        available: 2,
-        subPrograms: [],
-      },
-    ],
-  },
-  {
-    id: 'diploma',
-    title: 'Diploma',
-    description: 'Find the right diploma program for you.',
-    color: '#EA4335', // Red
-    icon: 'folder-outline', // Example icon
-    programs: [
-      {
-        categoryTitle: 'Diploma in Information Technology',
-        available: 5,
-        subPrograms: [],
-      },
-      {
-        categoryTitle: 'Diploma in Public Administration',
-        available: 5,
-        subPrograms: [],
-      },
-    ],
-  },
-];
 
-const AcademicProgramsScreen = ({ navigation }) => {
+      {
+        id: '14', name: 'Faculty of Accontancy', type: 'category', programs: [
+          { id: 'sa', name: 'Bachelor of Science in IT', icon: 'desktop-outline' },
+          { id: 'sb', name: 'Bachelor of Software Engineering', icon: 'code-slash-outline' },
+        ]
+      },
+      {
+        id: '15', name: 'Faculty of Social Science', type: 'category', programs: [
+          { id: '1', name: 'Bachelor of Science in IT', icon: 'desktop-outline' },
+          { id: '2', name: 'Bachelor of Software Engineering', icon: 'code-slash-outline' },
+        ]
+      },
+      {
+        id: '16', name: 'Faculty of Health', type: 'category', programs: [
+          { id: '3', name: 'Bachelor of Science in IT', icon: 'desktop-outline' },
+          { id: '4', name: 'Bachelor of Software Engineering', icon: 'code-slash-outline' },
+        ]
+      },
+      {
+        id: '17', name: 'Faculty of Engineering', type: 'category', programs: [
+          { id: '5', name: 'Bachelor of Science in IT', icon: 'desktop-outline' },
+          { id: '6', name: 'Bachelor of Software Engineering', icon: 'code-slash-outline' },
+        ]
+      },
+      // {
+      //   id: '18', name: 'Faculty of Management Science', type: 'category', programs: [
+      //     { id: '7', name: 'Bachelor of Science in IT', icon: 'desktop-outline' },
+      //     { id: '8', name: 'Bachelor of Software Engineering', icon: 'code-slash-outline' },
+      //   ]
+      // },
+      // {
+      //   id: '19', name: 'Faculty of Law', type: 'category', programs: [
+      //     { id: '9', name: 'Bachelor of Science in IT', icon: 'desktop-outline' },
+      //     { id: '10', name: 'Bachelor of Software Engineering', icon: 'code-slash-outline' },
+      //   ]
+      // },
+      // {
+      //   id: '20', name: 'Faculty of Education', type: 'category', programs: [
+      //     { id: '11', name: 'Bachelor of Science in IT', icon: 'desktop-outline' },
+      //     { id: '99', name: 'Bachelor of Software Engineering', icon: 'code-slash-outline' },
+      //   ]
+      // }
+    ]
+  },
+  Diploma: {
+    title: 'Diploma Programs',
+    color: '#f1f8f2', // Red 500
+    subPrograms: [
+      { id: '5', name: 'Diploma in Information Technology', type: 'program', icon: 'laptop-outline' },
+      { id: '6', name: 'Diploma in Public Administration', type: 'program', icon: 'library-outline' },
+    ]
+  }
+};
+
+const AcademicProgramsScreen = () => {
   const { colors } = useTheme();
   const styles = createStyle(colors);
   const navigationTab = useNavigation();
+  const [isBottomSheetVisible, setIsBottomSheetVisible] = useState(false);
+  const [selectedProgramData, setSelectedProgramData] = useState(null);
 
-  const bottomSheetRef = useRef(null);
-  const [selectedCategory, setSelectedCategory] = useState(null);
-
-  const snapPoints = ['25%', '65%', '90%'];
-
-  const handleSheetChanges = useCallback((index) => {
-    if (index === -1) {
-      setSelectedCategory(null);
-    }
-  }, []);
-
-  const openBottomSheet = (category) => {
-    setSelectedCategory(category);
-    bottomSheetRef.current?.expand();
+  const handleCardPress = (programType) => {
+    setSelectedProgramData(programsData[programType]);
+    setIsBottomSheetVisible(true);
   };
-
-  const closeBottomSheet = () => {
-    bottomSheetRef.current?.close();
-  };
-
-
 
   return (
     <View style={styles.container}>
       <Header
-        title="Schools"
+        title="Academic Programs"
         showLeftIcon
         leftIconName="menu"
         onLeftIconPress={() => navigationTab.openDrawer()}
       />
-      {/* Academic Programs Section */}
-      <View style={styles.academicProgramsHeader}>
-        <Ionicons name="library-outline" size={24} color={colors.primary} style={styles.academicIcon} />
-        <Text style={styles.academicTitle}>Academic Programs</Text>
+      <View style={styles.content}>
+        {Object.keys(programsData).map((key) => {
+          const program = programsData[key];
+          return (
+            <Pressable
+              key={key}
+              style={({ pressed }) => [
+                styles.card,
+                { backgroundColor: program.color, opacity: pressed ? 0.8 : 1 }
+              ]}
+              onPress={() => handleCardPress(key)}
+            >
+              <View>
+                <Text style={styles.cardTitle}>{program.title.replace(' Programs', '')}</Text>
+                <Text style={styles.cardDescription}>{`Explore our ${program.title.replace(' Programs', '')}'s programs.`}</Text>
+              </View>
+              <Ionicons name="arrow-forward" size={24} color={colors.textPrimary} />
+            </Pressable>
+          );
+        })}
       </View>
 
-      <ScrollView contentContainerStyle={styles.cardsContainer}>
-        {academicCategories.map((category) => (
-          <TouchableOpacity
-            key={category.id}
-            style={styles.card}
-            onPress={() => openBottomSheet(category)}
-          >
-            <View style={styles.cardContent}>
-              <Text style={styles.cardTitle}>{category.title}</Text>
-              <Text style={styles.cardDescription}>{category.description}</Text>
-            </View>
-            <Ionicons name="arrow-forward" size={24} style={styles.icon} />
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
-      {/* Bottom Sheet */}
-      <BottomSheet
-        ref={bottomSheetRef}
-        index={-1}
-        snapPoints={snapPoints}
-        onChange={handleSheetChanges}
-        enablePanDownToClose={true}
-        handleIndicatorStyle={styles.bottomSheetHandle}
-        backgroundStyle={styles.bottomSheetBackground}
-      >
-        {selectedCategory && (
-          <View style={styles.bottomSheetContent}>
-            <View style={styles.bottomSheetHeader}>
-              <Text style={styles.bottomSheetTitle}>{selectedCategory.title} Programs</Text>
-              <TouchableOpacity onPress={closeBottomSheet}>
-                <Ionicons name="close" size={24} color="#333" />
-              </TouchableOpacity>
-            </View>
-            <BottomSheetScrollView style={styles.bottomSheetScrollContent}>
-              {selectedCategory.programs.map((programCategory, index) => (
-                <ExpandableProgramList
-                  key={index}
-                  programCategory={programCategory}
-                  iconName={
-                    selectedCategory.id === 'postgraduate' ? 'laptop-outline' :
-                      selectedCategory.id === 'undergraduates' ? 'book-outline' :
-                        'document-text-outline'
-                  }
-                />
-              ))}
-            </BottomSheetScrollView>
-          </View>
-        )}
-      </BottomSheet>
+      <ProgramsBottomSheet
+        visible={isBottomSheetVisible}
+        onClose={() => setIsBottomSheetVisible(false)}
+        programsData={selectedProgramData}
+      />
     </View>
   );
 };
@@ -205,87 +153,33 @@ const createStyle = (colors) => {
       flex: 1,
       backgroundColor: colors.bg,
     },
-
-
-    academicProgramsHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      padding: 16,
-      paddingVertical: 20,
-    },
-    academicIcon: {
-      marginRight: 10,
-    },
-    academicTitle: {
-      fontSize: 20,
-      fontWeight: 'bold',
-      color: colors.text,
-    },
-    cardsContainer: {
-      padding: 16,
+    content: {
+      padding: 20,
     },
     card: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      padding: 20,
-      borderRadius: 12,
-      marginBottom: 15,
-      // shadowColor: '#000',
-      // shadowOffset: { width: 0, height: 2 },
-      // shadowOpacity: 0.1,
-      // shadowRadius: 4,
-      // elevation: 3,
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border
-    },
-    cardContent: {
-      flex: 1,
-      marginRight: 10,
+      borderRadius: 15,
+      padding: 25,
+      marginBottom: 20,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.1,
+      shadowRadius: 8,
+      elevation: 5,
     },
     cardTitle: {
-      fontSize: 20,
+      fontSize: 22,
       fontWeight: 'bold',
-      color: colors.text,
-      marginBottom: 5,
+      color: colors.textPrimary,
     },
     cardDescription: {
       fontSize: 14,
       color: colors.text,
-      opacity: 0.8,
-    },
-    icon: {
-      color: colors.text
-    },
-    // Bottom Sheet Styles
-    bottomSheetHandle: {
-      backgroundColor: colors.surface,
-      width: 60,
-      borderRadius: 5,
-    },
-    bottomSheetBackground: {
-      borderRadius: 20,
-    },
-    bottomSheetContent: {
-      flex: 1,
-      paddingHorizontal: 16,
-    },
-    bottomSheetHeader: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: 15,
-      paddingTop: 5,
-    },
-    bottomSheetTitle: {
-      fontSize: 20,
-      fontWeight: 'bold',
-      color: colors.text,
-    },
-    bottomSheetScrollContent: {
-      paddingBottom: 20,
+      marginTop: 5,
     },
   });
-}
+};
+
 export default AcademicProgramsScreen;

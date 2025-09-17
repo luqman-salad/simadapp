@@ -20,18 +20,27 @@ export default function RootLayout() {
             <Stack.Screen name="(auth)" />
             <Stack.Screen name="(screens)/SchoolInfoScreen"
               options={{
-                title: "Institutions Ara"
-                // headerShown: false
+                // title: "Institutions Ara"
+                headerShown: false
 
               }}
             />
             <Stack.Screen name="(screens)/institutionsInfo"
               options={{
-                title: "Institutions Ara"
-                // headerShown: false
+                // title: "Institutions Ara"
+                headerShown: false
 
               }}
             />
+
+
+            <Stack.Screen name="(screens)/ProgramsInfoScreen"
+              options={{
+                headerShown: false
+
+              }}
+            />
+
             <Stack.Screen name="(screens)/studentPortalHomePage"
               options={{
                 headerShown: false

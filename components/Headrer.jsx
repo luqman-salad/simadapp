@@ -56,7 +56,7 @@ export function Header({
                                     styles.badge,
                                     { backgroundColor: colors.error }
                                 ]}>
-                                    <Text style={[styles.badgeText, { color: colors.background }]}>
+                                    <Text style={[styles.badgeText, { color: colors.primary }]}>
                                         {NotificationItemCount > 99 ? '99+' : NotificationItemCount.toString()}
                                     </Text>
                                 </View>

@@ -22,7 +22,7 @@ const Home = () => {
                 showLeftIcon
                 leftIconName="menu"
                 showNotifiction
-                NotificationItemCount={2}
+                NotificationItemCount={100}
                 onLeftIconPress={() => navigation.openDrawer()}
             />
             <ScrollView style={styles.container}>

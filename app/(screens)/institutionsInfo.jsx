@@ -283,6 +283,7 @@ import { router } from 'expo-router';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Header } from '../../components/Headrer';
 import useTheme from '../../hooks/usetheme';
+import useInstitutionsStore from '../../store/institutionsStore';
 const facultyData = [
     { id: '1', name: 'Dr. Abdishakur', title: 'Professor of Computer Science', image: require('../../assets/images/fablab.jpg') },
     { id: '2', name: 'Dr. Luqman', title: 'Professor of Business Administration', image: require('../../assets/images/fablab.jpg') },
@@ -305,6 +306,7 @@ const FacultyCard = ({ item, styles }) => {
 const InstitutionsInfo = ({ route }) => {
     const { colors } = useTheme();
     const styles = createStyle(colors);
+    const {selectedInstitutionTitle} = useInstitutionsStore();
 
     // This is sample data, in a real app you would fetch this from an API
     const allInstitutionsData = {
@@ -375,7 +377,7 @@ const InstitutionsInfo = ({ route }) => {
     return (
         <View style={styles.container}>
             <Header
-                title="Institutions Ara"
+                title= {selectedInstitutionTitle}
                 showLeftIcon
                 leftIconName="chevron-back"
                 onLeftIconPress={() => router.back()}

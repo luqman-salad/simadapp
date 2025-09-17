@@ -1,14 +1,22 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
+import { Header } from '../../components/Headrer'
+import { useNavigation } from '@react-navigation/native';
 
-const lecturer = () => {
+const Lecturer = () => {
+  const navigationTab = useNavigation();
   return (
     <View>
-      <Text>lecturer</Text>
+      <Header
+        title="Lecturer"
+        showLeftIcon
+        leftIconName="menu"
+        onLeftIconPress={() => navigationTab.openDrawer()}
+      />
     </View>
   )
 }
 
-export default lecturer
+export default Lecturer
 
 const styles = StyleSheet.create({})

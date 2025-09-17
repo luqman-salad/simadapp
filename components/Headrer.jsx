@@ -30,7 +30,7 @@ export function Header({
                 <View style={styles.leftSection}>
                     {showLeftIcon ? (
                         <TouchableOpacity
-                            style={[styles.iconButton, { backgroundColor: colors.surface }]}
+                            style={[styles.iconButton, { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors }]}
                             onPress={onLeftIconPress}
                         >
                             <Ionicons name={leftIconName} size={24} color={colors.text} />

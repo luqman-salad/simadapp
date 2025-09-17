@@ -4,9 +4,11 @@ import { StatusBar } from "react-native";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import SafeAreaScreen from "../components/SafeAreaScreen";
+import useInstitutionsStore from "../store/institutionsStore";
 
 export default function RootLayout() {
   const { colors } = useTheme();
+  const {selectedInstitutionTitle} = useInstitutionsStore();
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
@@ -27,8 +29,8 @@ export default function RootLayout() {
             />
             <Stack.Screen name="(screens)/institutionsInfo"
               options={{
-                title: "Institutions Ara"
-                // headerShown: false
+                title: selectedInstitutionTitle,
+                headerShown: false
 
               }}
             />

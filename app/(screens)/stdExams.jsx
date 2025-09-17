@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
+import useTheme from '../../hooks/usetheme';
 
 // Dummy data for semesters and results
 const semesters = [
@@ -82,9 +83,12 @@ const ExamResultsScreen = ({ navigation }) => {
   const [selectedSemester, setSelectedSemester] = useState('fall_2024');
   const results = allResults[selectedSemester];
 
+  const { colors } = useTheme();
+  const styles = createStyle(colors);
+
   const renderProgressBar = (score, max) => {
     const percentage = (score / max) * 100;
-    const barColor = percentage >= 75 ? '#4CAF50' : percentage >= 50 ? '#FFD700' : '#F44336';
+    const barColor = percentage >= 75 ? colors.primary : percentage >= 50 ? colors.tertiary : colors.danger;
 
     return (
       <View style={styles.progressBarContainer}>
@@ -108,7 +112,7 @@ const ExamResultsScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.ContainerWrapper}>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.container}>
           <Text style={styles.title}>Exam Results</Text>
@@ -133,7 +137,7 @@ const ExamResultsScreen = ({ navigation }) => {
                   />
                 ))}
               </Picker>
-              <Ionicons name="chevron-down" size={20} color="#000" style={styles.pickerIcon} />
+              {/* <Ionicons name="chevron-down" size={20} color="#000" style={styles.pickerIcon} /> */}
             </View>
           </View>
 
@@ -190,65 +194,69 @@ const ExamResultsScreen = ({ navigation }) => {
       <TouchableOpacity style={styles.fabMarksheet} onPress={handleViewMarksheet}>
         <Ionicons name="document-text-outline" size={24} color="#fff" />
       </TouchableOpacity>
-    </SafeAreaView>
+    </View>
   );
 };
 
-const styles = StyleSheet.create({
-  safeArea: {
+const createStyle = (colors) => {
+    return StyleSheet.create({
+  ContainerWrapper: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.bg,
   },
   scrollViewContent: {
     flexGrow: 1,
     paddingBottom: 100,
   },
   container: {
-    padding: 20,
+    paddingHorizontal: 15,
+    paddingVertical: 10
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#000',
+    fontSize: 26,
+    fontWeight: 500,
+    color: colors.text,
     marginBottom: 8,
+    textAlign: "center"
   },
   subtitle: {
     fontSize: 16,
-    color: '#555',
+    color: colors.text,
     marginBottom: 30,
+    textAlign: "center"
   },
   semesterSelectorContainer: {
-    flexDirection: 'row',
+    // flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 25,
   },
   semesterLabel: {
     fontSize: 16,
-    color: '#333',
-    marginRight: 10,
+    color: colors.text,
+    marginBottom: 10,
   },
   pickerWrapper: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f0f0f0',
+    backgroundColor: colors.surface,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: colors.border,
     overflow: 'hidden',
-    height: 50,
+    height: 60,
   },
   picker: {
     flex: 1,
     height: '100%',
-    color: '#000',
+    color: colors.text,
   },
   pickerItem: {
     fontSize: 16,
   },
   pickerIcon: {
     position: 'absolute',
-    right: 15,
+    right: 10,
     pointerEvents: 'none',
   },
   summaryCardsContainer: {
@@ -257,77 +265,79 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   summaryCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: colors.surface,
+    borderRadius: 10,
     padding: 20,
     width: '48%',
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 6,
+    shadowRadius: 3,
+    elevation: 3,
     borderWidth: 1,
-    borderColor: '#eee',
+    borderColor: colors.border,
   },
   summaryValue: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#4CAF50',
+    color: colors.primary,
     marginBottom: 5,
   },
   summaryLabel: {
     fontSize: 14,
-    color: '#666',
+    color: colors.text,
     textAlign: 'center',
   },
   courseCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: colors.surface,
+    borderRadius: 10,
     padding: 20,
     marginBottom: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 6,
+    shadowRadius: 3,
+    elevation: 1,
     borderWidth: 1,
-    borderColor: '#eee',
+    borderColor: colors.border,
   },
   courseTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#000',
-    marginBottom: 15,
+    fontWeight: 500,
+    color: colors.text,
+    marginBottom: 5,
   },
   divider: {
     height: 1,
-    backgroundColor: '#eee',
-    marginVertical: 15,
+    backgroundColor: colors.border,
+    marginVertical: 7,
   },
   gradeItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 5,
     flexWrap: 'wrap',
   },
   gradeLabel: {
     fontSize: 16,
-    color: '#333',
+    color: colors.text,
     flex: 1,
   },
   gradeScore: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
+    fontWeight: 'bold',
+    color: colors.text,
     minWidth: 70,
     textAlign: 'right',
   },
   progressBarContainer: {
     height: 6,
-    backgroundColor: '#ddd',
+    backgroundColor: colors.bg,
     borderRadius: 3,
+    borderWidth: 1,
+    borderColor: colors.border,
     marginTop: 5,
     width: '100%',
   },
@@ -342,13 +352,13 @@ const styles = StyleSheet.create({
   },
   totalLabel: {
     fontSize: 16,
-    color: '#666',
+    color: colors.text,
     marginBottom: 5,
   },
   totalValue: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#4CAF50',
+    color: colors.primary,
   },
   gradeRow: {
     flexDirection: 'row',
@@ -358,13 +368,13 @@ const styles = StyleSheet.create({
   gradeValue: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#4CAF50',
+    color: colors.primary,
   },
   fabShare: {
     position: 'absolute',
     bottom: 25,
     right: 25,
-    backgroundColor: '#007AFF',
+    backgroundColor: colors.secondary,
     width: 56,
     height: 56,
     borderRadius: 28,
@@ -381,7 +391,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 90,
     right: 25,
-    backgroundColor: '#00A86B', // Green color
+    backgroundColor: colors.primary, // Green color
     width: 56,
     height: 56,
     borderRadius: 28,
@@ -394,5 +404,6 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
 });
+}
 
 export default ExamResultsScreen;

@@ -95,12 +95,12 @@ export default function PartnerBottomSheet({ visible, onClose, partner }) {
                 >
                     {/* Logo */}
                     {partner.logo && (
-                        <Image source={{ uri: partner.logo }} style={styles.logo} resizeMode="contain" />
+                        <Image source={partner.logo} style={styles.logo} resizeMode="contain" />
                     )}
 
                     {/* Info */}
                     <Text style={styles.category}>{partner.name}</Text>
-                    <Text style={styles.info}>{partner.description}</Text>
+                    <Text style={styles.info}>{partner.info}</Text>
                 </ScrollView>
             </Animated.View>
         </View>
@@ -146,5 +146,5 @@ const styles = StyleSheet.create({
         backgroundColor: '#f3f4f6',
     },
     category: { fontSize: 14, color: '#6B7280', marginBottom: 8 },
-    info: { fontSize: 15, color: '#374151', textAlign: 'center' },
+    info: { fontSize: 15, color: '#374151', textAlign: 'justify' },
 });

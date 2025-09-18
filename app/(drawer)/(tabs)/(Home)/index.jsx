@@ -25,7 +25,7 @@ const Home = () => {
                 NotificationItemCount={100}
                 onLeftIconPress={() => navigation.openDrawer()}
             />
-            <ScrollView style={styles.container}>
+            <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
 
 
 
@@ -43,7 +43,7 @@ const Home = () => {
                 </View>
 
                 <View style={styles.sectionContainer}>
-                    <Text style={styles.sectionTitle}>International Partners</Text>
+                    {/* <Text style={styles.sectionTitle}>International Partners</Text> */}
                     <InternationalPartners />
                 </View>
 

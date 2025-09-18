@@ -1,18 +1,18 @@
-import { Image, Pressable, ScrollView, StyleSheet, View } from 'react-native'; // Added Image for potential direct use
+import { router } from 'expo-router';
+import { Image, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import useTheme from '../hooks/usetheme';
 
-// Import university logos (YOU MUST CROP AND SAVE THESE INDIVIDUALLY)
-import { router } from 'expo-router';
+// Dummy logos (replace with actual imports)
 import { default as kumluLogo, default as lshtmLogo, default as luissLogo, default as sakaryaLogo, default as selcukLogo, default as usmLogo } from '../assets/images/react-logo.png';
-// ... you would add imports for any other logos if they were present in the original image
+import { useBottomSheet } from '../context/BottomSheetContext';
 
 const universities = [
-  { id: '1', name: 'Kütahya Dumlupınar Üniversitesi', image: kumluLogo },
-  { id: '2', name: 'Universiti Sains Malaysia', image: usmLogo },
-  { id: '3', name: 'Selçuk Üniversitesi', image: selcukLogo },
-  { id: '4', name: 'Sakarya Üniversitesi', image: sakaryaLogo },
-  { id: '5', name: 'LUISS', image: luissLogo },
-  { id: '6', name: 'London School of Hygiene & Tropical Medicine', image: lshtmLogo },
+  { id: '1', name: 'Kütahya Dumlupınar Üniversitesi', info: 'This is a detailed description for a tech partner. It collaborates on various projects related to climate science, biology, and advanced engineering. Our collaboration helps our students gain real-world experience. This is a detailed description for a tech partner. It collaborates on various projects related to climate science, biology, and advanced engineering. Our collaboration helps our students gain real-world experience.', logo: kumluLogo },
+  { id: '2', name: 'Universiti Sains Malaysia', logo: usmLogo },
+  { id: '3', name: 'Selçuk Üniversitesi', logo: selcukLogo },
+  { id: '4', name: 'Sakarya Üniversitesi', logo: sakaryaLogo },
+  { id: '5', name: 'LUISS', logo: luissLogo },
+  { id: '6', name: 'London School of Hygiene & Tropical Medicine', logo: lshtmLogo },
 ];
 
 const chunkArray = (array, size) => {
@@ -23,72 +23,85 @@ const chunkArray = (array, size) => {
   return result;
 };
 
-export default function HorizontalTwoRowGrid() {
+export default function PartnersCard() {
   const { colors } = useTheme();
   const styles = createStyle(colors);
+  const { openSheet } = useBottomSheet();
 
   const chunkedUniversities = chunkArray(universities, 2); // 2 items per column
 
-  const handlePress = () => {
-    router.push('/(screens)/ParternshipInfoScreen');
-    // store parternshipId 
+
+
+  const handleSeeAll = () => {
+    router.push('/(screens)/ParternshipInfoScreen'); // create this screen to show the full list
   };
+
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.scrollContainer}
-    >
-      {chunkedUniversities.map((column, index) => (
-        <View key={`col-${index}`} style={styles.column}>
-          {column.map((item) => (
-            <Pressable
-              key={item.id}
-              onPress={() => handlePress()}
-              style={({ pressed }) => [
-                styles.card,
-                { opacity: pressed ? 0.7 : 1 },
-              ]}
-            >
-              {/* Using Image component directly for the logo */}
-              <Image
-                source={item.image}
-                style={styles.logoImage}
-                resizeMode="contain" // Ensures the whole logo is visible
-              />
-            </Pressable>
+    <View style={styles.container}>
+      {/* Header with title + See All link */}
+      <View style={styles.headerRow}>
+        <Text style={styles.sectionTitle}>Our Partners</Text>
+        <TouchableOpacity onPress={handleSeeAll}>
+          <Text style={styles.seeAllText}>See All</Text>
+        </TouchableOpacity>
+      </View>
 
-            // <View key={`col-${index}`} style={styles.column}>
-            //         {column.map((item) => (
-            //           <Pressable
-            //             key={item.id}
-            //             onPress={() => handlePress(item.id)}
-            //             style={({ pressed }) => [
-            //               styles.card,
-            //               { opacity: pressed ? 0.7 : 1 },
-            //             ]}
-            //           >
-            //             <Image source={item.icon} style={styles.icon} />
-            //             <Text style={styles.title}>{item.name}</Text>
-            //           </Pressable>
-            //         ))}
-            //       </View>
-
-
-
-          ))}
-        </View>
-      ))}
-    </ScrollView>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContainer}
+      >
+        {chunkedUniversities.map((column, index) => (
+          <View key={`col-${index}`} style={styles.column}>
+            {column.map((item) => (
+              <Pressable
+                key={item.id}
+                onPress={() => openSheet("partner", item)}
+                style={({ pressed }) => [
+                  styles.card,
+                  { opacity: pressed ? 0.7 : 1 },
+                ]}
+              >
+                <Image
+                  source={item.logo}
+                  style={styles.logoImage}
+                  resizeMode="contain"
+                />
+              </Pressable>
+            ))}
+          </View>
+        ))}
+      </ScrollView>
+    </View>
   );
 }
 
 const createStyle = (colors) => {
   return StyleSheet.create({
+    container: {
+      marginBottom: 20,
+      backgroundColor: colors.bg,
+    },
+    headerRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      // paddingHorizontal: 10,
+      // marginBottom: 10,
+    },
+    sectionTitle: {
+      fontSize: 18,
+      fontWeight: '500',
+      marginBottom: 10,
+      color: colors.text,
+    },
+    seeAllText: {
+      fontSize: 14,
+      fontWeight: '500',
+      color: colors.primary,
+    },
     scrollContainer: {
       paddingVertical: 10,
-      backgroundColor: colors.bg,
-      marginBottom: 20,
     },
     column: {
       marginRight: 10,
@@ -100,18 +113,16 @@ const createStyle = (colors) => {
       marginBottom: 10,
       borderRadius: 12,
       overflow: 'hidden',
-      backgroundColor: colors.surface, // White background for the card
-      justifyContent: 'center', // Center the logo vertically
-      alignItems: 'center',    // Center the logo horizontally
-      borderWidth: 1, // Add a subtle border
-      borderColor: colors.border, // Light grey border color
+      backgroundColor: colors.surface,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: colors.border,
     },
     logoImage: {
-      width: '80%', // Make logo take up 80% of card width
-      height: '80%', // Make logo take up 80% of card height
+      width: '80%',
+      height: '80%',
     },
-    // The following styles are no longer needed for this specific render
-    // overlay: {},
-    // title: {},
   });
 };
+

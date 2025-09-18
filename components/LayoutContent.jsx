@@ -1,7 +1,9 @@
 import { Stack } from "expo-router";
 import { StatusBar } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import PartnerBottomSheet from '../components/PartnerBottomSheet';
 import ProgramsBottomSheet from '../components/ProgramsBottomSheet';
+
 import SafeAreaScreen from "../components/SafeAreaScreen";
 import { useBottomSheet } from '../context/BottomSheetContext';
 import useTheme from "../hooks/usetheme";
@@ -9,8 +11,7 @@ import useInstitutionsStore from "../store/institutionsStore";
 export default function RootLayout() {
   const { colors } = useTheme();
   const { selectedInstitutionTitle } = useInstitutionsStore();
-  const { isSheetVisible, closeSheet, content } = useBottomSheet();
-
+  const { isSheetVisible, closeSheet, content, sheetType } = useBottomSheet();
   return (
 
     <SafeAreaProvider>
@@ -110,11 +111,21 @@ export default function RootLayout() {
         </Stack>
       </SafeAreaScreen>
       <StatusBar barStyle={colors.statusBarStyle} />
-      <ProgramsBottomSheet
-        visible={isSheetVisible}
-        onClose={closeSheet}
-        programsData={content}
-      />
+      {sheetType === 'programs' && (
+        <ProgramsBottomSheet
+          visible={isSheetVisible}
+          onClose={closeSheet}
+          programsData={content}
+        />
+      )}
+
+      {sheetType === 'partner' && (
+        <PartnerBottomSheet
+          visible={isSheetVisible}
+          onClose={closeSheet}
+          partner={content}
+        />
+      )}
     </SafeAreaProvider>
 
   );

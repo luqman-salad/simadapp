@@ -117,7 +117,7 @@ const AcademicProgramsScreen = () => {
                 styles.card,
                 { backgroundColor: program.color, opacity: pressed ? 0.8 : 1 }
               ]}
-              onPress={() => openSheet(program)}
+              onPress={() => openSheet("programs", program)}
             >
               <View>
                 <Text style={styles.cardTitle}>{program.title.replace(' Programs', '')}</Text>

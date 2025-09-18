@@ -11,7 +11,7 @@ import {
     View
 } from 'react-native';
 import { Header } from '../../components/Headrer';
-import PartnerBottomSheet from '../../components/PartnerBottomSheet';
+import { useBottomSheet } from '../../context/BottomSheetContext';
 import useTheme from '../../hooks/usetheme'; // Adjust the path as needed
 
 const { width } = Dimensions.get('window');
@@ -107,8 +107,8 @@ const PartnershipsScreen = () => {
     const styles = createStyles(colors);
 
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectedPartner, setSelectedPartner] = useState(null);
-    const [sheetVisible, setSheetVisible] = useState(false);
+    const { openSheet } = useBottomSheet();
+
 
     const handleSearch = useCallback((text) => {
         setSearchQuery(text);
@@ -176,10 +176,7 @@ const PartnershipsScreen = () => {
                                     <PartnerCard
                                         key={partner.id}
                                         partner={partner}
-                                        onPress={() => {
-                                            setSelectedPartner(partner);
-                                            setSheetVisible(true);
-                                        }}
+                                        onPress={() => openSheet("partner", partner)}
                                         colors={colors}
                                     />
                                 ))}
@@ -189,11 +186,7 @@ const PartnershipsScreen = () => {
                 )}
             </ScrollView>
 
-            <PartnerBottomSheet
-                visible={sheetVisible}
-                onClose={() => setSheetVisible(false)}
-                partner={selectedPartner}
-            />
+
         </View>
     );
 };

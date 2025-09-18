@@ -1,24 +1,29 @@
+// context/BottomSheetContext.js
 import { createContext, useContext, useState } from 'react';
 
 const BottomSheetContext = createContext(undefined);
 
 export function BottomSheetProvider({ children }) {
     const [isSheetVisible, setIsSheetVisible] = useState(false);
-    const [content, setContent] = useState(null); // store dynamic content
+    const [content, setContent] = useState(null);
+    const [sheetType, setSheetType] = useState(null); // <-- new
 
-    // Open sheet with optional content
-    const openSheet = (data = null) => {
+    const openSheet = (type, data = null) => {
+        setSheetType(type); // e.g. "programs" or "partner"
         setContent(data);
         setIsSheetVisible(true);
     };
 
     const closeSheet = () => {
         setIsSheetVisible(false);
-        setContent(null); // clear content when closing
+        setContent(null);
+        setSheetType(null);
     };
 
     return (
-        <BottomSheetContext.Provider value={{ isSheetVisible, openSheet, closeSheet, content }}>
+        <BottomSheetContext.Provider
+            value={{ isSheetVisible, openSheet, closeSheet, content, sheetType }}
+        >
             {children}
         </BottomSheetContext.Provider>
     );

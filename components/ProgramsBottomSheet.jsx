@@ -1,14 +1,21 @@
+
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { Dimensions, LayoutAnimation, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, UIManager, View } from 'react-native';
-import { PanGestureHandler } from 'react-native-gesture-handler';
-import Animated, {
-    runOnJS,
-    useAnimatedGestureHandler,
-    useAnimatedStyle,
-    useSharedValue,
-    withSpring,
-} from 'react-native-reanimated';
+import {
+    Dimensions,
+    LayoutAnimation,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    UIManager,
+    View
+} from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const MAX_SHEET_HEIGHT = SCREEN_HEIGHT * 0.9;
@@ -19,24 +26,38 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
     UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const ProgramItem = ({ program, onToggleExpand, isExpanded, isSubItem = false }) => {
+const ProgramItem = ({ program, onToggleExpand, isExpanded, isSubItem = false, onClose }) => {
     if (program.type === 'category') {
         return (
             <View style={styles.categoryContainer}>
-                <TouchableOpacity onPress={() => onToggleExpand(program.id)} style={styles.categoryHeader}>
+                <TouchableOpacity
+                    onPress={() => onToggleExpand(program.id)}
+                    style={styles.categoryHeader}
+                >
                     <View style={styles.categoryInfo}>
                         <Ionicons name="folder-open-outline" size={24} color="#6B7280" />
                         <View style={{ marginLeft: 15 }}>
                             <Text style={styles.categoryTitle}>{program.name}</Text>
-                            <Text style={styles.categoryCount}>Up to {program.programs.length} Programs available</Text>
+                            <Text style={styles.categoryCount}>
+                                Up to {program.programs.length} Programs available
+                            </Text>
                         </View>
                     </View>
-                    <Ionicons name={isExpanded ? 'chevron-up' : 'chevron-down'} size={20} color="#6B7280" />
+                    <Ionicons
+                        name={isExpanded ? 'chevron-up' : 'chevron-down'}
+                        size={20}
+                        color="#6B7280"
+                    />
                 </TouchableOpacity>
                 {isExpanded && (
                     <View style={styles.subProgramsContainer}>
                         {program.programs.map((subProgram) => (
-                            <ProgramItem key={subProgram.id} program={subProgram} isSubItem={true} />
+                            <ProgramItem
+                                key={subProgram.id}
+                                program={subProgram}
+                                isSubItem={true}
+                                onClose={onClose}
+                            />
                         ))}
                     </View>
                 )}
@@ -45,7 +66,13 @@ const ProgramItem = ({ program, onToggleExpand, isExpanded, isSubItem = false })
     }
 
     return (
-        <TouchableOpacity style={[styles.programItem, isSubItem && styles.subProgramItem]} onPress={() => console.log(`${program.name} clicked!`)}>
+        <TouchableOpacity
+            style={[styles.programItem, isSubItem && styles.subProgramItem]}
+            onPress={() => {
+                onClose();
+                router.push('/(screens)/ProgramsInfoScreen')
+            }}
+        >
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Ionicons name={program.icon} size={24} color="#6B7280" />
                 <Text style={styles.programText}>{program.name}</Text>
@@ -54,67 +81,78 @@ const ProgramItem = ({ program, onToggleExpand, isExpanded, isSubItem = false })
     );
 };
 
+
 export default function ProgramsBottomSheet({ visible, onClose, programsData }) {
     const translateY = useSharedValue(SCREEN_HEIGHT);
     const opacity = useSharedValue(0);
+    const contextY = useSharedValue(0);
     const [sheetHeight, setSheetHeight] = useState(0);
-    // Use a single ID to track the currently expanded category
     const [expandedCategoryId, setExpandedCategoryId] = useState(null);
 
-    const calculateHeight = useCallback(() => {
+    // This is the key function to correctly calculate height
+    const calculateAndSetHeight = useCallback((idToExpand) => {
         if (!programsData) return;
         const baseHeight = 150;
         let contentHeight = 0;
 
-        programsData.subPrograms.forEach(program => {
-            contentHeight += ITEM_HEIGHT; // For the category header or a simple program item
-            if (program.type === 'category' && program.id === expandedCategoryId) {
+        programsData.subPrograms.forEach((program) => {
+            contentHeight += ITEM_HEIGHT;
+            if (program.type === 'category' && program.id === idToExpand) {
                 contentHeight += program.programs.length * ITEM_HEIGHT;
             }
         });
 
         const newHeight = baseHeight + contentHeight + PADDING_BOTTOM;
         setSheetHeight(Math.min(newHeight, MAX_SHEET_HEIGHT));
-    }, [programsData, expandedCategoryId]);
+    }, [programsData]);
 
-    useEffect(() => {
-        calculateHeight();
-    }, [calculateHeight]);
-
+    // This effect runs when the sheetHeight state changes
     useEffect(() => {
         if (visible) {
-            LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-            translateY.value = withSpring(SCREEN_HEIGHT - sheetHeight, { damping: 100 });
-            opacity.value = withSpring(1);
+            // Only animate if the sheetHeight has a valid value
+            if (sheetHeight > 0) {
+                translateY.value = withSpring(SCREEN_HEIGHT - sheetHeight, { damping: 100 });
+                opacity.value = withSpring(1);
+            }
         } else {
             translateY.value = withSpring(SCREEN_HEIGHT, { damping: 100 });
             opacity.value = withSpring(0);
-            // Reset the expanded category when the sheet closes
-            setExpandedCategoryId(null);
         }
     }, [visible, sheetHeight]);
 
+    // This effect handles the initial render and state changes
+    useEffect(() => {
+        calculateAndSetHeight(expandedCategoryId);
+    }, [calculateAndSetHeight, expandedCategoryId]);
+
+
     const handleToggleExpand = useCallback((categoryId) => {
+        // First, update the state, which will trigger the useEffect
         LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-        setExpandedCategoryId(prevId => (prevId === categoryId ? null : categoryId));
+        setExpandedCategoryId((prevId) => prevId === categoryId ? null : categoryId);
     }, []);
 
-    const gestureHandler = useAnimatedGestureHandler({
-        onStart: (_, context) => {
-            context.startY = translateY.value;
-        },
-        onActive: (event, context) => {
-            const newY = context.startY + event.translationY;
+    const panGesture = Gesture.Pan()
+        .onStart(() => {
+            contextY.value = translateY.value;
+        })
+        .onUpdate((event) => {
+            const newY = contextY.value + event.translationY;
             translateY.value = Math.max(newY, SCREEN_HEIGHT - sheetHeight);
-        },
-        onEnd: (event) => {
+        })
+        .onEnd((event) => {
             if (event.velocityY > 500 || translateY.value > SCREEN_HEIGHT - 150) {
+                translateY.value = withSpring(SCREEN_HEIGHT);
+                opacity.value = withSpring(0);
                 runOnJS(onClose)();
             } else {
                 translateY.value = withSpring(SCREEN_HEIGHT - sheetHeight, { damping: 100 });
+                opacity.value = withSpring(1);
+
             }
-        },
-    });
+        });
+
+
 
     const backdropStyle = useAnimatedStyle(() => ({
         opacity: opacity.value * 0.5,
@@ -133,8 +171,14 @@ export default function ProgramsBottomSheet({ visible, onClose, programsData }) 
                 <TouchableOpacity style={StyleSheet.absoluteFill} onPress={onClose} />
             </Animated.View>
             <Animated.View style={[styles.sheet, sheetStyle]}>
-                <PanGestureHandler onGestureEvent={gestureHandler}>
-                    <Animated.View style={{ backgroundColor: '#F9FAFB', borderTopLeftRadius: 20, borderTopRightRadius: 20 }}>
+                <GestureDetector gesture={panGesture}>
+                    <Animated.View
+                        style={{
+                            backgroundColor: '#F9FAFB',
+                            borderTopLeftRadius: 20,
+                            borderTopRightRadius: 20,
+                        }}
+                    >
                         <View style={styles.handle} />
                         <View style={styles.header}>
                             <Text style={styles.title}>{programsData.title}</Text>
@@ -143,7 +187,7 @@ export default function ProgramsBottomSheet({ visible, onClose, programsData }) 
                             </TouchableOpacity>
                         </View>
                     </Animated.View>
-                </PanGestureHandler>
+                </GestureDetector>
                 <ScrollView
                     style={styles.scrollView}
                     showsVerticalScrollIndicator={false}
@@ -157,6 +201,7 @@ export default function ProgramsBottomSheet({ visible, onClose, programsData }) 
                             program={program}
                             onToggleExpand={handleToggleExpand}
                             isExpanded={program.id === expandedCategoryId}
+                            onClose={onClose}
                         />
                     ))}
                 </ScrollView>
@@ -170,6 +215,12 @@ const styles = StyleSheet.create({
         ...StyleSheet.absoluteFillObject,
         backgroundColor: '#000',
     },
+    headerContainer: {
+        backgroundColor: '#F9FAFB',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+    },
+
     sheet: {
         position: 'absolute',
         left: 0,

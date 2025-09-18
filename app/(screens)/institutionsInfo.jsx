@@ -26,7 +26,7 @@ const FacultyCard = ({ item, styles }) => {
 const InstitutionsInfo = ({ route }) => {
     const { colors } = useTheme();
     const styles = createStyle(colors);
-    const {selectedInstitutionTitle} = useInstitutionsStore();
+    const { selectedInstitutionTitle } = useInstitutionsStore();
 
     // This is sample data, in a real app you would fetch this from an API
     const allInstitutionsData = {
@@ -97,7 +97,7 @@ const InstitutionsInfo = ({ route }) => {
     return (
         <View style={styles.container}>
             <Header
-                title= {selectedInstitutionTitle}
+                title={selectedInstitutionTitle}
                 showLeftIcon
                 leftIconName="chevron-back"
                 onLeftIconPress={() => router.back()}
@@ -189,7 +189,7 @@ const createStyle = (colors) => {
         mainContent: {
             // Remove the negative margin to prevent content from going behind the header
             // marginTop: 10,
-            // paddingHorizontal: 20,
+            paddingHorizontal: 20,
             // paddingBottom: 20,
         },
         card: {

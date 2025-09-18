@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useEffect } from 'react';
 import {
     Dimensions,
+    Image,
     ScrollView,
     StyleSheet,
     Text,
@@ -20,20 +21,10 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SHEET_HEIGHT = 700;
 const PEEK_HEIGHT = 150;
 
-export default function ScrollableBottomSheet({ visible, onClose, programsData }) {
+export default function PartnerBottomSheet({ visible, onClose, partner }) {
     const translateY = useSharedValue(SCREEN_HEIGHT);
     const opacity = useSharedValue(0);
     const contextY = useSharedValue(0);
-
-    const scheduleItems = [
-        { id: 1, time: '9:00 AM', title: 'Team Standup', location: 'Conference Room A', attendees: 8, color: '#2563EB' },
-        { id: 2, time: '10:30 AM', title: 'Product Review', location: 'Main Hall', attendees: 15, color: '#10B981' },
-        { id: 3, time: '12:00 PM', title: 'Lunch Break', location: 'Cafeteria', attendees: 25, color: '#F59E0B' },
-        { id: 4, time: '2:00 PM', title: 'Client Presentation', location: 'Meeting Room B', attendees: 6, color: '#EF4444' },
-        { id: 5, time: '3:30 PM', title: 'Design Workshop', location: 'Creative Studio', attendees: 12, color: '#8B5CF6' },
-        { id: 6, time: '5:00 PM', title: 'Team Building', location: 'Outdoor Area', attendees: 20, color: '#06B6D4' },
-        { id: 7, time: '6:30 PM', title: 'Networking Event', location: 'Rooftop Lounge', attendees: 35, color: '#F97316' },
-    ];
 
     useEffect(() => {
         if (visible) {
@@ -72,61 +63,46 @@ export default function ScrollableBottomSheet({ visible, onClose, programsData }
         transform: [{ translateY: translateY.value }],
     }));
 
-    if (!visible) return null;
+    if (!visible || !partner) return null;
 
     return (
         <View style={styles.container}>
+            {/* Backdrop */}
             <Animated.View style={[styles.backdrop, backdropStyle]}>
                 <TouchableOpacity style={styles.backdropTouch} onPress={onClose} />
             </Animated.View>
 
-
+            {/* Sheet */}
             <Animated.View style={[styles.sheet, sheetStyle]}>
                 <GestureDetector gesture={panGesture}>
                     <Animated.View>
                         <View style={styles.handle} />
                         <View style={styles.header}>
-                            <Text style={styles.title}>Today's Schedule</Text>
+                            <Text style={styles.title}>{partner.name}</Text>
                             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                                 <Ionicons name="close" size={24} color="#6B7280" />
                             </TouchableOpacity>
                         </View>
                     </Animated.View>
                 </GestureDetector>
+
                 <ScrollView
                     style={styles.scrollView}
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={styles.scrollContent}
                     bounces={false}
                     overScrollMode="never"
-                    scrollEventThrottle={16}
                 >
-                    {scheduleItems.map((item) => (
-                        <TouchableOpacity key={item.id} style={styles.scheduleItem} activeOpacity={0.7}>
-                            <View style={[styles.timeIndicator, { backgroundColor: item.color }]} />
-                            <View style={styles.itemContent}>
-                                <View style={styles.itemHeader}>
-                                    <Text style={styles.itemTitle}>{item.title}</Text>
-                                    <View style={styles.timeContainer}>
-                                        <Text style={styles.itemTime}>{item.time}</Text>
-                                    </View>
-                                </View>
-                                <View style={styles.itemDetails}>
-                                    <View style={styles.detailItem}>
-                                        <Text style={styles.detailText}>{item.location}</Text>
-                                    </View>
-                                    <View style={styles.detailItem}>
-                                        <Text style={styles.detailText}>{item.attendees} people</Text>
-                                    </View>
-                                </View>
-                            </View>
-                        </TouchableOpacity>
-                    ))}
+                    {/* Logo */}
+                    {partner.logo && (
+                        <Image source={{ uri: partner.logo }} style={styles.logo} resizeMode="contain" />
+                    )}
 
-
+                    {/* Info */}
+                    <Text style={styles.category}>{partner.name}</Text>
+                    <Text style={styles.info}>{partner.description}</Text>
                 </ScrollView>
             </Animated.View>
-
         </View>
     );
 }
@@ -161,23 +137,14 @@ const styles = StyleSheet.create({
     title: { fontSize: 18, fontWeight: 'bold' },
     closeButton: { padding: 4 },
     scrollView: { flex: 1 },
-    scrollContent: { padding: 16 },
-    scheduleItem: {
-        flexDirection: 'row',
+    scrollContent: { padding: 16, alignItems: 'center' },
+    logo: {
+        width: 120,
+        height: 120,
         marginBottom: 16,
-        padding: 12,
-        backgroundColor: '#f9f9f9',
-        borderRadius: 8,
+        borderRadius: 12,
+        backgroundColor: '#f3f4f6',
     },
-    timeIndicator: { width: 6, borderRadius: 3, marginRight: 12 },
-    itemContent: { flex: 1 },
-    itemHeader: { flexDirection: 'row', justifyContent: 'space-between' },
-    itemTitle: { fontSize: 16, fontWeight: '600' },
-    timeContainer: { flexDirection: 'row', alignItems: 'center' },
-    itemTime: { marginLeft: 4, color: '#6B7280' },
-    itemDetails: { flexDirection: 'row', marginTop: 4 },
-    detailItem: { marginRight: 16 },
-    detailText: { color: '#9CA3AF' },
-    footer: { marginTop: 16, alignItems: 'center' },
-    footerText: { color: '#6B7280', fontSize: 12 },
+    category: { fontSize: 14, color: '#6B7280', marginBottom: 8 },
+    info: { fontSize: 15, color: '#374151', textAlign: 'center' },
 });

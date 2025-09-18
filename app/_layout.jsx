@@ -1,14 +1,16 @@
-import { Stack } from "expo-router";
-import { SafeAreaProvider } from "react-native-safe-area-context";
-import SafeAreaScreen from "../components/SafeAreaScreen"
-import { ThemeProvider } from "@/hooks/usetheme";
-import LayoutContent from "@/components/LayoutContent"
-
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import LayoutContent from "../components/LayoutContent";
+import { BottomSheetProvider } from '../context/BottomSheetContext';
+import { ThemeProvider } from "../hooks/usetheme";
 export default function RootLayout() {
-  
+
   return (
     <ThemeProvider>
-      <LayoutContent/>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <BottomSheetProvider>
+          <LayoutContent />
+        </BottomSheetProvider>
+      </GestureHandlerRootView>
     </ThemeProvider>
   );
 }

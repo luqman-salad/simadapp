@@ -1,9 +1,9 @@
+//school.jsx
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Header } from '../../components/Headrer';
-import ProgramsBottomSheet from '../../components/ProgramsBottomSheet';
+import { useBottomSheet } from '../../context/BottomSheetContext';
 import useTheme from '../../hooks/usetheme';
 
 const programsData = {
@@ -66,24 +66,19 @@ const programsData = {
           { id: '6', name: 'Bachelor of Software Engineering', icon: 'code-slash-outline' },
         ]
       },
-      // {
-      //   id: '18', name: 'Faculty of Management Science', type: 'category', programs: [
-      //     { id: '7', name: 'Bachelor of Science in IT', icon: 'desktop-outline' },
-      //     { id: '8', name: 'Bachelor of Software Engineering', icon: 'code-slash-outline' },
-      //   ]
-      // },
-      // {
-      //   id: '19', name: 'Faculty of Law', type: 'category', programs: [
-      //     { id: '9', name: 'Bachelor of Science in IT', icon: 'desktop-outline' },
-      //     { id: '10', name: 'Bachelor of Software Engineering', icon: 'code-slash-outline' },
-      //   ]
-      // },
-      // {
-      //   id: '20', name: 'Faculty of Education', type: 'category', programs: [
-      //     { id: '11', name: 'Bachelor of Science in IT', icon: 'desktop-outline' },
-      //     { id: '99', name: 'Bachelor of Software Engineering', icon: 'code-slash-outline' },
-      //   ]
-      // }
+      {
+        id: '27', name: 'Faculty of Law', type: 'category', programs: [
+          { id: '35', name: 'Bachelor of Science in IT', icon: 'desktop-outline' },
+          { id: '36', name: 'Bachelor of Software Engineering', icon: 'code-slash-outline' },
+        ]
+      },
+      {
+        id: '127', name: 'Faculty of Education', type: 'category', programs: [
+          { id: '222', name: 'Bachelor of Science in IT', icon: 'desktop-outline' },
+          { id: '6222', name: 'Bachelor of Software Engineering', icon: 'code-slash-outline' },
+        ]
+      },
+
     ]
   },
   Diploma: {
@@ -100,13 +95,9 @@ const AcademicProgramsScreen = () => {
   const { colors } = useTheme();
   const styles = createStyle(colors);
   const navigationTab = useNavigation();
-  const [isBottomSheetVisible, setIsBottomSheetVisible] = useState(false);
-  const [selectedProgramData, setSelectedProgramData] = useState(null);
+  const { openSheet } = useBottomSheet();
 
-  const handleCardPress = (programType) => {
-    setSelectedProgramData(programsData[programType]);
-    setIsBottomSheetVisible(true);
-  };
+
 
   return (
     <View style={styles.container}>
@@ -126,7 +117,7 @@ const AcademicProgramsScreen = () => {
                 styles.card,
                 { backgroundColor: program.color, opacity: pressed ? 0.8 : 1 }
               ]}
-              onPress={() => handleCardPress(key)}
+              onPress={() => openSheet(program)}
             >
               <View>
                 <Text style={styles.cardTitle}>{program.title.replace(' Programs', '')}</Text>
@@ -138,12 +129,9 @@ const AcademicProgramsScreen = () => {
         })}
       </View>
 
-      <ProgramsBottomSheet
-        visible={isBottomSheetVisible}
-        onClose={() => setIsBottomSheetVisible(false)}
-        programsData={selectedProgramData}
-      />
+
     </View>
+
   );
 };
 

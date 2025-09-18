@@ -1,14 +1,9 @@
-import React from 'react';
-import { View, ScrollView, StyleSheet, ImageBackground, Image } from 'react-native'; // Added Image for potential direct use
+import { Image, Pressable, ScrollView, StyleSheet, View } from 'react-native'; // Added Image for potential direct use
 import useTheme from '../hooks/usetheme';
 
 // Import university logos (YOU MUST CROP AND SAVE THESE INDIVIDUALLY)
-import kumluLogo from '../assets/images/react-logo.png';
-import usmLogo from '../assets/images/react-logo.png';
-import selcukLogo from '../assets/images/react-logo.png';
-import sakaryaLogo from '../assets/images/react-logo.png';
-import luissLogo from '../assets/images/react-logo.png';
-import lshtmLogo from '../assets/images/react-logo.png';
+import { router } from 'expo-router';
+import { default as kumluLogo, default as lshtmLogo, default as luissLogo, default as sakaryaLogo, default as selcukLogo, default as usmLogo } from '../assets/images/react-logo.png';
 // ... you would add imports for any other logos if they were present in the original image
 
 const universities = [
@@ -20,7 +15,6 @@ const universities = [
   { id: '6', name: 'London School of Hygiene & Tropical Medicine', image: lshtmLogo },
 ];
 
-// ✅ Split into chunks of 2 for two rows per column
 const chunkArray = (array, size) => {
   const result = [];
   for (let i = 0; i < array.length; i += size) {
@@ -35,6 +29,10 @@ export default function HorizontalTwoRowGrid() {
 
   const chunkedUniversities = chunkArray(universities, 2); // 2 items per column
 
+  const handlePress = () => {
+    router.push('/(screens)/ParternshipInfoScreen');
+    // store parternshipId 
+  };
   return (
     <ScrollView
       horizontal
@@ -44,14 +42,40 @@ export default function HorizontalTwoRowGrid() {
       {chunkedUniversities.map((column, index) => (
         <View key={`col-${index}`} style={styles.column}>
           {column.map((item) => (
-            <View key={item.id} style={styles.card}>
+            <Pressable
+              key={item.id}
+              onPress={() => handlePress()}
+              style={({ pressed }) => [
+                styles.card,
+                { opacity: pressed ? 0.7 : 1 },
+              ]}
+            >
               {/* Using Image component directly for the logo */}
               <Image
                 source={item.image}
                 style={styles.logoImage}
                 resizeMode="contain" // Ensures the whole logo is visible
               />
-            </View>
+            </Pressable>
+
+            // <View key={`col-${index}`} style={styles.column}>
+            //         {column.map((item) => (
+            //           <Pressable
+            //             key={item.id}
+            //             onPress={() => handlePress(item.id)}
+            //             style={({ pressed }) => [
+            //               styles.card,
+            //               { opacity: pressed ? 0.7 : 1 },
+            //             ]}
+            //           >
+            //             <Image source={item.icon} style={styles.icon} />
+            //             <Text style={styles.title}>{item.name}</Text>
+            //           </Pressable>
+            //         ))}
+            //       </View>
+
+
+
           ))}
         </View>
       ))}

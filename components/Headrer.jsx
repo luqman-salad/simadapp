@@ -1,7 +1,7 @@
-import useTheme from "@/hooks/usetheme";
 import { Ionicons } from '@expo/vector-icons'; // Assuming you have @expo/vector-icons installed
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import useTheme from "../hooks/usetheme";
 
 
 // <Ionicons name="chevron-back" size={24} color={colors.text} />
@@ -30,7 +30,7 @@ export function Header({
                 <View style={styles.leftSection}>
                     {showLeftIcon ? (
                         <TouchableOpacity
-                            style={[styles.iconButton, { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors }]}
+                            style={[styles.iconButton, { backgroundColor: colors.surface, borderWidth: 0.2, borderColor: colors.primary }]}
                             onPress={onLeftIconPress}
                         >
                             <Ionicons name={leftIconName} size={24} color={colors.text} />
@@ -47,7 +47,7 @@ export function Header({
                 <View style={styles.rightSection}>
                     {showNotifiction ? (
                         <TouchableOpacity
-                            style={[styles.iconButton, { backgroundColor: colors.surface }]}
+                            style={[styles.iconButton, { backgroundColor: colors.surface, borderWidth: 0.2, borderColor: colors.primary }]}
                             onPress={onNotificationPress}
                         >
                             <Ionicons name="notifications-outline" size={24} color={colors.text} />

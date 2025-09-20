@@ -4,6 +4,8 @@ import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import useTheme from '../../hooks/usetheme';
+import { useRouter } from 'expo-router';
+import { Header } from '../../components/Headrer';
 
 // Dummy data for transactions
 const allTransactions = [
@@ -63,6 +65,7 @@ const MyFinancesScreen = () => {
 
   const { colors } = useTheme();
   const styles = createStyle(colors);
+  const router = useRouter();
 
   const handleOpenTransactions = useCallback(() => {
     bottomSheetRef.current?.expand();
@@ -74,7 +77,13 @@ const MyFinancesScreen = () => {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaView style={styles.safeArea}>
+      <View style={styles.Wrapper}>
+        <Header
+        title="Finances"
+        showLeftIcon
+        leftIconName="chevron-back"
+        onLeftIconPress={() => router.back()}
+      />
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
           <View style={styles.headerContainer}>
             <Text style={styles.title}>My Finances</Text>
@@ -145,7 +154,7 @@ const MyFinancesScreen = () => {
             </TouchableOpacity>
           </View>
         </ScrollView>
-      </SafeAreaView>
+      </View>
 
       {/* All Transactions Bottom Sheet */}
       <BottomSheet
@@ -165,7 +174,7 @@ const MyFinancesScreen = () => {
 // Main screen styles
 const createStyle = (colors) => {
     return StyleSheet.create({
-  safeArea: {
+  Wrapper: {
     flex: 1,
     backgroundColor: colors.bg,
   },

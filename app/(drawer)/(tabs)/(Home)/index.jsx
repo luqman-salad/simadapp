@@ -26,9 +26,6 @@ const Home = () => {
                 onLeftIconPress={() => navigation.openDrawer()}
             />
             <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
-
-
-
                 <ShowCase />
                 <AcademicFacilities />
 

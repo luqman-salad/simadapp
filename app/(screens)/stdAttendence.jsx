@@ -4,6 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Picker } from '@react-native-picker/picker';
 import { PieChart } from 'react-native-chart-kit';
 import { Ionicons, FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
+import useTheme from '../../hooks/usetheme';
+import { useRouter } from 'expo-router';
+import { Header } from '../../components/Headrer';
 
 // Dummy data for the course selector and chart
 const courses = [
@@ -46,8 +49,18 @@ const chartConfig = {
 const AttendanceScreen = () => {
   const [selectedCourse, setSelectedCourse] = useState(null);
 
+  const { colors } = useTheme();
+  const router = useRouter();
+  const styles = createStyle(colors);
+
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.Wrapper}>
+      <Header
+        title="Attandence"
+        showLeftIcon
+        leftIconName="chevron-back"
+        onLeftIconPress={() => router.back()}
+      />
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         {/* Course Selector */}
         <View style={styles.selectorContainer}>
@@ -67,7 +80,7 @@ const AttendanceScreen = () => {
                 />
               ))}
             </Picker>
-            <Ionicons name="chevron-down" size={20} color="#000" style={styles.pickerIcon} />
+            {/* <Ionicons name="chevron-down" size={20} color="#000" style={styles.pickerIcon} /> */}
           </View>
         </View>
 
@@ -110,36 +123,37 @@ const AttendanceScreen = () => {
 
         {/* Stat Cards */}
         <View style={styles.statsContainer}>
-          <View style={[styles.statCard, { borderColor: '#3498db' }]}>
-            <Ionicons name="people-outline" size={30} color="#3498db" />
+          <View style={[styles.statCard, { borderColor: colors.primary }]}>
+            <Ionicons name="people-outline" size={30} color={colors.primary} />
             <Text style={styles.statValue}>35</Text>
             <Text style={styles.statLabel}>Total</Text>
           </View>
-          <View style={[styles.statCard, { borderColor: '#2ecc71' }]}>
-            <Ionicons name="checkmark-circle-outline" size={30} color="#2ecc71" />
+          <View style={[styles.statCard, { borderColor: colors.secondary }]}>
+            <Ionicons name="checkmark-circle-outline" size={30} color={colors.secondary}/>
             <Text style={styles.statValue}>32</Text>
             <Text style={styles.statLabel}>Present</Text>
           </View>
-          <View style={[styles.statCard, { borderColor: '#f1c40f' }]}>
-            <FontAwesome name="star-o" size={30} color="#f1c40f" />
+          <View style={[styles.statCard, { borderColor: colors.tertiary }]}>
+            <FontAwesome name="star-o" size={30} color={colors.tertiary} />
             <Text style={styles.statValue}>3</Text>
             <Text style={styles.statLabel}>Absent</Text>
           </View>
-          <View style={[styles.statCard, { borderColor: '#9b59b6' }]}>
-            <Ionicons name="person-circle-outline" size={30} color="#9b59b6" />
+          <View style={[styles.statCard, { borderColor: colors.primary }]}>
+            <Ionicons name="person-circle-outline" size={30} color={colors.primary} />
             <Text style={styles.statValue}>0</Text>
             <Text style={styles.statLabel}>Excuse</Text>
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
-const styles = StyleSheet.create({
-  safeArea: {
+const createStyle = (colors) => {
+  return StyleSheet.create({
+  Wrapper: {
     flex: 1,
-    backgroundColor: '#f0f0f5',
+    backgroundColor: colors.bg,
   },
   scrollViewContent: {
     padding: 20,
@@ -150,23 +164,23 @@ const styles = StyleSheet.create({
   selectorTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333',
+    color: colors.text,
     marginBottom: 10,
   },
   pickerWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: colors.border,
     overflow: 'hidden',
-    height: 50,
+    // height: 50,
   },
   picker: {
     flex: 1,
     height: '100%',
-    color: '#000',
+    color: colors.text,
   },
   pickerIcon: {
     position: 'absolute',
@@ -188,17 +202,17 @@ const styles = StyleSheet.create({
   },
   legendText: {
     fontSize: 14,
-    color: '#666',
+    color: colors.text,
     marginTop: 5,
   },
   detailsTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333',
+    color: colors.text,
     marginBottom: 15,
   },
   rateCard: {
-    backgroundColor: '#2ecc71',
+    backgroundColor: colors.primary,
     borderRadius: 12,
     padding: 20,
     flexDirection: 'row',
@@ -208,17 +222,17 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 5,
+    shadowRadius: 3,
+    elevation: 3,
   },
   rateLabel: {
     fontSize: 16,
-    color: '#fff',
+    color: colors.white,
   },
   rateValue: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
   },
   statsContainer: {
     flexDirection: 'row',
@@ -226,18 +240,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   statCard: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 20,
     alignItems: 'center',
     width: '48%',
     marginBottom: 15,
-    borderWidth: 2,
+    borderWidth: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 5,
+    shadowRadius: 3,
+    elevation: 3,
+    borderColor: colors.border
   },
   statValue: {
     fontSize: 28,
@@ -251,5 +266,6 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
 });
+}
 
 export default AttendanceScreen;

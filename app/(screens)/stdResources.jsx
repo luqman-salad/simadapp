@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, SafeAreaView, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import useTheme from '../../hooks/usetheme';
+import { Header } from '../../components/Headrer';
 
 // Dummy data for the semester and course materials
 const semesters = [
@@ -59,6 +62,10 @@ const CourseMaterialsScreen = () => {
   const [selectedSemester, setSelectedSemester] = useState('fall_2024');
   const materials = courseMaterials[selectedSemester];
 
+  const { colors } = useTheme();
+  const router = useRouter();
+  const styles = createStyle(colors);
+
   // Function to handle file download
   const handleDownload = (fileName) => {
     Alert.alert("Download File", `Are you sure you want to download "${fileName}"?`, [
@@ -79,7 +86,13 @@ const CourseMaterialsScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.Wraper}>
+      <Header
+        title="Resources"
+        showLeftIcon
+        leftIconName="chevron-back"
+        onLeftIconPress={() => router.back()}
+      />
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.headerContainer}>
           <Text style={styles.title}>Course Materials</Text>
@@ -99,7 +112,7 @@ const CourseMaterialsScreen = () => {
                 <Picker.Item key={s.value} label={s.label} value={s.value} />
               ))}
             </Picker>
-            <Ionicons name="chevron-down" size={20} color="#000" style={styles.pickerIcon} />
+            {/* <Ionicons name="chevron-down" size={20} color="#000" style={styles.pickerIcon} /> */}
           </View>
         </View>
 
@@ -127,14 +140,15 @@ const CourseMaterialsScreen = () => {
           </View>
         ))}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
-const styles = StyleSheet.create({
-  safeArea: {
+const createStyle = (colors) => {
+  return StyleSheet.create({
+  Wraper: {
     flex: 1,
-    backgroundColor: '#f0f0f5',
+    backgroundColor: colors.bg,
   },
   scrollViewContent: {
     padding: 20,
@@ -145,13 +159,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: 500,
+    color: colors.text,
     marginBottom: 5,
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: colors.text,
     textAlign: 'center',
   },
   selectorContainer: {
@@ -161,24 +175,25 @@ const styles = StyleSheet.create({
   },
   selectorLabel: {
     fontSize: 16,
-    color: '#333',
+    color: colors.text,
     marginRight: 10,
   },
   pickerWrapper: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: colors.border,
     overflow: 'hidden',
     height: 45,
   },
   picker: {
     flex: 1,
     height: '100%',
-    color: '#000',
+    color: colors.text,
+    height: 100
   },
   pickerIcon: {
     position: 'absolute',
@@ -186,7 +201,7 @@ const styles = StyleSheet.create({
     pointerEvents: 'none',
   },
   courseCard: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
     borderRadius: 15,
     padding: 20,
     marginBottom: 20,
@@ -194,17 +209,17 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 5,
-    elevation: 5,
+    elevation: 3,
   },
   courseTitle: {
     fontSize: 20,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: 400,
+    color: colors.text,
     marginBottom: 10,
   },
   divider: {
     height: 1,
-    backgroundColor: '#e0e0e0',
+    backgroundColor: colors.border,
     marginBottom: 15,
   },
   categoryContainer: {
@@ -212,8 +227,8 @@ const styles = StyleSheet.create({
   },
   categoryTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#3498db',
+    fontWeight: 500,
+    color: colors.text,
     marginBottom: 10,
   },
   fileItem: {
@@ -226,8 +241,9 @@ const styles = StyleSheet.create({
   },
   fileName: {
     fontSize: 14,
-    color: '#555',
+    color: colors.text,
   },
 });
+}
 
 export default CourseMaterialsScreen;

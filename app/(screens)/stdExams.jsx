@@ -4,6 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
 import useTheme from '../../hooks/usetheme';
+import { useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
+import { Header } from '../../components/Headrer';
 
 // Dummy data for semesters and results
 const semesters = [
@@ -86,6 +89,8 @@ const ExamResultsScreen = ({ navigation }) => {
   const { colors } = useTheme();
   const styles = createStyle(colors);
 
+  const router = useRouter();
+
   const renderProgressBar = (score, max) => {
     const percentage = (score / max) * 100;
     const barColor = percentage >= 75 ? colors.primary : percentage >= 50 ? colors.tertiary : colors.danger;
@@ -113,6 +118,12 @@ const ExamResultsScreen = ({ navigation }) => {
 
   return (
     <View style={styles.ContainerWrapper}>
+      <Header
+        title="Exams"
+        showLeftIcon
+        leftIconName="chevron-back"
+        onLeftIconPress={() => router.back()}
+      />
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.container}>
           <Text style={styles.title}>Exam Results</Text>

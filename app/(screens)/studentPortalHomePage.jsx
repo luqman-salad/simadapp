@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context'; // For proper spacing on different devices
 import { Ionicons } from '@expo/vector-icons'; // Assuming you have @expo/vector-icons installed
 import useTheme from '../../hooks/usetheme';
 import { useRouter } from 'expo-router';
@@ -12,9 +11,9 @@ const dashboardTiles = [
   { id: 'schedule', title: 'Schedule', subtitle: 'Classes This Week', icon: 'calendar-outline', color: '#7AFFC0', screen: '(screens)/stdSchechule' }, // Green-ish
   { id: 'attendance', title: 'Attendance', subtitle: 'View detailed report', icon: 'checkmark-circle-outline', color: '#FFD479', screen: '(screens)/stdAttendence' }, // Orange-ish
   { id: 'resources', title: 'Resources', subtitle: 'Download materials', icon: 'folder-open-outline', color: '#DAA5FF', screen: '(screens)/stdResources' }, // Purple-ish
-  { id: 'support', title: 'Support', subtitle: 'Get Help & FAQs', icon: 'help-circle-outline', color: '#A0E7E5', screen: '(screens)/stdSupport' }, // Teal-ish
+  // { id: 'support', title: 'Support', subtitle: 'Get Help & FAQs', icon: 'help-circle-outline', color: '#A0E7E5', screen: '(screens)/stdSupport' }, // Teal-ish
   
-  { id: 'news', title: 'News', subtitle: 'Latest university updates', icon: 'newspaper-outline', color: '#C6E2E9', screen: '(screens)/stdNews' }, // Light Blue-ish
+  // { id: 'news', title: 'News', subtitle: 'Latest university updates', icon: 'newspaper-outline', color: '#C6E2E9', screen: '(screens)/stdNews' }, // Light Blue-ish
   { id: 'profile', title: 'Profile', subtitle: 'Manage your details', icon: 'person-circle-outline', color: '#B3E0B3', screen: '(screens)/stdProfile' }, // Light Green-ish
 ];
 
@@ -40,7 +39,7 @@ const StudentDashboardScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.Wrapper}>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.container}>
           {/* Header Section */}
@@ -101,15 +100,16 @@ const StudentDashboardScreen = ({ navigation }) => {
 
         
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const createStyle = (colors) => {
     return StyleSheet.create({
-  safeArea: {
+  Wrapper: {
     flex: 1,
-    backgroundColor: '#f0f4f8', // Very light grey/blue background
+    backgroundColor: colors.bg,
+    paddingTop: 15
   },
   scrollViewContent: {
     flexGrow: 1,

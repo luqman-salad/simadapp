@@ -1,6 +1,9 @@
 import React from 'react';
 import { StyleSheet, Text, View, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import useTheme from '../../hooks/usetheme';
+import { Header } from '../../components/Headrer';
 
 // --- Dummy data for the schedule ---
 const semesterSchedule = [
@@ -71,8 +74,17 @@ const semesterSchedule = [
 ];
 
 const ScheduleScreen = () => {
+  const router = useRouter();
+  const { colors } = useTheme();
+  const styles = createStyle(colors);
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.Wrapper}>
+      <Header
+        title="Schedule"
+        showLeftIcon
+        leftIconName="chevron-back"
+        onLeftIconPress={() => router.back()}
+      />
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.headerContainer}>
           <Text style={styles.title}>Current Semester Schedule</Text>
@@ -123,14 +135,15 @@ const ScheduleScreen = () => {
           </View>
         ))}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
-const styles = StyleSheet.create({
-  safeArea: {
+const createStyle = (colors) => {
+  return StyleSheet.create({
+  Wrapper: {
     flex: 1,
-    backgroundColor: '#f0f0f5',
+    backgroundColor: colors.bg,
   },
   scrollViewContent: {
     paddingVertical: 20,
@@ -143,12 +156,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#333',
+    color: colors.text,
     marginBottom: 5,
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: colors.text,
   },
   dayContainer: {
     marginBottom: 25,
@@ -156,12 +169,12 @@ const styles = StyleSheet.create({
   dayHeader: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
+    color: colors.text,
     marginBottom: 10,
   },
   divider: {
     height: 1,
-    backgroundColor: '#e0e0e0',
+    backgroundColor: colors.border,
     marginBottom: 15,
   },
   // --- Timeline Specific Styles ---
@@ -190,19 +203,19 @@ const styles = StyleSheet.create({
   },
   timelineContent: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 15,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 3,
+    elevation: 1,
   },
   className: {
     fontSize: 18,
     fontWeight: 500,
-    color: '#333',
+    color: colors.text,
     marginBottom: 10,
   },
   infoRow: {
@@ -212,7 +225,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 14,
-    color: '#555',
+    color: colors.text,
     marginLeft: 10,
   },
   noClassesContainer: {
@@ -220,17 +233,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
-    backgroundColor: '#f8f8f8',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: colors.border,
   },
   noClassesText: {
     fontSize: 16,
-    color: '#999',
+    color: colors.text,
     fontStyle: 'italic',
     marginLeft: 10,
   },
 });
-
+}
 export default ScheduleScreen;

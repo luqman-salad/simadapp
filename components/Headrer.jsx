@@ -16,6 +16,7 @@ export function Header({
     NotificationItemCount = 0,
 }) {
     const { colors } = useTheme();
+    const styles = createStyle(colors);
     const insets = useSafeAreaInsets();
 
     return (
@@ -71,12 +72,15 @@ export function Header({
     );
 }
 
-const styles = StyleSheet.create({
+const createStyle = (colors) => {
+  return StyleSheet.create({
     container: {
         // shadowOffset: { width: 0, height: 1 },
         // shadowOpacity: 0.1,
         // shadowRadius: 2,
         // elevation: 2,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.border
     },
     content: {
         flexDirection: 'row',
@@ -124,3 +128,4 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
 });
+}

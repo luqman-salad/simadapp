@@ -1,4 +1,4 @@
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 
 //Components
@@ -9,6 +9,7 @@ import RectorsMessage from '../../../../components/RectorsMessage';
 import SenateList from '../../../../components/SenateList';
 import VisionPurpose from '../../../../components/VisionPurpose';
 import useAboutStore from "../../../../store/aboutStore";
+import { Header } from "../../../../components/Headrer";
 
 const pages = {
     '1': { component: LearnAboutSIMAD, title: 'Learn About SIMAD' },
@@ -24,9 +25,16 @@ export default function DynamicDetailsPage() {
     const id = selectedAboutItem.id;
     const page = pages[id];
     const PageComponent = page?.component;
+    const router = useRouter();
 
     return (
         <View style={styles.container}>
+            <Header
+                title={selectedAboutItem.title}
+                showLeftIcon
+                leftIconName="chevron-back"
+                onLeftIconPress={() => router.back()}
+            />
             {page ? <PageComponent /> : <Text>Page not found.</Text>}
         </View>
     );

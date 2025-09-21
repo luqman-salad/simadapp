@@ -114,8 +114,8 @@ const createStyle = (colors) => {
     },
     badge: {
         position: 'absolute',
-        top: -4,
-        right: -4,
+        top: -3,
+        right: 2,
         minWidth: 20,
         height: 20,
         borderRadius: 10,

@@ -137,6 +137,18 @@ export default function RootLayout() {
               headerShown: false
             }}
           />
+          <Stack.Screen name="(screens)/courseMaterials"
+            options={{
+              // title: "Attendence"
+              headerShown: false
+            }}
+          />
+          <Stack.Screen name="(screens)/notifications"
+            options={{
+              // title: "Attendence"
+              headerShown: false
+            }}
+          />
 
         </Stack>
       </SafeAreaScreen>

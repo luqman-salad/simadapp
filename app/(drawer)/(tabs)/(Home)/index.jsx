@@ -8,22 +8,29 @@ import InternationalPartners from '../../../../components/InternationalPartners'
 import ShowCase from '../../../../components/Showcase';
 import SimadInNumbers from '../../../../components/SimadInNumbers';
 import useTheme from '../../../../hooks/usetheme';
+import { useRouter } from 'expo-router';
 
 
 const Home = () => {
     const { colors } = useTheme();
     const styles = createStyle(colors);
     const navigation = useNavigation();
+    const router = useRouter()
+
+    const handlePress = () => {
+        router.push("(screens)/notifications")
+    }
 
     return (
         <>
             <Header
-                title=""
+                title="SIMAD"
                 showLeftIcon
                 leftIconName="menu"
                 showNotifiction
-                NotificationItemCount={100}
+                NotificationItemCount={6}
                 onLeftIconPress={() => navigation.openDrawer()}
+                onNotificationPress={() => handlePress()}
             />
             <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
                 <ShowCase />

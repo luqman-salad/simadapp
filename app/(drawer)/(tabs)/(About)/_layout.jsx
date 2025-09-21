@@ -13,7 +13,8 @@ export default function AboutLayout() {
         <Stack.Screen 
           name="detail"
           options={{
-            title: selectedAboutItem?.title
+            title: selectedAboutItem?.title,
+            headerShown: false
           }}
         />
     </Stack>

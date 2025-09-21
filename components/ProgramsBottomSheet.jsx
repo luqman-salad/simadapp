@@ -5,12 +5,10 @@ import { useCallback, useEffect, useState } from 'react';
 import {
     Dimensions,
     LayoutAnimation,
-    Platform,
     ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
-    UIManager,
     View
 } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -22,9 +20,7 @@ const MAX_SHEET_HEIGHT = SCREEN_HEIGHT * 0.9;
 const ITEM_HEIGHT = 80;
 const PADDING_BOTTOM = 40;
 
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-    UIManager.setLayoutAnimationEnabledExperimental(true);
-}
+
 
 const ProgramItem = ({ program, onToggleExpand, isExpanded, isSubItem = false, onClose }) => {
     if (program.type === 'category') {

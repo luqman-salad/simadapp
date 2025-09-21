@@ -1,9 +1,13 @@
 import { Stack } from "expo-router";
 import { StatusBar } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import FollowUsBottomSheet from '../components/BottomSheets/FollowUsBottomSheet';
+import LanguageBottomSheet from '../components/BottomSheets/LanguageBottomSheet';
+import ThemeBottomSheet from '../components/BottomSheets/ThemeBottomSheet';
+
+
 import PartnerBottomSheet from '../components/PartnerBottomSheet';
 import ProgramsBottomSheet from '../components/ProgramsBottomSheet';
-
 import SafeAreaScreen from "../components/SafeAreaScreen";
 import { useBottomSheet } from '../context/BottomSheetContext';
 import useTheme from "../hooks/usetheme";
@@ -12,6 +16,8 @@ export default function RootLayout() {
   const { colors } = useTheme();
   const { selectedInstitutionTitle } = useInstitutionsStore();
   const { isSheetVisible, closeSheet, content, sheetType } = useBottomSheet();
+  const { selectedTheme, onSelectTheme } = content?.theme || {};
+  const { selectedLanguage, onSelectLanguage } = content?.language || {};
   return (
 
     <SafeAreaProvider>
@@ -148,6 +154,33 @@ export default function RootLayout() {
           visible={isSheetVisible}
           onClose={closeSheet}
           partner={content}
+        />
+      )}
+
+      {/* Render ThemeBottomSheet */}
+      {sheetType === 'theme' && (
+        <ThemeBottomSheet
+          visible={isSheetVisible}
+          onClose={closeSheet}
+          selectedTheme={selectedTheme}
+          onSelectTheme={onSelectTheme}
+        />
+      )}
+
+      {/* Render LanguageBottomSheet */}
+      {sheetType === 'language' && (
+        <LanguageBottomSheet
+          visible={isSheetVisible}
+          onClose={closeSheet}
+          selectedLanguage={selectedLanguage}
+          onSelectLanguage={onSelectLanguage}
+        />
+      )}
+
+      {sheetType === 'follow-us' && (
+        <FollowUsBottomSheet
+          visible={isSheetVisible}
+          onClose={closeSheet}
         />
       )}
     </SafeAreaProvider>

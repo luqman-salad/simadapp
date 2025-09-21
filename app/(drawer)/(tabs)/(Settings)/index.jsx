@@ -69,7 +69,7 @@ const Setting = ({ navigation }) => {
   return (
     <>
       <Header
-        title="Setting"
+        title="SETTING"
       />
       <View style={createStyles(colors).screenContainer}>
         <ScrollView contentContainerStyle={createStyles(colors).contentContainer}>

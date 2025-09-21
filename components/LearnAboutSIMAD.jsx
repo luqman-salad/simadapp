@@ -1,8 +1,6 @@
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import useTheme from '../hooks/usetheme';
 
-import { router } from 'expo-router';
-import { Header } from '../components/Headrer';
 
 // Data for the repeatable card sections
 const cardData = [
@@ -49,45 +47,40 @@ const LearnAboutSIMAD = () => {
 
 
     return (
-        <>
-            <Header
-                title="Learn About Simad"
-                showLeftIcon
-                leftIconName="chevron-back"
-                onLeftIconPress={() => router.back()}
-            />
-            <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-                {/* Top Banner Section */}
-                <View style={styles.bannerContainer}>
-                    <Image
-                        source={require('../assets/images/fablab.jpg')} // Replace with your actual image path
-                        style={styles.bannerImage}
-                    />
-                    <View style={styles.overlay} />
 
-                    <Pressable style={styles.learnMoreButton}>
-                        <Text style={styles.buttonText}>Learn About SIMAD UNIVERSITY in 5 min</Text>
-                    </Pressable>
+
+        <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+            {/* Top Banner Section */}
+            <View style={styles.bannerContainer}>
+                <Image
+                    source={require('../assets/images/fablab.jpg')} // Replace with your actual image path
+                    style={styles.bannerImage}
+                />
+                <View style={styles.overlay} />
+
+                <Pressable style={styles.learnMoreButton}>
+                    <Text style={styles.buttonText}>Learn About SIMAD UNIVERSITY in 5 min</Text>
+                </Pressable>
+            </View>
+
+            {/* "Why Simad ?" Section */}
+            <View style={styles.whySimadContainer}>
+                <Text style={styles.whySimadTitle}>Why Simad ?</Text>
+            </View>
+
+            {/* Dynamic Card Sections */}
+            {cardData.map((card, index) => (
+                <View key={index} style={styles.card}>
+                    <Text style={styles.cardTitle}>{card.title}</Text>
+                    <Text style={styles.cardDescription}>
+                        {card.description}
+                        <Text style={styles.seeMore}>See More...</Text>
+                    </Text>
+                    <Image source={card.image} style={styles.cardImage} />
                 </View>
+            ))}
+        </ScrollView>
 
-                {/* "Why Simad ?" Section */}
-                <View style={styles.whySimadContainer}>
-                    <Text style={styles.whySimadTitle}>Why Simad ?</Text>
-                </View>
-
-                {/* Dynamic Card Sections */}
-                {cardData.map((card, index) => (
-                    <View key={index} style={styles.card}>
-                        <Text style={styles.cardTitle}>{card.title}</Text>
-                        <Text style={styles.cardDescription}>
-                            {card.description}
-                            <Text style={styles.seeMore}>See More...</Text>
-                        </Text>
-                        <Image source={card.image} style={styles.cardImage} />
-                    </View>
-                ))}
-            </ScrollView>
-        </>
     );
 };
 

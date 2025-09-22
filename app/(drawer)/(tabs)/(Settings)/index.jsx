@@ -12,6 +12,7 @@ import useTheme from '../../../../hooks/usetheme';
 // Import the new, separate bottom sheet components
 import { Header } from '../../../../components/Headrer';
 import { useBottomSheet } from '../../../../context/BottomSheetContext';
+import { useRouter } from 'expo-router';
 
 
 
@@ -48,6 +49,8 @@ const Setting = ({ navigation }) => {
   const [isLanguageSheetVisible, setIsLanguageSheetVisible] = useState(false);
   const { openSheet } = useBottomSheet();
 
+  const router = useRouter()
+
   const handleThemeSelection = useCallback((selectedTheme) => {
     setTheme(selectedTheme);
     setIsThemeSheetVisible(false);
@@ -58,22 +61,22 @@ const Setting = ({ navigation }) => {
     setIsLanguageSheetVisible(false);
   }, []);
 
-  const handleNavigation = (screenName) => {
-    if (navigation && navigation.navigate) {
-      navigation.navigate(screenName);
-    } else {
-      console.log(`Navigating to ${screenName}`);
-    }
-  };
+  // const handleNavigation = (screenName) => {
+  //   if (navigation && navigation.navigate) {
+  //     navigation.navigate(screenName);
+  //   } else {
+  //     console.log(`Navigating to ${screenName}`);
+  //   }
+  // };
 
   return (
     <>
       <Header
-        title="SETTING"
+        title="Settings"
       />
       <View style={createStyles(colors).screenContainer}>
         <ScrollView contentContainerStyle={createStyles(colors).contentContainer}>
-          <Text style={createStyles(colors).sectionHeader}>GENERAL</Text>
+          <Text style={createStyles(colors).sectionHeader}>General</Text>
           <View style={createStyles(colors).section}>
             <SettingsItem
               icon="settings-outline"
@@ -100,46 +103,46 @@ const Setting = ({ navigation }) => {
             <SettingsItem
               icon="notifications-outline"
               title="Notification"
-              onPress={() => handleNavigation('Notifications')}
+              // onPress={}
               colors={colors}
             />
           </View>
 
-          <Text style={createStyles(colors).sectionHeader}>ABOUT</Text>
+          <Text style={createStyles(colors).sectionHeader}>About</Text>
 
           <View style={createStyles(colors).section}>
             <SettingsItem
               icon="information-circle-outline"
               title="About SIMAD University"
-              onPress={() => handleNavigation('AboutSIMAD')}
+              // onPress={() => handleNavigation('AboutSIMAD')}
               colors={colors}
             />
             <SettingsItem
               icon="code-slash-outline"
-              title="About Devs"
-              onPress={() => handleNavigation('AboutDevs')}
+              title="About devs Team"
+              onPress={() => router.push("(screens)/aboutTeam")}
               colors={colors}
             />
           </View>
 
-          <Text style={createStyles(colors).sectionHeader}>SUPPORT</Text>
+          <Text style={createStyles(colors).sectionHeader}>Support</Text>
 
           <View style={createStyles(colors).section}>
             <SettingsItem
               icon="help-circle-outline"
               title="Tips & Support"
-              onPress={() => handleNavigation('TipsSupport')}
+              // onPress={() => handleNavigation('TipsSupport')}
               colors={colors}
             />
             <SettingsItem
               icon="lock-closed-outline"
               title="Privacy Policy"
-              onPress={() => handleNavigation('PrivacyPolicy')}
+              // onPress={() => handleNavigation('PrivacyPolicy')}
               colors={colors}
             />
           </View>
 
-          <Text style={createStyles(colors).sectionHeader}>CONNECT</Text>
+          <Text style={createStyles(colors).sectionHeader}>Connect</Text>
 
           <View style={createStyles(colors).section}>
             <SettingsItem
@@ -183,6 +186,8 @@ const createStyles = (colors = {}) => StyleSheet.create({
     backgroundColor: colors.surface,
     borderRadius: 12,
     marginBottom: 24,
+    borderWidth: 1,
+    borderColor: colors.border
   },
   sectionHeader: {
     fontSize: 14,

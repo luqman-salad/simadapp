@@ -2,14 +2,14 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 
 //Components
-import Accreditation from '../../../../components/Accreditation';
-import HistoryAwards from '../../../../components/HistoryAwards';
-import LearnAboutSIMAD from '../../../../components/LearnAboutSIMAD';
-import RectorsMessage from '../../../../components/RectorsMessage';
-import SenateList from '../../../../components/SenateList';
-import VisionPurpose from '../../../../components/VisionPurpose';
-import useAboutStore from "../../../../store/aboutStore";
-import { Header } from "../../../../components/Headrer";
+import Accreditation from '../../components/Accreditation';
+import HistoryAwards from '../../components/HistoryAwards';
+import LearnAboutSIMAD from '../../components/LearnAboutSIMAD';
+import RectorsMessage from '../../components/RectorsMessage';
+import SenateList from '../../components/SenateList';
+import VisionPurpose from '../../components/VisionPurpose';
+import useAboutStore from "../../store/aboutStore";
+import { Header } from "../../components/Headrer";
 
 const pages = {
     '1': { component: LearnAboutSIMAD, title: 'Learn About SIMAD' },

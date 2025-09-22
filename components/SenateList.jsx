@@ -7,50 +7,36 @@ const senateData = [
     {
         name: 'Dr. Abdikarim Mohaidin Ahmed',
         title: 'The Rector',
-        barColor: '#28a745', // Green
-        image: require('../assets/images/fablab.jpg'), // Placeholder image 5
+        barColor: '#ffc107', // Green
+        image: require('../assets/images/dr_abdikarim.png'), // Placeholder image 5
 
     },
     {
         name: 'Mr. Yusuf Moallim Ahmed',
         title: 'Senior Advisor of the Rector',
-        barColor: '#ffc107', // Gold/Yellow
-        image: require('../assets/images/fablab.jpg'), // Placeholder image 5
+        barColor: '#28a745', // Gold/Yellow
+        image: require('../assets/images/mr_yusuf.png'), // Placeholder image 5
 
     },
     {
         name: 'Dr. Mohamud Mohamed Alasow',
         title: 'Deputy Rector for Student Affairs',
         barColor: '#28a745', // Green
-        image: require('../assets/images/fablab.jpg'), // Placeholder image 5
-
-    },
-    {
-        name: 'Dr. Mohamed Mohamud Mohamed',
-        title: 'Deputy Rector of Academics',
-        barColor: '#ffc107', // Gold/Yellow
-        image: require('../assets/images/fablab.jpg'), // Placeholder image 5
+        image: require('../assets/images/dr_alasow.png'), // Placeholder image 5
 
     },
     {
         name: 'Dr. Ahmed Hassan Mohamud',
         title: 'Deputy Rector for Admin and Finance',
         barColor: '#28a745', // Green
-        image: require('../assets/images/fablab.jpg'), // Placeholder image 5
+        image: require('../assets/images/dr_ahmed_hassan.png'), // Placeholder image 5
 
     },
     {
-        name: 'Dr. Mohamed Mohamud Mohamed',
-        title: 'Deputy Rector of Academics',
-        barColor: '#ffc107', // Gold/Yellow
-        image: require('../assets/images/fablab.jpg'), // Placeholder image 5
-
-    },
-    {
-        name: 'Dr. Ahmed Hassan Mohamud',
-        title: 'Deputy Rector for Admin and Finance',
+        name: 'Abdullahi Ahmed Abdirahman',
+        title: 'Deputy Rector for institutional development',
         barColor: '#28a745', // Green
-        image: require('../assets/images/fablab.jpg'), // Placeholder image 5
+        image: require('../assets/images/abdullahi_yarre.png'), // Placeholder image 5
 
     },
 ];
@@ -62,13 +48,7 @@ const SenateList = () => {
 
     return (
         <View style={styles.container}>
-            {/* Header Section */}
-            {/* <View style={styles.header}>
-                <Text style={styles.backArrow}>←</Text>
-                <Text style={styles.headerTitle}>The Senate</Text>
-            </View> */}
             <Text style={styles.listTitle}>The Senate List Profiles</Text>
-
             {/* Profile List */}
             <ScrollView style={styles.senateContainer}>
                 {senateData.map((member, index) => (
@@ -125,8 +105,8 @@ const createStyle = (colors) => {
             flexDirection: 'row',
             alignItems: 'center',
             backgroundColor: colors.surface,
-            borderRadius: 10,
-            padding: 15,
+            borderRadius: 4,
+            padding: 8,
             marginVertical: 8,
             shadowColor: colors.shadowColor,
             shadowOffset: { width: 0, height: 2 },
@@ -136,8 +116,8 @@ const createStyle = (colors) => {
         },
         colorBar: {
             width: 8,
-            borderTopLeftRadius: 10,
-            borderBottomLeftRadius: 10,
+            borderTopLeftRadius: 4,
+            borderBottomLeftRadius: 4,
             position: 'absolute',
             left: 0,
             top: 0,
@@ -159,13 +139,15 @@ const createStyle = (colors) => {
         },
 
         profileImageContainer: {
-            width: 50, // Set desired width for the image container
-            height: 50, // Set desired height for the image container
-            borderRadius: 25, // Half of width/height to make it a circle
-            overflow: 'hidden', // Clip the image to the border radius
-            marginLeft: 10, // Add some space from the text
-            justifyContent: 'center', // Center image vertically
-            alignItems: 'center', // Center image horizontally
+            width: 70, 
+            height: 70,
+            borderRadius: 5,
+            overflow: 'hidden',
+            marginLeft: 10,
+            justifyContent: 'center', 
+            alignItems: 'center',
+            // borderWidth: 1,
+            // borderColor: colors.border
         },
         profileImage: {
             width: '100%', // Image takes full width of its container

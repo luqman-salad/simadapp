@@ -21,7 +21,7 @@ export default function Layout() {
           // marginTop: 10,
           // marginBottom: 10,
           // Add a background color to be visible behind the border radius
-          // backgroundColor: colors.bg,
+          backgroundColor: colors.bg,
           // Apply border radius to specific corners
           // borderTopRightRadius: 30,
           // borderBottomRightRadius: 30,

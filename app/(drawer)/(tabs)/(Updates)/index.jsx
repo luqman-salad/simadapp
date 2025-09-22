@@ -4,14 +4,33 @@ import { createMaterialTopTabNavigator } from '@react-navigation/material-top-ta
 import Events from '../../../../components/Events';
 import News from '../../../../components/News';
 import useTheme from '../../../../hooks/usetheme';
+import { Header } from '../../../../components/Headrer';
+import { useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 
 const Tab = createMaterialTopTabNavigator();
 
 function UpdatesTabs() {
   const { colors } = useTheme();
+  const navigation = useNavigation();
+
+  const router = useRouter();
+
+  const handlePress = () => {
+    router.push("(screens)/notifications")
+}
 
   return (
     <View style={styles.container}>
+      <Header
+        title="Updates"
+        showLeftIcon
+        leftIconName="menu"
+        showNotifiction
+        NotificationItemCount={6}
+        onLeftIconPress={() => navigation.openDrawer()}
+        onNotificationPress={() => handlePress()}
+      />
       <Tab.Navigator
         screenOptions={{
           swipeEnabled: true, // This line was missing a comma after it

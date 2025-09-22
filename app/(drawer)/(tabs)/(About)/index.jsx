@@ -2,6 +2,8 @@ import { useRouter } from 'expo-router';
 import { Dimensions, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import useTheme from '../../../../hooks/usetheme';
 import useAboutStore from '../../../../store/aboutStore';
+import { Header } from '../../../../components/Headrer';
+import { useNavigation, useNavigationBuilder } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 
@@ -42,15 +44,30 @@ export default function ImageGrid() {
   const { colors } = useTheme();
   const styles = createStyle(colors);
   const router = useRouter();
+  const navigation = useNavigation();
   const {setSelectedAboutItem} = useAboutStore();
 
 
   const handlePress = (item) => {
     setSelectedAboutItem(item);
-    router.push("/detail");
+    router.push("(screens)/aboutDetail");
   }
 
+  const handleNotificationPress = () => {
+    router.push("(screens)/notifications")
+}
+
   return (
+    <View style={styles.wrapper}>
+      <Header
+        title="About"
+        showLeftIcon
+        leftIconName="menu"
+        showNotifiction
+        NotificationItemCount={6}
+        onLeftIconPress={() => navigation.openDrawer()}
+        onNotificationPress={() => handleNotificationPress()}
+      />
     <ScrollView contentContainerStyle={styles.container}>
       {cardData.map((item) => (
         <TouchableOpacity
@@ -69,11 +86,16 @@ export default function ImageGrid() {
         </TouchableOpacity>
       ))}
     </ScrollView>
+    </View>
   );
 }
 
 const createStyle = (colors) => {
   const styles = StyleSheet.create({
+    wrapper:{
+      flex: 1,
+      backgroundColor: colors.bg
+    },
     container: {
       flex: 1,
       flexDirection: 'row',
@@ -81,7 +103,6 @@ const createStyle = (colors) => {
       justifyContent: 'space-between',
       paddingHorizontal: 10,
       paddingTop: 10,
-      backgroundColor: colors.bg, // Light grey background
     },
     card: {
       width: (width - 30) / 2, // 2 cards per row with 10px spacing on each side

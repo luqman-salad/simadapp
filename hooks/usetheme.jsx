@@ -81,7 +81,7 @@ export const ThemeProvider = ({ children }) => {
 
   useEffect(() => {
     // get the user's choice
-    AsyncStorage.getItem("darkMode").then((value) => {
+    AsyncStorage.getItem("lightMode").then((value) => {
       if (value) setIsDarkMode(JSON.parse(value));
     });
   }, []);

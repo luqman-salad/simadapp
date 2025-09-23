@@ -119,7 +119,7 @@ const Setting = ({ navigation }) => {
             />
             <SettingsItem
               icon="code-slash-outline"
-              title="About devs Team"
+              title="About developers Team"
               onPress={() => router.push("(screens)/aboutTeam")}
               colors={colors}
             />

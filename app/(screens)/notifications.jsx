@@ -21,6 +21,7 @@ const dummyNotifications = [
     message: "Assignment 2 for Data Structures is due next week.",
     time: "2h ago",
     icon: "document-text-outline",
+    read: false,
   },
   {
     id: "2",
@@ -29,6 +30,7 @@ const dummyNotifications = [
     message: "You have a pending attendance update for CS 301.",
     time: "5h ago",
     icon: "checkmark-done-circle-outline",
+    read: false,
   },
   {
     id: "3",
@@ -37,6 +39,7 @@ const dummyNotifications = [
     message: "The platform will undergo maintenance tomorrow at 10 PM.",
     time: "1d ago",
     icon: "settings-outline",
+    read: false,
   },
 ];
 
@@ -48,18 +51,34 @@ const NotificationsScreen = () => {
   const [notifications, setNotifications] = useState(dummyNotifications);
 
   const renderNotification = ({ item }) => (
-    <TouchableOpacity style={styles.card}>
-      <Ionicons name={item.icon} size={28} color={colors.primary} />
+    <TouchableOpacity style={[styles.card, item.read && styles.readCard]}>
+      <Ionicons
+        name={item.icon}
+        size={28}
+        color={item.read ? colors.textSecondary : colors.primary}
+      />
       <View style={styles.textContainer}>
-        <Text style={styles.title}>{item.title}</Text>
+        <Text
+          style={[
+            styles.title,
+            item.read && { color: colors.textSecondary, fontWeight: "500" },
+          ]}
+        >
+          {item.title}
+        </Text>
         <Text style={styles.message}>{item.message}</Text>
         <Text style={styles.time}>{item.time}</Text>
       </View>
     </TouchableOpacity>
   );
 
+  const markAllAsRead = () => {
+    const updatedNotifications = notifications.map((n) => ({ ...n, read: true }));
+    setNotifications(updatedNotifications);
+  };
+
   return (
-    <SafeAreaView style={styles.wrapper}>
+    <View style={styles.wrapper}>
       <Header
         title="Notifications"
         showLeftIcon
@@ -78,15 +97,12 @@ const NotificationsScreen = () => {
       />
 
       {notifications.length > 0 && (
-        <TouchableOpacity
-          style={styles.clearBtn}
-          onPress={() => setNotifications([])}
-        >
-          <Ionicons name="trash-outline" size={20} color={colors.white} />
-          <Text style={styles.clearBtnText}>Clear All</Text>
+        <TouchableOpacity style={styles.clearBtn} onPress={markAllAsRead}>
+          <Ionicons name="checkmark-done-outline" size={20} color={colors.white} />
+          <Text style={styles.clearBtnText}>Mark as Read</Text>
         </TouchableOpacity>
       )}
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -114,6 +130,9 @@ const createStyles = (colors) =>
       shadowRadius: 4,
       elevation: 1,
       gap: 12,
+    },
+    readCard: {
+      backgroundColor: colors.bg,
     },
     textContainer: {
       flex: 1,
@@ -145,7 +164,7 @@ const createStyles = (colors) =>
       alignSelf: "center",
       flexDirection: "row",
       alignItems: "center",
-      backgroundColor: colors.danger,
+      backgroundColor: colors.primary,
       paddingVertical: 12,
       paddingHorizontal: 20,
       borderRadius: 30,

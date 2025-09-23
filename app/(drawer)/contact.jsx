@@ -1,176 +1,192 @@
 import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  SafeAreaView,
-  ScrollView,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Linking } from "react-native";
 import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import useTheme from "../../hooks/usetheme";
 import { Header } from "../../components/Headrer";
 
+const offices = [
+  {
+    title: "Admissions Office",
+    email: "Admissions@simad.edu.so",
+    responsibilities: [
+      "Recruitment of domestic students",
+      "Open Campus, request for materials",
+      "Student status (leave of absence, withdrawal etc.)",
+      "Transcripts",
+    ],
+  },
+  {
+    title: "Student Affairs Office",
+    email: "",
+    responsibilities: [
+      "Certificates",
+      "Scholarships",
+      "Tuition",
+      "Extracurricular Activities",
+      "Clubs, student volunteer opportunities",
+      "Culture weeks",
+    ],
+  },
+  {
+    title: "Academic Office",
+    email: "Academics@simad.edu.so",
+    responsibilities: [
+      "Course Registration",
+      "Graduation Requirement Confirmation",
+      "Class Absences (Illness / Injury or Bereavement)",
+      "Final, Midterm, Re-exam, Supplementary Exams",
+      "Graduate Students",
+      "Library",
+    ],
+  },
+  {
+    title: "ICT Office",
+    email: "ict@simad.edu.so",
+    responsibilities: ["IT support", "System malfunctions"],
+  },
+  {
+    title: "Research Office",
+    email: "Research@simad.edu.so",
+    responsibilities: ["Research"],
+  },
+  {
+    title: "Public Relations Office",
+    email: "Pr@simad.edu.so",
+    responsibilities: ["Alumni Association", "Social outreach", "Campus tours"],
+  },
+  {
+    title: "Security Guide Office",
+    email: "",
+    responsibilities: ["On-campus lost-and-found", "Visitor parking"],
+  },
+  {
+    title: "Finance Office",
+    email: "",
+    responsibilities: ["Fees"],
+  },
+];
+
 const ContactScreen = () => {
   const { colors } = useTheme();
-  const styles = createStyles(colors);
+  const styles = createStyle(colors);
   const router = useRouter();
 
-  const contactOptions = [
-    {
-      id: "1",
-      title: "Call Us",
-      desc: "Immediate phone support",
-      icon: "call-outline",
-      bg: "#FFE5E0",
-    },
-    {
-      id: "2",
-      title: "Email Us",
-      desc: "Send detailed queries",
-      icon: "mail-outline",
-      bg: "#E6F0FF",
-    },
-    {
-      id: "3",
-      title: "Live Chat",
-      desc: "Chat anytime with us",
-      icon: "chatbubble-ellipses-outline",
-      bg: "#E5F9F0",
-    },
-    {
-      id: "4",
-      title: "FAQs",
-      desc: "Quick common answers",
-      icon: "help-circle-outline",
-      bg: "#FFF4CC",
-    },
-  ];
+  const handleEmail = (email) => {
+    if (email) {
+      Linking.openURL(`mailto:${email}`);
+    }
+  };
 
   return (
-    <SafeAreaView style={styles.wrapper}>
+    <View style={styles.wrapper}>
       <Header
-        title="Help & Support"
+        title="Contact Us"
         showLeftIcon
         leftIconName="chevron-back"
         onLeftIconPress={() => router.back()}
       />
 
-      <ScrollView contentContainerStyle={styles.container}>
-        {/* Header Section */}
-        <View style={styles.topSection}>
-          <Ionicons name="headset-outline" size={60} color={colors.primary} />
-          <Text style={styles.title}>We’re Here to Help</Text>
+      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Get in Touch</Text>
           <Text style={styles.subtitle}>
-            Choose the best way to reach us
+            Reach out to the right department for your inquiries.
           </Text>
         </View>
 
-        {/* Grid Options */}
-        <View style={styles.grid}>
-          {contactOptions.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              style={[styles.card, { backgroundColor: item.bg }]}
-              onPress={() => alert(`${item.title} clicked!`)}
-            >
-              <Ionicons name={item.icon} size={28} color={colors.primary} />
-              <Text style={styles.cardTitle}>{item.title}</Text>
-              <Text style={styles.cardDesc}>{item.desc}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+        {offices.map((office, index) => (
+          <View key={index} style={styles.card}>
+            <Text style={styles.officeTitle}>{office.title}</Text>
 
-        {/* CTA Button */}
-        <TouchableOpacity style={styles.ctaBtn} onPress={() => alert("Calling...")}>
-          <Ionicons name="call" size={20} color={colors.white} />
-          <Text style={styles.ctaBtnText}>Urgent Help? Tap to Call</Text>
-        </TouchableOpacity>
+            {office.responsibilities.map((resp, i) => (
+              <Text key={i} style={styles.responsibility}>
+                • {resp}
+              </Text>
+            ))}
 
-        {/* Footer */}
-        <Text style={styles.footerText}>
-          Our support team responds within 24 hours. We’re always happy to assist you.
-        </Text>
+            {office.email ? (
+              <TouchableOpacity
+                onPress={() => handleEmail(office.email)}
+                style={styles.emailBtn}
+              >
+                <Ionicons name="mail-outline" size={18} color={colors.primary} />
+                <Text style={styles.emailText}>{office.email}</Text>
+              </TouchableOpacity>
+            ) : (
+              <Text style={styles.noEmail}>No direct email available</Text>
+            )}
+          </View>
+        ))}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
 export default ContactScreen;
 
-const createStyles = (colors) =>
+const createStyle = (colors) =>
   StyleSheet.create({
     wrapper: {
       flex: 1,
       backgroundColor: colors.bg,
     },
-    container: {
-      padding: 20,
-      paddingBottom: 40,
+    scrollViewContent: {
+      paddingBottom: 20,
+      paddingHorizontal: 16,
     },
-    topSection: {
+    header: {
       alignItems: "center",
-      marginBottom: 25,
+      marginVertical: 20,
     },
     title: {
-      fontSize: 22,
-      fontWeight: "bold",
+      fontSize: 24,
+      fontWeight: "700",
       color: colors.text,
-      marginTop: 10,
     },
     subtitle: {
-      fontSize: 15,
-      color: colors.textSecondary,
+      fontSize: 14,
+      color: colors.textSecondary || "#666",
+      textAlign: "center",
       marginTop: 4,
     },
-    grid: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-      justifyContent: "space-between",
-      marginBottom: 20,
-    },
     card: {
-      width: "47%",
-      padding: 15,
+      backgroundColor: colors.surface,
       borderRadius: 12,
-      marginBottom: 15,
-      alignItems: "flex-start",
+      padding: 16,
+      marginBottom: 16,
       shadowColor: "#000",
+      shadowOffset: { width: 0, height: 3 },
       shadowOpacity: 0.1,
-      shadowRadius: 3,
-      elevation: 2,
+      shadowRadius: 5,
+      elevation: 3,
     },
-    cardTitle: {
-      fontSize: 16,
+    officeTitle: {
+      fontSize: 18,
       fontWeight: "600",
+      color: colors.primary,
+      marginBottom: 8,
+    },
+    responsibility: {
+      fontSize: 14,
       color: colors.text,
-      marginTop: 8,
+      marginBottom: 2,
     },
-    cardDesc: {
-      fontSize: 13,
-      color: colors.textSecondary,
-      marginTop: 2,
-    },
-    ctaBtn: {
+    emailBtn: {
       flexDirection: "row",
       alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: colors.primary,
-      padding: 15,
-      borderRadius: 10,
-      marginBottom: 20,
-      gap: 8,
-    },
-    ctaBtnText: {
-      color: colors.white,
-      fontSize: 16,
-      fontWeight: "bold",
-    },
-    footerText: {
-      fontSize: 14,
-      textAlign: "center",
-      color: colors.textSecondary,
       marginTop: 10,
+    },
+    emailText: {
+      marginLeft: 6,
+      fontSize: 14,
+      fontWeight: "500",
+      color: colors.primary,
+    },
+    noEmail: {
+      fontSize: 13,
+      marginTop: 8,
+      color: "#888",
+      fontStyle: "italic",
     },
   });

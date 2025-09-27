@@ -28,7 +28,7 @@ export default function RootLayout() {
               headerShown: false
             }}
           />
-          <Stack.Screen name="(auth)" />
+          {/* <Stack.Screen name="(auth)" /> */}
           <Stack.Screen name="(screens)/SchoolInfoScreen"
             options={{
               // title: "Institutions Ara"

@@ -79,8 +79,8 @@ const createStyle = (colors) => {
         // shadowOpacity: 0.1,
         // shadowRadius: 2,
         // elevation: 2,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.border
+        // borderBottomWidth: 1,
+        // borderBottomColor: colors.border
     },
     content: {
         flexDirection: 'row',

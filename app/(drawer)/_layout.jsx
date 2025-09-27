@@ -72,7 +72,7 @@ export default function Layout() {
         ),
       }} />
 
-      <Drawer.Screen name='parent' options={{
+      {/* <Drawer.Screen name='parent' options={{
         headerShown: false,
         // title: "Parent",
         drawerIcon: ({ size, color }) => (
@@ -85,7 +85,7 @@ export default function Layout() {
         drawerIcon: ({ size, color }) => (
           <Ionicons name="person-outline" size={size} color={color} />
         ),
-      }} />
+      }} /> */}
       
       <Drawer.Screen name='contact' options={{
         headerShown: false,

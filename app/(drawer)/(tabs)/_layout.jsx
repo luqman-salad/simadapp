@@ -7,6 +7,7 @@ export default function AuthLayout() {
     const { colors } = useTheme();
     return (
         <Tabs
+            initialRouteName="(Home)"
             screenOptions={{
                 tabBarActiveTintColor: colors.secondary,
                 tabBarInactiveTintColor: colors.success,

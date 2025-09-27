@@ -1,184 +1,97 @@
-import React from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
 import useTheme from '../hooks/usetheme';
-
-const timelineData = [
-    {
-        years: '2022\n2023',
-        events: [
-            'Launched ICE Institute',
-            'Ranked top 61-70th in THE Sub Saharan Africa University Ranking 2023',
-            'Launched SIMAD iLab Executive Arena',
-            'Joined the International Federation of Library Associations and Institutions (IFLA)'
-        ]
-    },
-    {
-        years: '2020\n2021',
-        events: [
-            'SIMAD Town Campus unveiled',
-            'SIMAD Innovation Lab got established'
-        ]
-    },
-    {
-        years: '2018\n2019',
-        events: [
-            'Dr.Sumait Hospital officially Launched',
-            'Student Loan program has been initiated'
-        ]
-    },
-    {
-        years: '2016\n2017',
-        events: [
-            'SIMAD joined Association of Arab Universities',
-            'SIMAD established the Institute of Modern Languages (IML)'
-        ]
-    },
-    {
-        years: '2014\n2015',
-        events: [
-            'SIMAD joined Association of International Universities',
-            'Dr. Dahir Hassan Arab became the Rector of SIMAD University',
-            'SIMAD joined the Association of African Universities'
-        ]
-    },
-    {
-        years: '2012\n2013',
-        events: [
-            'SIMAD launched annual conferences on diverse disciplines',
-            'SIMAD established the Center for Postgraduate Studies',
-            'SIMAD established undergraduate faculties'
-        ]
-    },
-    {
-        years: '2010\n2011',
-        events: [
-            'SIMAD became a full-fledged University',
-            'Abdirahman Mohamed Hussein Odowa became the first Rector of SIMAD University'
-        ]
-    },
-    {
-        years: '2012\n2013',
-        events: [
-            'SIMAD launched annual conferences on diverse disciplines',
-            'SIMAD established the Center for Postgraduate Studies',
-            'SIMAD established undergraduate faculties'
-        ]
-    },
-    {
-        years: '2010\n2011',
-        events: [
-            'SIMAD became a full-fledged University',
-            'Abdirahman Mohamed Hussein Odowa became the first Rector of SIMAD University'
-        ]
-    },
-    {
-        years: '2012\n2013',
-        events: [
-            'SIMAD launched annual conferences on diverse disciplines',
-            'SIMAD established the Center for Postgraduate Studies',
-            'SIMAD established undergraduate faculties'
-        ]
-    },
-    {
-        years: '2010\n2011',
-        events: [
-            'SIMAD became a full-fledged University',
-            'Abdirahman Mohamed Hussein Odowa became the first Rector of SIMAD University'
-        ]
-    },
-    {
-        years: '2012\n2013',
-        events: [
-            'SIMAD launched annual conferences on diverse disciplines',
-            'SIMAD established the Center for Postgraduate Studies',
-            'SIMAD established undergraduate faculties'
-        ]
-    },
-    {
-        years: '2010\n2011',
-        events: [
-            'SIMAD became a full-fledged University',
-            'Abdirahman Mohamed Hussein Odowa became the first Rector of SIMAD University'
-        ]
-    },
-    {
-        years: '2012\n2013',
-        events: [
-            'SIMAD launched annual conferences on diverse disciplines',
-            'SIMAD established the Center for Postgraduate Studies',
-            'SIMAD established undergraduate faculties'
-        ]
-    },
-    {
-        years: '2010\n2011',
-        events: [
-            'SIMAD became a full-fledged University',
-            'Abdirahman Mohamed Hussein Odowa became the first Rector of SIMAD University'
-        ]
-    },
-    {
-        years: '2012\n2013',
-        events: [
-            'SIMAD launched annual conferences on diverse disciplines',
-            'SIMAD established the Center for Postgraduate Studies',
-            'SIMAD established undergraduate faculties'
-        ]
-    },
-    {
-        years: '2010\n2011',
-        events: [
-            'SIMAD became a full-fledged University',
-            'Abdirahman Mohamed Hussein Odowa became the first Rector of SIMAD University'
-        ]
-    },
-    {
-        years: '2008\n2009',
-        events: [
-            'SIMAD University started the publication of Somali Business Review'
-        ]
-    },
-    {
-        years: '2005\n2006',
-        events: [
-            'SIMAD University started offering postgraduate scholarships to school members'
-        ]
-    },
-    {
-        years: '1999',
-        events: [
-            'SIMAD was established as a higher education institute.',
-            'Dr. Hassan Sheikh Mohamud was appointed as Dean',
-            'SIMAD University started offering diplomas in IT, Business and Accounting'
-        ]
-    }
-];
 
 export default function HistoryAwards() {
     const { colors } = useTheme();
     const styles = createStyle(colors);
+    const [timelineData, setTimelineData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch('https://simad-portal-api.vercel.app/api/v1/app/about-university/getHistoryAwardData');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            if (result.success && result.data && result.data.historyItems) {
+                // Transform the API data to match your component structure
+                const transformedData = result.data.historyItems.map(item => ({
+                    years: item.year,
+                    events: item.events,
+                    id: item.id
+                }));
+                setTimelineData(transformedData);
+            } else {
+                throw new Error('Invalid data structure');
+            }
+        } catch (err) {
+            setError(err.message);
+            console.error('Error fetching data:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    if (loading) {
+        return (
+            <View style={[styles.container, styles.center]}>
+                <ActivityIndicator size="large" color={colors.primary} />
+                <Text style={styles.loadingText}>Loading History & Awards...</Text>
+            </View>
+        );
+    }
+
+    if (error) {
+        return (
+            <View style={[styles.container, styles.center]}>
+                <Text style={styles.errorText}>Error: {error}</Text>
+                <Text style={styles.retryText} onPress={fetchData}>
+                    Tap to retry
+                </Text>
+            </View>
+        );
+    }
+
+    if (!timelineData || timelineData.length === 0) {
+        return (
+            <View style={[styles.container, styles.center]}>
+                <Text style={styles.errorText}>No historical data available</Text>
+                <Text style={styles.retryText} onPress={fetchData}>
+                    Tap to retry
+                </Text>
+            </View>
+        );
+    }
 
     return (
         <ScrollView style={styles.container}>
-            {/* <Image
-                source={require('../assets/images/fablab.jpg')}
-                style={styles.headerImage}
-            /> */
-                <View style={styles.bannerContainer}>
-                    <Image
-                        source={require('../assets/images/fablab.jpg')} // Replace with your actual image path
-                        style={styles.bannerImage}
-                    />
-                    <View style={styles.overlay} />
-
-                    <Pressable style={styles.learnMoreButton}>
-                        <Text style={styles.buttonText}>History & Awards</Text>
-                    </Pressable>
-                </View>}
+            <View style={styles.bannerContainer}>
+                <Image
+                    source={require('../assets/images/fablab.jpg')}
+                    style={styles.bannerImage}
+                />
+                <View style={styles.overlay} />
+                <Pressable style={styles.learnMoreButton}>
+                    <Text style={styles.buttonText}>History & Awards</Text>
+                </Pressable>
+            </View>
+            
             <View style={styles.content}>
                 <Text style={styles.title}>SIMAD Timeline</Text>
                 <View style={styles.timelineWrapper}>
                     {timelineData.map((item, index) => (
-                        <View key={index} style={styles.timelineItem}>
+                        <View key={item.id || index} style={styles.timelineItem}>
                             <View style={styles.timelineLeft}>
                                 <Text style={styles.yearText}>{item.years}</Text>
                             </View>
@@ -215,7 +128,27 @@ const createStyle = (colors) => {
             flex: 1,
             backgroundColor: colors.bg,
         },
-
+        center: {
+            justifyContent: 'center',
+            alignItems: 'center',
+            flex: 1,
+        },
+        loadingText: {
+            marginTop: 10,
+            color: colors.text,
+            fontSize: 16,
+        },
+        errorText: {
+            color: colors.error,
+            fontSize: 16,
+            textAlign: 'center',
+            marginBottom: 10,
+        },
+        retryText: {
+            color: colors.primary,
+            fontSize: 14,
+            textDecorationLine: 'underline',
+        },
         bannerContainer: {
             height: 200,
             position: 'relative',
@@ -228,15 +161,6 @@ const createStyle = (colors) => {
         overlay: {
             ...StyleSheet.absoluteFillObject,
             backgroundColor: 'rgba(0, 0, 0, 0.3)',
-        },
-        topBar: {
-            position: 'absolute',
-            top: 50,
-            width: '100%',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            paddingHorizontal: 20,
-            alignItems: 'center',
         },
         learnMoreButton: {
             position: 'absolute',
@@ -255,14 +179,6 @@ const createStyle = (colors) => {
             fontSize: 16,
             fontWeight: '500',
         },
-
-
-
-        // headerImage: {
-        //     width: Dimensions.get('window').width,
-        //     height: 200,
-        //     resizeMode: 'cover',
-        // },
         content: {
             paddingHorizontal: 20,
             paddingVertical: 20,
@@ -274,7 +190,7 @@ const createStyle = (colors) => {
             marginBottom: 20,
         },
         timelineWrapper: {
-            paddingLeft: 50, // Space for the years column
+            paddingLeft: 50,
         },
         timelineItem: {
             flexDirection: 'row',
@@ -283,7 +199,7 @@ const createStyle = (colors) => {
         },
         timelineLeft: {
             position: 'absolute',
-            left: -55, // Adjust this value to position the years to the left
+            left: -55,
             top: 0,
             width: 50,
             alignItems: 'center',
@@ -312,7 +228,6 @@ const createStyle = (colors) => {
             flex: 1,
             position: 'absolute',
             left: 6.5,
-
             top: 0,
             bottom: -20,
         },
@@ -323,8 +238,8 @@ const createStyle = (colors) => {
             backgroundColor: colors.surface,
             borderRadius: 10,
             padding: 15,
-            borderWidth: 0.5,
-            borderColor: colors.primary,
+            borderWidth: 1,
+            borderColor: colors.border,
         },
         eventItem: {
             flexDirection: 'row',
@@ -348,6 +263,7 @@ const createStyle = (colors) => {
             flex: 1,
             fontSize: 13,
             lineHeight: 20,
+            color: colors.text,
         },
     });
 };

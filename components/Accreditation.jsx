@@ -1,70 +1,8 @@
-import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
 import useTheme from '../hooks/usetheme';
+import { useState, useEffect } from 'react';
 
-const data = [
-    {
-        title: "Ministry Of Education, Culture, And Higher Education (MOECHE)",
-        subtitle: "",
-        description: "SIMAD University is officially recognized by the Ministry of Education, Culture, and Higher Education of the Republic of Somalia. Registered as a private, non-profit institution of higher education, the university is committed to advancing and disseminating",
-        logo: require('../assets/images/fablab.jpg')
-    },
-    {
-        title: "Times Higher Education Sub-Saharan Africa University Ranking",
-        description: "SIMAD University has been ranked among the top 10 universities in Sub Saharan Africa by Times Higher Education in the latest 2024 THE Sub-Saharan Africa University Ranking.",
-        list: [
-            "1st in Somalia",
-            "7th in Sub-Saharan Africa"
-        ],
-        logo: require('../assets/images/fablab.jpg')
-    },
-    {
-        title: "Webometrics",
-        description: "SIMAD University has been ranked among the top 10 universities in Sub Saharan Africa by Times Higher Education in the latest 2024 THE Sub-Saharan Africa University Ranking.",
-        list: [
-            "1st in Somalia",
-            "7th in Sub-Saharan Africa"
-        ],
-        logo: require('../assets/images/fablab.jpg')
-    },
-    {
-        title: "Times Higher Education Sub-Saharan Africa University Ranking",
-        description: "SIMAD University has been ranked among the top 10 universities in Sub Saharan Africa by Times Higher Education in the latest 2024 THE Sub-Saharan Africa University Ranking.",
-        list: [
-            "1st in Somalia",
-            "7th in Sub-Saharan Africa"
-        ],
-        logo: require('../assets/images/fablab.jpg')
-    },
-    {
-        title: "Webometrics",
-        description: "SIMAD University has been ranked among the top 10 universities in Sub Saharan Africa by Times Higher Education in the latest 2024 THE Sub-Saharan Africa University Ranking.",
-        list: [
-            "1st in Somalia",
-            "7th in Sub-Saharan Africa"
-        ],
-        logo: require('../assets/images/fablab.jpg')
-    },
-    {
-        title: "Times Higher Education Sub-Saharan Africa University Ranking",
-        description: "SIMAD University has been ranked among the top 10 universities in Sub Saharan Africa by Times Higher Education in the latest 2024 THE Sub-Saharan Africa University Ranking.",
-        list: [
-            "1st in Somalia",
-            "7th in Sub-Saharan Africa"
-        ],
-        logo: require('../assets/images/fablab.jpg')
-    },
-    {
-        title: "Webometrics",
-        description: "SIMAD University has been ranked among the top 10 universities in Sub Saharan Africa by Times Higher Education in the latest 2024 THE Sub-Saharan Africa University Ranking.",
-        list: [
-            "1st in Somalia",
-            "7th in Sub-Saharan Africa"
-        ],
-        logo: require('../assets/images/fablab.jpg')
-    }
-];
-
-const AccreditationCard = ({ title, subtitle, description, list, logo }) => {
+const AccreditationCard = ({ title, description, logo, message }) => {
     const { colors } = useTheme();
     const styles = createStyle(colors);
 
@@ -73,21 +11,10 @@ const AccreditationCard = ({ title, subtitle, description, list, logo }) => {
             <View style={styles.cardHeader}>
                 <View style={styles.cardTitleContainer}>
                     <Text style={styles.cardTitle}>{title}</Text>
-
-                    <Text style={styles.cardText}>{description}</Text>
-                    {list && list.length > 0 && (
-                        <View style={styles.list}>
-                            {list.map((item, index) => (
-                                <View key={index} style={styles.listItem}>
-                                    <Text style={styles.bulletPoint}>•</Text>
-                                    <Text style={styles.listItemText}>{item}</Text>
-                                </View>
-                            ))}
-                        </View>
-                    )}
+                    <Text style={styles.cardText}>{message || description}</Text>
                 </View>
                 <Image
-                    source={logo}
+                    source={{ uri: logo }}
                     style={styles.cardLogo}
                     onError={(e) => console.log('Image failed to load', e.nativeEvent.error)}
                 />
@@ -99,6 +26,68 @@ const AccreditationCard = ({ title, subtitle, description, list, logo }) => {
 export default function Accreditation() {
     const { colors } = useTheme();
     const styles = createStyle(colors);
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch('https://simad-portal-api.vercel.app/api/v1/app/about-university/getAccreditationsData');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            if (result.success && result.data && result.data.accreditations) {
+                setData(result.data.accreditations);
+            } else {
+                throw new Error('Invalid data structure');
+            }
+        } catch (err) {
+            setError(err.message);
+            console.error('Error fetching data:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    if (loading) {
+        return (
+            <View style={[styles.container, styles.center]}>
+                <ActivityIndicator size="large" color={colors.primary} />
+                <Text style={styles.loadingText}>Loading Accreditations...</Text>
+            </View>
+        );
+    }
+
+    if (error) {
+        return (
+            <View style={[styles.container, styles.center]}>
+                <Text style={styles.errorText}>Error: {error}</Text>
+                <Text style={styles.retryText} onPress={fetchData}>
+                    Tap to retry
+                </Text>
+            </View>
+        );
+    }
+
+    if (!data || data.length === 0) {
+        return (
+            <View style={[styles.container, styles.center]}>
+                <Text style={styles.errorText}>No accreditation data available</Text>
+                <Text style={styles.retryText} onPress={fetchData}>
+                    Tap to retry
+                </Text>
+            </View>
+        );
+    }
 
     return (
         <ScrollView style={styles.container}>
@@ -107,11 +96,9 @@ export default function Accreditation() {
 
                 {data.map((item, index) => (
                     <AccreditationCard
-                        key={index}
-                        title={item.title}
-                        subtitle={item.subtitle}
-                        description={item.description}
-                        list={item.list}
+                        key={item.id || index}
+                        title={item.name}
+                        message={item.message}
                         logo={item.logo}
                     />
                 ))}
@@ -126,6 +113,27 @@ const createStyle = (colors) => {
             flex: 1,
             backgroundColor: colors.bg,
         },
+        center: {
+            justifyContent: 'center',
+            alignItems: 'center',
+            flex: 1,
+        },
+        loadingText: {
+            marginTop: 10,
+            color: colors.text,
+            fontSize: 16,
+        },
+        errorText: {
+            color: colors.error,
+            fontSize: 16,
+            textAlign: 'center',
+            marginBottom: 10,
+        },
+        retryText: {
+            color: colors.primary,
+            fontSize: 14,
+            textDecorationLine: 'underline',
+        },
         content: {
             padding: 20,
         },
@@ -139,8 +147,8 @@ const createStyle = (colors) => {
             backgroundColor: colors.surface,
             borderRadius: 10,
             padding: 15,
-            borderWidth: 0.5,
-            borderColor: colors.primary,
+            borderWidth: 1,
+            borderColor: colors.border,
             marginBottom: 20,
         },
         cardHeader: {
@@ -162,13 +170,13 @@ const createStyle = (colors) => {
             width: 100,
             height: 100,
             borderRadius: 10,
-            borderWidth: 0.5,
-            borderColor: colors.primary,
-
+            borderWidth: 1,
+            borderColor: colors.border,
         },
         cardText: {
             fontSize: 12,
             lineHeight: 20,
+            color: colors.text,
         },
         list: {
             marginTop: 5,
@@ -188,6 +196,7 @@ const createStyle = (colors) => {
             flex: 1,
             fontSize: 14,
             lineHeight: 20,
+            color: colors.text,
         },
     });
 };

@@ -1,27 +1,6 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
 import useTheme from '../hooks/usetheme';
-
-const data = {
-    vision: "To become a leading center of academic and professional excellence and virtues.",
-    mission: {
-        text: "To provide high-quality education, research, and community services committed to excellence, integrity, and professionalism. The university produces competent scholars and leaders of high quality and moral uprightness.",
-        points: [
-            "Excellence (E)",
-            "Integrity (I)",
-            "and Professionalism (P)"
-        ]
-    },
-    guidingPrinciples: {
-        text: "The university strives to achieve the following strategic goals:",
-        points: [
-            "To provide the highest quality academic and professional programs at all levels.",
-            "To develop and disseminate contemporary learning techniques and models in a supportive academic environment.",
-            "To enhance the knowledge, skills, and attitudes of the learners, developing them into great scholars and effective leaders of tomorrow.",
-            "To facilitate scholarly research and scientific studies in various areas that address national issues.",
-            "To serve as a specialized center for training, research, and consultancy in Somalia."
-        ]
-    }
-};
+import { useState, useEffect } from 'react';
 
 const SectionCard = ({ title, icon, contentText, listPoints }) => {
     const { colors } = useTheme();
@@ -55,6 +34,65 @@ const SectionCard = ({ title, icon, contentText, listPoints }) => {
 export default function VisionPurpose() {
     const { colors } = useTheme();
     const styles = createStyle(colors);
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch('https://simad-portal-api.vercel.app/api/v1/app/about-university/getUniVisionAndMission');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            if (result.success && result.data) {
+                setData(result.data);
+            } else {
+                throw new Error('Invalid data structure');
+            }
+        } catch (err) {
+            setError(err.message);
+            console.error('Error fetching data:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    if (loading) {
+        return (
+            <View style={[styles.container, styles.center]}>
+                <ActivityIndicator size="large" color={colors.primary} />
+                <Text style={styles.loadingText}>Loading...</Text>
+            </View>
+        );
+    }
+
+    if (error) {
+        return (
+            <View style={[styles.container, styles.center]}>
+                <Text style={styles.errorText}>Error: {error}</Text>
+                <Text style={styles.retryText} onPress={fetchData}>
+                    Tap to retry
+                </Text>
+            </View>
+        );
+    }
+
+    if (!data) {
+        return (
+            <View style={[styles.container, styles.center]}>
+                <Text style={styles.errorText}>No data available</Text>
+            </View>
+        );
+    }
 
     return (
         <ScrollView style={styles.container}>
@@ -76,6 +114,13 @@ export default function VisionPurpose() {
                     contentText={data.guidingPrinciples.text}
                     listPoints={data.guidingPrinciples.points}
                 />
+                {/* Add Core Values section if needed */}
+                <SectionCard
+                    title="Core Values"
+                    icon="💎"
+                    contentText={data.coreValues.text}
+                    listPoints={data.coreValues.points}
+                />
             </View>
         </ScrollView>
     );
@@ -89,6 +134,25 @@ const createStyle = (colors) => {
         },
         content: {
             padding: 20,
+        },
+        center: {
+            justifyContent: 'center',
+            alignItems: 'center',
+        },
+        loadingText: {
+            marginTop: 10,
+            color: colors.text,
+        },
+        errorText: {
+            color: colors.error,
+            fontSize: 16,
+            textAlign: 'center',
+            marginBottom: 10,
+        },
+        retryText: {
+            color: colors.primary,
+            fontSize: 14,
+            textDecorationLine: 'underline',
         },
         sectionContainer: {
             marginBottom: 20,
@@ -121,14 +185,15 @@ const createStyle = (colors) => {
             padding: 15,
             borderWidth: 1,
             borderColor: '#C3E6CB',
-            borderLeftWidth: 5, // Adds the thicker left border
-            borderLeftColor: '#C3E6CB', // Color of the left border
+            borderLeftWidth: 5,
+            borderLeftColor: '#C3E6CB',
             marginBottom: 10,
             marginLeft: 20,
         },
         contentText: {
             fontSize: 14,
             lineHeight: 20,
+            color: colors.text,
         },
         list: {
             marginTop: 10,
@@ -147,6 +212,7 @@ const createStyle = (colors) => {
             flex: 1,
             fontSize: 14,
             lineHeight: 20,
+            color: colors.text,
         },
     });
 };

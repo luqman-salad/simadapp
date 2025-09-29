@@ -1,6 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import useTheme from '../hooks/usetheme';
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import useTheme from "../hooks/usetheme";
+import { getWhySimadData } from "../apis/learnAboutSimadApi";
 
 const LearnAboutSIMAD = () => {
   const { colors } = useTheme();
@@ -8,69 +17,88 @@ const LearnAboutSIMAD = () => {
 
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const result = await getWhySimadData();
+      if (result?.success && Array.isArray(result.data.whySimadItems)) {
+        setCards(result.data.whySimadItems);
+      } else {
+        throw new Error("Invalid response structure");
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchWhySimad = async () => {
-      try {
-        const response = await fetch(
-          'https://simad-portal-api.vercel.app/api/v1/app/about-university/getWhySimadData'
-        );
-        const data = await response.json();
-        if (data?.success && Array.isArray(data.data.whySimadItems)) {
-          setCards(data.data.whySimadItems);
-        }
-      } catch (error) {
-        console.error('Error fetching Why Simad data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchWhySimad();
+    fetchData();
   }, []);
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
       {/* Top Banner Section */}
       <View style={styles.bannerContainer}>
         <Image
-          source={require('../assets/images/fablab.jpg')} // Replace with your actual image
+          source={require("../assets/images/fablab.jpg")}
           style={styles.bannerImage}
         />
         <View style={styles.overlay} />
 
         <Pressable style={styles.learnMoreButton}>
-          <Text style={styles.buttonText}>Learn About SIMAD UNIVERSITY in 5 min</Text>
+          <Text style={styles.buttonText}>
+            Learn About SIMAD UNIVERSITY in 5 min
+          </Text>
         </Pressable>
       </View>
 
-      {/* "Why Simad ?" Section */}
+      {/* Title */}
       <View style={styles.whySimadContainer}>
         <Text style={styles.whySimadTitle}>Why Simad ?</Text>
       </View>
 
-      {/* Loader */}
-      {loading ? (
-        <ActivityIndicator size="large" color={colors.secondary} style={{ marginTop: 20 }} />
-      ) : (
+      {/* Loading / Error / Data */}
+      {loading && (
+        <ActivityIndicator
+          size="large"
+          color={colors.secondary}
+          style={{ marginTop: 20 }}
+        />
+      )}
+
+      {error && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Error: {error}</Text>
+          <Text style={styles.retryText} onPress={fetchData}>
+            Tap to retry
+          </Text>
+        </View>
+      )}
+
+      {!loading &&
+        !error &&
         cards.map((card, index) => (
           <View key={index} style={styles.card}>
             <Text style={styles.cardTitle}>{card.title}</Text>
             <Text style={styles.cardDescription}>
-              {card.description} <Text style={styles.seeMore}>See More...</Text>
+              {card.description}{" "}
+              <Text style={styles.seeMore}>See More...</Text>
             </Text>
             {card.image && (
               <Image source={{ uri: card.image }} style={styles.cardImage} />
             )}
           </View>
-        ))
-      )}
+        ))}
     </ScrollView>
   );
 };
 
-const createStyle = (colors) => {
-  return StyleSheet.create({
+const createStyle = (colors) =>
+  StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: colors.bg,
@@ -80,33 +108,33 @@ const createStyle = (colors) => {
     },
     bannerContainer: {
       height: 200,
-      position: 'relative',
+      position: "relative",
     },
     bannerImage: {
-      width: '100%',
-      height: '100%',
-      resizeMode: 'cover',
+      width: "100%",
+      height: "100%",
+      resizeMode: "cover",
     },
     overlay: {
       ...StyleSheet.absoluteFillObject,
-      backgroundColor: 'rgba(0, 0, 0, 0.3)',
+      backgroundColor: "rgba(0, 0, 0, 0.3)",
     },
     learnMoreButton: {
-      position: 'absolute',
+      position: "absolute",
       bottom: 5,
-      left: '50%',
+      left: "50%",
       transform: [{ translateX: -160 }],
       width: 320,
       height: 50,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      backgroundColor: "rgba(0, 0, 0, 0.5)",
       borderRadius: 25,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
     },
     buttonText: {
       color: colors.white,
       fontSize: 16,
-      fontWeight: '500',
+      fontWeight: "500",
     },
     whySimadContainer: {
       paddingHorizontal: 20,
@@ -114,7 +142,7 @@ const createStyle = (colors) => {
     },
     whySimadTitle: {
       fontSize: 24,
-      fontWeight: 'bold',
+      fontWeight: "bold",
       color: colors.secondary,
     },
     card: {
@@ -131,27 +159,39 @@ const createStyle = (colors) => {
     },
     cardTitle: {
       fontSize: 18,
-      fontWeight: 'bold',
+      fontWeight: "bold",
       color: colors.shadow,
       marginBottom: 5,
     },
     cardDescription: {
       fontSize: 14,
-      color: '#666',
+      color: "#666",
       lineHeight: 20,
       marginBottom: 10,
     },
     seeMore: {
       color: colors.secondary,
-      fontWeight: 'bold',
+      fontWeight: "bold",
     },
     cardImage: {
-      width: '100%',
+      width: "100%",
       height: 200,
       borderRadius: 8,
-      resizeMode: 'cover',
+      resizeMode: "cover",
+    },
+    errorContainer: {
+      alignItems: "center",
+      marginTop: 20,
+    },
+    errorText: {
+      color: "red",
+      fontSize: 16,
+      marginBottom: 10,
+    },
+    retryText: {
+      color: colors.secondary,
+      fontWeight: "bold",
     },
   });
-};
 
 export default LearnAboutSIMAD;

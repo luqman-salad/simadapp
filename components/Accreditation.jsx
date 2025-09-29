@@ -1,6 +1,8 @@
-import { Image, ScrollView, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
+// components/Accreditation.jsx
+import { Image, ScrollView, StyleSheet, Text, View, ActivityIndicator, Pressable } from 'react-native';
 import useTheme from '../hooks/usetheme';
 import { useState, useEffect } from 'react';
+import { getAccreditationsData } from '../apis/accreditationApi';
 
 const AccreditationCard = ({ title, description, logo, message }) => {
     const { colors } = useTheme();
@@ -33,13 +35,8 @@ export default function Accreditation() {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const response = await fetch('https://simad-portal-api.vercel.app/api/v1/app/about-university/getAccreditationsData');
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const result = await response.json();
+            setError(null);
+            const result = await getAccreditationsData();
             
             if (result.success && result.data && result.data.accreditations) {
                 setData(result.data.accreditations);
@@ -58,6 +55,10 @@ export default function Accreditation() {
         fetchData();
     }, []);
 
+    const handleRetry = () => {
+        fetchData();
+    };
+
     if (loading) {
         return (
             <View style={[styles.container, styles.center]}>
@@ -71,9 +72,9 @@ export default function Accreditation() {
         return (
             <View style={[styles.container, styles.center]}>
                 <Text style={styles.errorText}>Error: {error}</Text>
-                <Text style={styles.retryText} onPress={fetchData}>
-                    Tap to retry
-                </Text>
+                <Pressable onPress={handleRetry}>
+                    <Text style={styles.retryText}>Tap to retry</Text>
+                </Pressable>
             </View>
         );
     }
@@ -82,9 +83,9 @@ export default function Accreditation() {
         return (
             <View style={[styles.container, styles.center]}>
                 <Text style={styles.errorText}>No accreditation data available</Text>
-                <Text style={styles.retryText} onPress={fetchData}>
-                    Tap to retry
-                </Text>
+                <Pressable onPress={handleRetry}>
+                    <Text style={styles.retryText}>Tap to retry</Text>
+                </Pressable>
             </View>
         );
     }

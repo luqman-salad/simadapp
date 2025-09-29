@@ -1,19 +1,9 @@
 import { router } from 'expo-router';
-import { Image, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import { useState, useEffect } from 'react';
 import useTheme from '../hooks/usetheme';
-
-// Dummy logos (replace with actual imports)
-import { default as kumluLogo, default as lshtmLogo, default as luissLogo, default as sakaryaLogo, default as selcukLogo, default as usmLogo } from '../assets/images/react-logo.png';
 import { useBottomSheet } from '../context/BottomSheetContext';
-
-const universities = [
-  { id: '1', name: 'Kütahya Dumlupınar Üniversitesi', info: 'This is a detailed description for a tech partner. It collaborates on various projects related to climate science, biology, and advanced engineering. Our collaboration helps our students gain real-world experience. This is a detailed description for a tech partner. It collaborates on various projects related to climate science, biology, and advanced engineering. Our collaboration helps our students gain real-world experience.', logo: kumluLogo },
-  { id: '2', name: 'Universiti Sains Malaysia', logo: usmLogo },
-  { id: '3', name: 'Selçuk Üniversitesi', logo: selcukLogo },
-  { id: '4', name: 'Sakarya Üniversitesi', logo: sakaryaLogo },
-  { id: '5', name: 'LUISS', logo: luissLogo },
-  { id: '6', name: 'London School of Hygiene & Tropical Medicine', logo: lshtmLogo },
-];
+import { getPartners } from '../apis/partinershipsApi';
 
 const chunkArray = (array, size) => {
   const result = [];
@@ -28,13 +18,96 @@ export default function PartnersCard() {
   const styles = createStyle(colors);
   const { openSheet } = useBottomSheet();
 
-  const chunkedUniversities = chunkArray(universities, 2); // 2 items per column
+  const [partners, setPartners] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  const fetchPartnersData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await getPartners();
+      
+      if (result?.success && Array.isArray(result.data)) {
+        // Flatten all partners from all categories
+        const allPartners = result.data.flatMap(category => category.partners);
+        setPartners(allPartners);
+      } else {
+        throw new Error('Invalid data structure from API');
+      }
+    } catch (err) {
+      setError(err.message);
+      console.error('Error fetching partners:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
+    fetchPartnersData();
+  }, []);
+
+  const chunkedPartners = chunkArray(partners, 2); // 2 items per column
 
   const handleSeeAll = () => {
-    router.push('/(screens)/ParternshipInfoScreen'); // create this screen to show the full list
+    router.push('/(screens)/ParternshipInfoScreen');
   };
+
+  const handleRetry = () => {
+    fetchPartnersData();
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.headerRow}>
+          <Text style={styles.sectionTitle}>Our Partners</Text>
+          <TouchableOpacity onPress={handleSeeAll}>
+            <Text style={styles.seeAllText}>See All</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="small" color={colors.primary} />
+          <Text style={styles.loadingText}>Loading partners...</Text>
+        </View>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.headerRow}>
+          <Text style={styles.sectionTitle}>Our Partners</Text>
+          <TouchableOpacity onPress={handleSeeAll}>
+            <Text style={styles.seeAllText}>See All</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Failed to load partners</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
+            <Text style={styles.retryText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
+  if (partners.length === 0) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.headerRow}>
+          <Text style={styles.sectionTitle}>Our Partners</Text>
+          <TouchableOpacity onPress={handleSeeAll}>
+            <Text style={styles.seeAllText}>See All</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>No partners available</Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -51,22 +124,30 @@ export default function PartnersCard() {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContainer}
       >
-        {chunkedUniversities.map((column, index) => (
+        {chunkedPartners.map((column, index) => (
           <View key={`col-${index}`} style={styles.column}>
-            {column.map((item) => (
+            {column.map((partner) => (
               <Pressable
-                key={item.id}
-                onPress={() => openSheet("partner", item)}
+                key={partner.id}
+                onPress={() => openSheet("partner", partner)}
                 style={({ pressed }) => [
                   styles.card,
                   { opacity: pressed ? 0.7 : 1 },
                 ]}
               >
-                <Image
-                  source={item.logo}
-                  style={styles.logoImage}
-                  resizeMode="contain"
-                />
+                {partner.logo ? (
+                  <Image
+                    source={{ uri: partner.logo }}
+                    style={styles.logoImage}
+                    resizeMode="contain"
+                  />
+                ) : (
+                  <View style={styles.placeholderContainer}>
+                    <Text style={styles.placeholderText}>
+                      {partner.name.charAt(0)}
+                    </Text>
+                  </View>
+                )}
               </Pressable>
             ))}
           </View>
@@ -86,8 +167,6 @@ const createStyle = (colors) => {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      // paddingHorizontal: 10,
-      // marginBottom: 10,
     },
     sectionTitle: {
       fontSize: 18,
@@ -123,6 +202,57 @@ const createStyle = (colors) => {
       width: '80%',
       height: '80%',
     },
+    placeholderContainer: {
+      width: '100%',
+      height: '100%',
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.border,
+    },
+    placeholderText: {
+      fontSize: 24,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    loadingContainer: {
+      height: 120,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    loadingText: {
+      marginTop: 8,
+      fontSize: 14,
+      color: colors.text,
+    },
+    errorContainer: {
+      height: 120,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    errorText: {
+      fontSize: 14,
+      color: colors.error,
+      marginBottom: 8,
+    },
+    retryButton: {
+      backgroundColor: colors.primary,
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+      borderRadius: 6,
+    },
+    retryText: {
+      color: colors.white,
+      fontSize: 12,
+      fontWeight: '500',
+    },
+    emptyContainer: {
+      height: 120,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    emptyText: {
+      fontSize: 14,
+      color: colors.textSecondary,
+    },
   });
 };
-

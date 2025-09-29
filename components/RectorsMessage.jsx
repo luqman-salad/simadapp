@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { useEffect, useState } from "react";
 import useTheme from "../hooks/usetheme";
+import { getRectorsMessage } from "../apis/rectorsOfficeApi";
 
 export default function RectorsOffice() {
   const { colors } = useTheme();
@@ -17,25 +18,26 @@ export default function RectorsOffice() {
 
   const [rector, setRector] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const result = await getRectorsMessage();
+      if (result?.success && result.data?.RectorMessage) {
+        setRector(result.data.RectorMessage); // directly set the object
+      } else {
+        throw new Error("Invalid response structure");
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchRectorData = async () => {
-      try {
-        const res = await fetch(
-          "https://simad-portal-api.vercel.app/api/v1/app/about-university/getRectorsMessage"
-        );
-        const json = await res.json();
-        if (json && json.data) {
-          setRector(json.data.RectorMessage);
-        }
-      } catch (error) {
-        console.error("Error fetching Rector data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchRectorData();
+    fetchData();
   }, []);
 
   const handleEmailPress = (email) => {
@@ -61,7 +63,7 @@ export default function RectorsOffice() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
       {/* Top Section */}
       <View style={styles.topSection}>
         <Image
@@ -145,7 +147,7 @@ const createStyle = (colors) =>
       marginHorizontal: 15,
       marginBottom: 20,
       borderWidth: 1,
-      borderColor: colors.border
+      borderColor: colors.border,
     },
     cardHeader: {
       flexDirection: "row",
@@ -171,7 +173,7 @@ const createStyle = (colors) =>
       lineHeight: 20,
       marginBottom: 10,
       color: colors.text,
-      textAlign: "justify"
+      textAlign: "justify",
     },
     emailText: {
       color: colors.secondary,

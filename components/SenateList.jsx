@@ -1,6 +1,8 @@
+// components/SenateList.jsx
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import useTheme from '../hooks/usetheme';
+import { getSenateList } from '../apis/senateApis';
 
 const SenateList = () => {
   const { colors } = useTheme();
@@ -8,19 +10,23 @@ const SenateList = () => {
 
   const [senate, setSenate] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchSenate = async () => {
       try {
-        const response = await fetch(
-          'https://simad-portal-api.vercel.app/api/v1/app/about-university/getSenateList'
-        );
-        const result = await response.json();
+        setLoading(true);
+        setError(null);
+        const result = await getSenateList();
+        
         if (result?.success && Array.isArray(result.data?.senateList)) {
           setSenate(result.data.senateList);
+        } else {
+          throw new Error('Invalid data structure from API');
         }
       } catch (error) {
         console.error('Error fetching Senate list:', error);
+        setError(error.message);
       } finally {
         setLoading(false);
       }
@@ -29,12 +35,66 @@ const SenateList = () => {
     fetchSenate();
   }, []);
 
+  const handleRetry = () => {
+    // Retry logic if needed
+    useEffect(() => {
+      const fetchSenate = async () => {
+        try {
+          setLoading(true);
+          setError(null);
+          const result = await getSenateList();
+          
+          if (result?.success && Array.isArray(result.data?.senateList)) {
+            setSenate(result.data.senateList);
+          } else {
+            throw new Error('Invalid data structure from API');
+          }
+        } catch (error) {
+          console.error('Error fetching Senate list:', error);
+          setError(error.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+  
+      fetchSenate();
+    }, []);
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.listTitle}>The Senate List Profiles</Text>
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color={colors.secondary} />
+          <Text style={styles.loadingText}>Loading senate members...</Text>
+        </View>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.listTitle}>The Senate List Profiles</Text>
+        <View style={styles.center}>
+          <Text style={styles.errorText}>Error: {error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
+            <Text style={styles.retryText}>Try Again</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.listTitle}>The Senate List Profiles</Text>
 
-      {loading ? (
-        <ActivityIndicator size="large" color={colors.secondary} style={{ marginTop: 20 }} />
+      {senate.length === 0 ? (
+        <View style={styles.center}>
+          <Text style={styles.emptyText}>No senate members found</Text>
+        </View>
       ) : (
         <ScrollView style={styles.senateContainer}>
           {senate.map((member, index) => (
@@ -55,7 +115,11 @@ const SenateList = () => {
 
               {/* Profile Image */}
               <Pressable style={styles.profileImageContainer}>
-                <Image source={{ uri: member.image }} style={styles.profileImage} />
+                <Image 
+                  source={{ uri: member.image }} 
+                  style={styles.profileImage}
+                  onError={() => console.log('Failed to load image')}
+                />
               </Pressable>
             </TouchableOpacity>
           ))}
@@ -70,6 +134,12 @@ const createStyle = (colors) =>
     container: {
       flex: 1,
       backgroundColor: colors.bg,
+    },
+    center: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 20,
     },
     listTitle: {
       fontSize: 18,
@@ -110,11 +180,11 @@ const createStyle = (colors) =>
     name: {
       fontSize: 16,
       fontWeight: 'bold',
-      color: colors.shadow,
+      color: colors.text,
     },
     title: {
       fontSize: 14,
-      color: '#666',
+      color: colors.textSecondary || '#666',
       marginTop: 2,
     },
     profileImageContainer: {
@@ -130,6 +200,33 @@ const createStyle = (colors) =>
       width: '100%',
       height: '100%',
       resizeMode: 'cover',
+    },
+    loadingText: {
+      marginTop: 10,
+      color: colors.text,
+      fontSize: 14,
+    },
+    errorText: {
+      color: colors.error || '#ff0000',
+      fontSize: 16,
+      textAlign: 'center',
+      marginBottom: 15,
+    },
+    emptyText: {
+      color: colors.textSecondary || '#666',
+      fontSize: 16,
+      textAlign: 'center',
+    },
+    retryButton: {
+      backgroundColor: colors.primary,
+      paddingHorizontal: 20,
+      paddingVertical: 10,
+      borderRadius: 5,
+    },
+    retryText: {
+      color: colors.white || '#ffffff',
+      fontSize: 14,
+      fontWeight: '500',
     },
   });
 

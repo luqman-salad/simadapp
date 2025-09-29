@@ -1,6 +1,8 @@
+// components/HistoryAwards.jsx
 import React, { useState, useEffect } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
 import useTheme from '../hooks/usetheme';
+import { getHistoryAwardData } from '../apis/historyAwardsApi';
 
 export default function HistoryAwards() {
     const { colors } = useTheme();
@@ -12,13 +14,8 @@ export default function HistoryAwards() {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const response = await fetch('https://simad-portal-api.vercel.app/api/v1/app/about-university/getHistoryAwardData');
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const result = await response.json();
+            setError(null);
+            const result = await getHistoryAwardData();
             
             if (result.success && result.data && result.data.historyItems) {
                 // Transform the API data to match your component structure
@@ -43,6 +40,10 @@ export default function HistoryAwards() {
         fetchData();
     }, []);
 
+    const handleRetry = () => {
+        fetchData();
+    };
+
     if (loading) {
         return (
             <View style={[styles.container, styles.center]}>
@@ -56,9 +57,9 @@ export default function HistoryAwards() {
         return (
             <View style={[styles.container, styles.center]}>
                 <Text style={styles.errorText}>Error: {error}</Text>
-                <Text style={styles.retryText} onPress={fetchData}>
-                    Tap to retry
-                </Text>
+                <Pressable onPress={handleRetry}>
+                    <Text style={styles.retryText}>Tap to retry</Text>
+                </Pressable>
             </View>
         );
     }
@@ -67,15 +68,15 @@ export default function HistoryAwards() {
         return (
             <View style={[styles.container, styles.center]}>
                 <Text style={styles.errorText}>No historical data available</Text>
-                <Text style={styles.retryText} onPress={fetchData}>
-                    Tap to retry
-                </Text>
+                <Pressable onPress={handleRetry}>
+                    <Text style={styles.retryText}>Tap to retry</Text>
+                </Pressable>
             </View>
         );
     }
 
     return (
-        <ScrollView style={styles.container}>
+        <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
             <View style={styles.bannerContainer}>
                 <Image
                     source={require('../assets/images/fablab.jpg')}

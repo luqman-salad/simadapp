@@ -169,7 +169,7 @@ export default function RootLayout() {
         <ProgramsBottomSheet
           visible={isSheetVisible}
           onClose={closeSheet}
-          programsData={content}
+           categoryId={content}
         />
       )}
 

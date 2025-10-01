@@ -1,60 +1,25 @@
-import React from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Linking } from 'react-native';
-import useTheme from '../hooks/usetheme'; // Assuming useTheme is correctly located
-
-// Import your specific images for each card
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Linking, ActivityIndicator } from 'react-native';
+import useTheme from '../hooks/usetheme';
 import computerlabsImage from '../assets/images/computerlabs.jpeg';
-
-const cardData = [
-  {
-    id: '1',
-    image: computerlabsImage,
-    title: 'CALL FOR APPLICATIONS: ERASMUS+ KA107 STUDENT MOBILITY PROGRAM',
-    description: 'All applications must be submitted by March 8, 2025.',
-    link: 'https://simad.edu.so/erasmus-program-1',
-  },
-  {
-    id: '2',
-    image: computerlabsImage,
-    title: 'CALL FOR APPLICATIONS: ERASMUS+ KA107 STUDENT MOBILITY PROGRAM',
-    description: 'All applications must be submitted by March 8, 2025.',
-    link: 'https://simad.edu.so/erasmus-program-2',
-  },
-  {
-    id: '3',
-    image: computerlabsImage,
-    title: 'CALL FOR APPLICATIONS: ERASMUS+ KA107 STUDENT MOBILITY PROGRAM',
-    description: 'Preliminary Evaluation Result for Erasmus+ Staff Training Mobility Program 2025',
-    link: 'https://simad.edu.so/announcement-erasmus',
-  },
-  {
-    id: '4',
-    image: computerlabsImage,
-    title: 'CALL FOR APPLICATIONS: ERASMUS+ KA107 STUDENT MOBILITY PROGRAM',
-    description: 'All applications must be submitted by March 8, 2025.',
-    link: 'https://simad.edu.so/erasmus-program-3',
-  },
-  {
-    id: '5',
-    image: computerlabsImage,
-    title: 'CALL FOR APPLICATIONS: ERASMUS+ KA107 STUDENT MOBILITY PROGRAM',
-    description: 'All applications must be submitted by March 8, 2025.',
-    link: 'https://simad.edu.so/erasmus-program-3',
-  },
-];
+import { getActiveNews } from '../apis/newsApi';
 
 const renderItem = ({ item, styles, handleReadMore, colors }) => (
   <TouchableOpacity
-    key={item.id}
+    key={item._id}
     style={styles.card}
     activeOpacity={0.8}
-    onPress={() => handleReadMore(item.link)}
+    onPress={() => handleReadMore(item.infoLink)}
   >
-    <Image source={item.image} style={styles.cardImage} />
+    {item.image ? (
+      <Image source={{ uri: item.image }} style={styles.cardImage} />
+    ) : (
+      <Image source={computerlabsImage} style={styles.cardImage} />
+    )}
     <View style={styles.cardContent}>
       <Text style={styles.cardTitle}>{item.title}</Text>
       <Text style={styles.cardDescription}>{item.description}</Text>
-      <TouchableOpacity onPress={() => handleReadMore(item.link)}>
+      <TouchableOpacity onPress={() => handleReadMore(item.infoLink)}>
         <Text style={styles.readMore}>Read More...</Text>
       </TouchableOpacity>
     </View>
@@ -65,15 +30,76 @@ export default function AnnouncementList() {
   const { colors } = useTheme();
   const styles = createStyle(colors);
 
+  const [news, setNews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchNews = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await getActiveNews();
+      
+      if (result?.success && Array.isArray(result.data)) {
+        setNews(result.data);
+      } else {
+        throw new Error('Invalid data structure from API');
+      }
+    } catch (err) {
+      setError(err.message);
+      console.error('Error fetching news:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNews();
+  }, []);
+
   const handleReadMore = (url) => {
     Linking.openURL(url).catch(err => console.error("Couldn't load page", err));
   };
 
+  const handleRetry = () => {
+    fetchNews();
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={styles.loadingText}>Loading announcements...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>Failed to load announcements</Text>
+        <Text style={styles.errorDetail}>{error}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
+          <Text style={styles.retryText}>Try Again</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  if (news.length === 0) {
+    return (
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyText}>No announcements available</Text>
+        <Text style={styles.emptyDetail}>Check back later for new updates</Text>
+      </View>
+    );
+  }
+
   return (
     <FlatList
-      data={cardData}
+      data={news}
       renderItem={({ item }) => renderItem({ item, styles, handleReadMore, colors })}
-      keyExtractor={item => item.id}
+      keyExtractor={item => item._id}
       contentContainerStyle={styles.container}
       showsVerticalScrollIndicator={false}
     />
@@ -90,8 +116,8 @@ const createStyle = (colors) => {
     card: {
       flexDirection: 'row',
       backgroundColor: colors.surface,
-      borderRadius: 12,
-      marginBottom: 15,
+      borderRadius: 10,
+      marginBottom: 8,
       shadowColor: '#000',
       shadowOffset: {
         width: 0,
@@ -105,7 +131,7 @@ const createStyle = (colors) => {
     cardImage: {
       width: 120,
       height: 120,
-      borderRadius: 12,
+      borderRadius: 10,
       margin: 10,
       resizeMode: 'cover',
     },
@@ -130,6 +156,66 @@ const createStyle = (colors) => {
       fontSize: 12,
       color: colors.primary,
       fontWeight: '600',
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.bg,
+      padding: 20,
+    },
+    loadingText: {
+      marginTop: 10,
+      color: colors.text,
+      fontSize: 16,
+    },
+    errorContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.bg,
+      padding: 20,
+    },
+    errorText: {
+      color: colors.error,
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 10,
+    },
+    errorDetail: {
+      color: colors.textSecondary,
+      fontSize: 14,
+      textAlign: 'center',
+      marginBottom: 20,
+    },
+    emptyContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.bg,
+      padding: 20,
+    },
+    emptyText: {
+      color: colors.textSecondary,
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 10,
+    },
+    emptyDetail: {
+      color: colors.textSecondary,
+      fontSize: 14,
+      textAlign: 'center',
+    },
+    retryButton: {
+      backgroundColor: colors.primary,
+      paddingHorizontal: 20,
+      paddingVertical: 10,
+      borderRadius: 8,
+    },
+    retryText: {
+      color: colors.white,
+      fontSize: 16,
+      fontWeight: '500',
     },
   });
 };

@@ -1,44 +1,10 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import { router } from 'expo-router';
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useNavigation, useLocalSearchParams } from 'expo-router';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
+import { useState, useEffect } from 'react';
 import { Header } from '../../components/Headrer';
 import useTheme from '../../hooks/usetheme';
-
-const schoolDetails = {
-  title: 'School of Computing',
-  description: 'Home of Digital innovative computing education',
-  vision: "Our vision is to establish ourselves as a premier hub for academic and professional excellence in computing and information technology, committed to nurturing innovation, promoting ethical leadership, and driving digital transformation across Somalia.",
-  mission: [
-    "Deliver high-quality education that blends solid theoretical foundations with hands-on technical training across computing disciplines.",
-    "Advance research and innovation in emerging technologies to address real-world challenges.",
-  ],
-  facts: [
-    { label: 'Academic Programs', value: '3' },
-    { label: 'Academic Staff', value: '35+' },
-    { label: 'Student Population', value: '1.1k+' },
-    { label: 'Foundation Year', value: '1999' },
-  ],
-  testimonials: [
-    { text: "The hands-on experience at the Innovation Lab has been incredible. I feel so well-prepared for my future career.", name: "Abdishakur, CS Student" },
-    { text: "The professors are not only knowledgeable but also genuinely supportive. I am thriving in this environment.", name: "Luqman, IT Student" },
-  ],
-  dean: {
-    name: 'Eng. Abdifitah Farah Ali',
-    title: 'Dean Faculty of Computing',
-    message: "Welcome to the Faculty of Computing, where education meets innovation. As the Dean of this vibrant faculty, I am proud to lead a team of dedicated educators and researchers committed to nurturing the next generation of technology leaders. Our faculty offers three distinct programs designed to meet the diverse interests and career goals of our students: Information Technology, Computer Science, and Graphics & Multimedia. Each program is carefully crafted to provide a comprehensive education, combining theoretical knowledge with practical skills to ensure our graduates are well-prepared for the dynamic world of technology. At the Faculty of Computing, we are dedicated to fostering a learning environment that encourages innovation, collaboration, and critical thinking. Our students are challenged to solve real-world problems, engage in hands-on projects, and apply their knowledge in ways that can create a tangible impact. Thank you for visiting the Faculty of Computing. Together, we can create the future.",
-  },
-  contact: {
-    phone: '+252617522228',
-    email: 'foc@simad.edu.so',
-    location: 'Taleh Campus, Mogadishu',
-  },
-  programs: [
-    { title: 'Bachelor of Computer Science', icon: 'monitor' },
-    { title: 'Bachelor of Information Technology', icon: 'monitor' },
-    { title: 'Bachelor of Graphics & Multimedia', icon: 'image-outline' },
-  ]
-};
+import { getSchoolInfoById } from '../../apis/schoolsApi';
 
 const SectionHeader = ({ iconName, iconColor, title, subtitle }) => {
   const { colors } = useTheme();
@@ -70,14 +36,18 @@ const InfoCard = ({ iconName, title, value }) => {
   );
 };
 
-const ProgramCard = ({ title, iconName }) => {
+const ProgramCard = ({ title, iconName, programId }) => {
   const { colors } = useTheme();
   const styles = createStyle(colors);
+  const navigation = useNavigation();
 
   return (
     <Pressable style={styles.programCard}
       onPress={() => {
-        router.push('/(screens)/ProgramsInfoScreen');
+        navigation.navigate('ProgramsInfoScreen', { 
+          programId: programId, 
+          programName: title 
+        });
       }}
     >
       <MaterialCommunityIcons name={iconName} size={28} color={colors.textSecondary} />
@@ -90,151 +60,330 @@ const ProgramCard = ({ title, iconName }) => {
 const SchoolDetails = () => {
   const { colors } = useTheme();
   const styles = createStyle(colors);
-  const navigationTab = useNavigation();
+  const navigation = useNavigation();
+  
+  // Use useLocalSearchParams to get the parameters from the URL
+  const params = useLocalSearchParams();
+  const schoolId = params.schoolId;
+  const schoolName = params.schoolName;
+
+  const [schoolData, setSchoolData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  console.log('SchoolDetails received params:', { schoolId, schoolName });
+
+  const fetchSchoolData = async () => {
+    if (!schoolId) {
+      setError('No school ID provided');
+      setLoading(false);
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await getSchoolInfoById(schoolId);
+      
+      if (result?.success && result.data?.school) {
+        setSchoolData(result.data.school);
+      } else {
+        throw new Error('No school data received');
+      }
+    } catch (err) {
+      setError(err.message);
+      console.error('Error fetching school data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (schoolId) {
+      fetchSchoolData();
+    }
+  }, [schoolId]);
+
+  const handleRetry = () => {
+    fetchSchoolData();
+  };
+
+  // Helper function to map API icon names to MaterialCommunityIcons
+  const getIconName = (apiIconName) => {
+    const iconMap = {
+      'fa-laptop-code': 'laptop',
+      'fa-network-wired': 'lan',
+      'fa-photo-video': 'image',
+      'fa-user-tie': 'account-tie',
+      'fa-lightbulb': 'lightbulb-outline',
+      'fa-chart-bar': 'chart-bar',
+      'fa-comments': 'comment-multiple-outline',
+      'fa-book': 'book-open-variant',
+      'fa-envelope': 'email-outline'
+    };
+    return iconMap[apiIconName] || 'help-circle-outline';
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Header
+          title={schoolName || "Loading..."}
+          showLeftIcon
+          leftIconName="chevron-back"
+          onLeftIconPress={() => navigation.goBack()}
+        />
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={[styles.loadingText, { color: colors.text }]}>
+            Loading school details...
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <Header
+          title={schoolName || "Error"}
+          showLeftIcon
+          leftIconName="chevron-back"
+          onLeftIconPress={() => navigation.goBack()}
+        />
+        <View style={styles.center}>
+          <Text style={[styles.errorText, { color: colors.error }]}>
+            Failed to load school details
+          </Text>
+          <Text style={[styles.errorDetail, { color: colors.text }]}>
+            {error}
+          </Text>
+          <Pressable style={styles.retryButton} onPress={handleRetry}>
+            <Text style={styles.retryText}>Try Again</Text>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
+  if (!schoolData) {
+    return (
+      <View style={styles.container}>
+        <Header
+          title={schoolName || "Not Found"}
+          showLeftIcon
+          leftIconName="chevron-back"
+          onLeftIconPress={() => navigation.goBack()}
+        />
+        <View style={styles.center}>
+          <Text style={[styles.emptyText, { color: colors.text }]}>
+            School information not available
+          </Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <Header
-        title="School of Computing"
+        title={schoolData.name}
         showLeftIcon
         leftIconName="chevron-back"
-        onLeftIconPress={() => navigationTab.goBack()}
+        onLeftIconPress={() => navigation.goBack()}
       />
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
-
-
+        {/* Header Section */}
         <View style={styles.headerBackground}>
-          <Image source={require('../../assets/images/computerlabs.jpeg')} style={styles.headerImage} resizeMode="cover" />
+          {schoolData.coverImage ? (
+            <Image source={{ uri: schoolData.coverImage }} style={styles.headerImage} resizeMode="cover" />
+          ) : (
+            <Image source={require('../../assets/images/computerlabs.jpeg')} style={styles.headerImage} resizeMode="cover" />
+          )}
           <View style={styles.overlay}>
-            <Text style={styles.schoolTitle}>{schoolDetails.title}</Text>
-            <Text style={styles.schoolDescription}>{schoolDetails.description}</Text>
+            <Text style={styles.schoolTitle}>{schoolData.name}</Text>
+            <Text style={styles.schoolDescription}>{schoolData.tagline || schoolData.shortDescription}</Text>
           </View>
         </View>
 
-
-
-        {/* Departments of the School Section */}
-        <View style={styles.cardSection}>
-          <SectionHeader
-            iconName="view-list"
-            iconColor={colors.primary}
-            title="Departments of the School"
-            subtitle="Explore the Specializations Programs of the School"
-          />
-          <View style={styles.programList}>
-            {schoolDetails.programs.map((program, index) => (
-              <ProgramCard key={index} title={program.title} iconName={program.icon} />
-            ))}
+        {/* Programs Section */}
+        {schoolData.programs && schoolData.programs.length > 0 && (
+          <View style={styles.cardSection}>
+            <SectionHeader
+              iconName={getIconName(schoolData.programsSection?.icon)}
+              iconColor={colors.primary}
+              title={schoolData.programsSection?.title || "Programs of the Faculty"}
+              subtitle={schoolData.programsSection?.subtitle || "Explore undergraduate and graduate programs"}
+            />
+            <View style={styles.programList}>
+              {schoolData.programs.map((program, index) => (
+                <ProgramCard 
+                  key={program._id} 
+                  title={program.name} 
+                  iconName={getIconName(program.icon)}
+                  programId={program._id}
+                />
+              ))}
+            </View>
           </View>
-        </View>
+        )}
 
         {/* Vision & Mission Section */}
-        <View style={styles.cardSection}>
-          <SectionHeader
-            iconName="star-outline"
-            iconColor={colors.tertiary}
-            title="Vision & Mission"
-            subtitle="Our Commitment to Technological Innovation & Excellence"
-          />
-          <View style={styles.infoBox}>
-            <Text style={styles.infoBoxTitle}>Vision</Text>
-            <Text style={styles.infoBoxText}>{schoolDetails.vision}</Text>
+        {(schoolData.vision || schoolData.mission) && (
+          <View style={styles.cardSection}>
+            <SectionHeader
+              iconName={getIconName(schoolData.visionAndMissionSection?.icon)}
+              iconColor={colors.tertiary}
+              title={schoolData.visionAndMissionSection?.title || "Vision & Mission"}
+              subtitle={schoolData.visionAndMissionSection?.subtitle || "Our Commitment to Excellence"}
+            />
+            {schoolData.vision && (
+              <View style={styles.infoBox}>
+                <Text style={styles.infoBoxTitle}>Vision</Text>
+                <Text style={styles.infoBoxText}>{schoolData.vision}</Text>
+              </View>
+            )}
+            {schoolData.mission && (
+              <View style={styles.infoBox}>
+                <Text style={styles.infoBoxTitle}>Mission</Text>
+                <Text style={styles.infoBoxText}>{schoolData.mission}</Text>
+              </View>
+            )}
           </View>
-          <View style={styles.infoBox}>
-            <Text style={styles.infoBoxTitle}>Mission</Text>
-            {schoolDetails.mission.map((item, index) => (
-              <Text key={index} style={styles.infoBoxText}>
-                <Text style={{ fontSize: 18 }}>• </Text>{item}
-              </Text>
-            ))}
-          </View>
-        </View>
+        )}
 
         {/* Dean's Message Section */}
-        <View style={styles.cardSection}>
-          <SectionHeader
-            iconName="account-outline"
-            iconColor={colors.secondary}
-            title="Dean's Message"
-            subtitle="Leadership & Vision for Technological Excellence"
-          />
-          <View style={styles.deanContainer}>
-            <View style={styles.deanImagePlaceholder} />
-            <Text style={styles.deanName}>{schoolDetails.dean.name}</Text>
-            <Text style={styles.deanTitle}>{schoolDetails.dean.title}</Text>
+        {schoolData.dean && (
+          <View style={styles.cardSection}>
+            <SectionHeader
+              iconName={getIconName(schoolData.dean.section?.icon)}
+              iconColor={colors.secondary}
+              title={schoolData.dean.section?.title || "Dean's Message"}
+              subtitle={schoolData.dean.section?.subtitle || "Leadership & Vision"}
+            />
+            <View style={styles.deanContainer}>
+              <View style={styles.deanImagePlaceholder} />
+              <Text style={styles.deanName}>{schoolData.dean.name}</Text>
+              <Text style={styles.deanTitle}>{schoolData.dean.title}</Text>
+            </View>
+            <View style={styles.infoBox}>
+              <Text style={styles.infoBoxText}>{schoolData.dean.message}</Text>
+            </View>
           </View>
-          <View style={styles.infoBox}>
-            <Text style={styles.infoBoxText}>{schoolDetails.dean.message}</Text>
-          </View>
-        </View>
+        )}
 
         {/* Facts & Figures Section */}
-        <View style={styles.cardSection}>
-          <SectionHeader
-            iconName="information-outline"
-            iconColor={colors.primary}
-            title="Facts & Figures"
-            subtitle="Our distinctive features and technological advantages"
-          />
-          <View style={styles.factGrid}>
-            {schoolDetails.facts.map((fact, index) => (
-              <View key={index} style={styles.factCard}>
-                <Text style={styles.factValue}>{fact.value}</Text>
-                <Text style={styles.factLabel}>{fact.label}</Text>
+        {schoolData.facts && (
+          <View style={styles.cardSection}>
+            <SectionHeader
+              iconName={getIconName(schoolData.factsSection?.icon)}
+              iconColor={colors.primary}
+              title={schoolData.factsSection?.title || "Facts & Figures"}
+              subtitle={schoolData.factsSection?.subtitle || "Our distinctive features"}
+            />
+            <View style={styles.factGrid}>
+              {Object.entries(schoolData.facts).map(([key, value], index) => (
+                <View key={index} style={styles.factCard}>
+                  <Text style={styles.factValue}>{value}</Text>
+                  <Text style={styles.factLabel}>
+                    {key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* Student Testimonials Section */}
+        {schoolData.testimonials && schoolData.testimonials.length > 0 && (
+          <View style={styles.cardSection}>
+            <SectionHeader
+              iconName={getIconName(schoolData.testimonialsSection?.icon)}
+              iconColor={colors.secondary}
+              title={schoolData.testimonialsSection?.title || "Student Testimonials"}
+              subtitle={schoolData.testimonialsSection?.subtitle || "Hear from our students"}
+            />
+            {schoolData.testimonials.map((testimonial, index) => (
+              <View key={index} style={styles.testimonialCard}>
+                <Text style={styles.testimonialText}>"{testimonial.message}"</Text>
+                <Text style={styles.testimonialAuthor}>- {testimonial.student_name}, {testimonial.program}</Text>
               </View>
             ))}
           </View>
-        </View>
-
-        {/* Student Testimonials Section */}
-        <View style={styles.cardSection}>
-          <SectionHeader
-            iconName="comment-quote-outline"
-            iconColor={colors.secondary}
-            title="Student Testimonials"
-            subtitle="Hear from our students"
-          />
-          {schoolDetails.testimonials.map((testimonial, index) => (
-            <View key={index} style={styles.testimonialCard}>
-              <Text style={styles.testimonialText}>"{testimonial.text}"</Text>
-              <Text style={styles.testimonialAuthor}>- {testimonial.name}</Text>
-            </View>
-          ))}
-        </View>
+        )}
 
         {/* Contact Info Section */}
-        <View style={styles.cardSection}>
-          <SectionHeader
-            iconName="phone-settings-outline"
-            iconColor={colors.tertiary}
-            title="Contact Info"
-            subtitle="Get in touch with us"
-          />
-          <InfoCard iconName="phone-outline" title="Phone" value={schoolDetails.contact.phone} />
-          <InfoCard iconName="email-outline" title="Email" value={schoolDetails.contact.email} />
-          <InfoCard iconName="map-marker-outline" title="Location" value={schoolDetails.contact.location} />
-        </View>
-
-        {/* Call to Action Section */}
-        {/* <View style={[styles.ctaCard, { backgroundColor: colors.primary }]}>
-          <Text style={styles.ctaTitle}>Ready to Start Your Journey?</Text>
-          <Text style={styles.ctaSubtitle}>Join our community of innovators and start building your future today.</Text>
-          <Pressable style={({ pressed }) => [styles.applyButton, { opacity: pressed ? 0.8 : 1 }]}>
-            <Text style={styles.applyButtonText}>Apply Now</Text>
-          </Pressable>
-        </View> */}
+        {schoolData.contact && (
+          <View style={styles.cardSection}>
+            <SectionHeader
+              iconName={getIconName(schoolData.contactSection?.icon)}
+              iconColor={colors.tertiary}
+              title={schoolData.contactSection?.title || "Contact Info"}
+              subtitle={schoolData.contactSection?.subtitle || "Get in touch with us"}
+            />
+            {schoolData.contact.phone && (
+              <InfoCard iconName="phone-outline" title="Phone" value={schoolData.contact.phone} />
+            )}
+            {schoolData.contact.email && (
+              <InfoCard iconName="email-outline" title="Email" value={schoolData.contact.email} />
+            )}
+            {schoolData.contact.location && (
+              <InfoCard iconName="map-marker-outline" title="Location" value={schoolData.contact.location} />
+            )}
+          </View>
+        )}
       </ScrollView>
     </View>
   );
 };
 
+// ... keep all the existing styles the same ...
 const createStyle = (colors) => {
   return StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: colors.bg,
     },
-    // The header is now inside the ScrollView
+    center: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 20,
+    },
+    loadingText: {
+      marginTop: 10,
+      fontSize: 16,
+      textAlign: 'center',
+    },
+    errorText: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 10,
+      textAlign: 'center',
+    },
+    errorDetail: {
+      fontSize: 14,
+      textAlign: 'center',
+      marginBottom: 20,
+      lineHeight: 20,
+    },
+    emptyText: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      textAlign: 'center',
+    },
+    retryButton: {
+      backgroundColor: colors.primary,
+      paddingHorizontal: 20,
+      paddingVertical: 12,
+      borderRadius: 8,
+    },
+    retryText: {
+      color: colors.white,
+      fontSize: 16,
+      fontWeight: '500',
+    },
     headerBackground: {
       height: 220,
       justifyContent: 'flex-end',
@@ -266,35 +415,10 @@ const createStyle = (colors) => {
       color: colors.white,
       textAlign: 'center',
       lineHeight: 22,
-
     },
     scrollViewContent: {
       paddingBottom: 20,
     },
-
-    // // ... other styles ...
-    // scrollViewContent: {
-    //   paddingBottom: 20,
-    // },
-    // headerBackground: {
-    //   width: '100%',
-    //   // paddingTop and marginBottom moved here to make the image cover the space
-    //   paddingTop: 120,
-    //   marginBottom: 20,
-    // },
-    // schoolHeaderContent: {
-    //   paddingHorizontal: 20,
-    // },
-    // schoolTitle: {
-    //   fontSize: 28,
-    //   fontWeight: 'bold',
-    //   color: colors.text,
-    //   marginBottom: 5,
-    // },
-    // schoolDescription: {
-    //   fontSize: 16,
-    //   color: colors.textSecondary,
-    // },
     cardSection: {
       backgroundColor: colors.surface,
       marginHorizontal: 15,
@@ -419,7 +543,6 @@ const createStyle = (colors) => {
       fontStyle: 'italic',
       color: colors.text,
       textAlign: 'justify',
-
       lineHeight: 22,
       marginBottom: 5,
     },
@@ -447,38 +570,6 @@ const createStyle = (colors) => {
     infoValue: {
       fontSize: 14,
       color: colors.textSecondary,
-    },
-    ctaCard: {
-      marginHorizontal: 15,
-      borderRadius: 15,
-      padding: 25,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginTop: 10,
-    },
-    ctaTitle: {
-      fontSize: 22,
-      fontWeight: 'bold',
-      color: colors.white,
-      textAlign: 'center',
-      marginBottom: 5,
-    },
-    ctaSubtitle: {
-      fontSize: 14,
-      color: colors.white,
-      textAlign: 'center',
-      marginBottom: 20,
-    },
-    applyButton: {
-      backgroundColor: colors.white,
-      paddingVertical: 12,
-      paddingHorizontal: 30,
-      borderRadius: 30,
-    },
-    applyButtonText: {
-      color: colors.primary,
-      fontSize: 16,
-      fontWeight: 'bold',
     },
   });
 };

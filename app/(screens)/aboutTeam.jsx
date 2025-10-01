@@ -88,7 +88,7 @@ const OurTeamScreen = () => {
           <View style={styles.header}>
             <Text style={styles.title}>Our Team</Text>
             <Text style={styles.subtitle}>
-              Meet the team behind this great platform, dedicated to building innovative solutions with passion and expertise.
+              Meet the team behind this great platform.
             </Text>
           </View>
 

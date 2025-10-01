@@ -21,10 +21,16 @@ const SHEET_HEIGHT = SCREEN_HEIGHT * 0.65;
 const PEEK_HEIGHT = 370;
 
 const ThemeBottomSheet = ({ visible, onClose, selectedTheme, onSelectTheme }) => {
-    const { colors } = useTheme();
+    const { colors, toggleDarkMode, isDarkMode } = useTheme();
     const translateY = useSharedValue(SCREEN_HEIGHT);
     const opacity = useSharedValue(0);
     const contextY = useSharedValue(0);
+
+    const styles = createStyle(colors);
+
+    const handleThemeChange = () => {
+
+    }
 
     useEffect(() => {
         if (visible) {
@@ -82,16 +88,17 @@ const ThemeBottomSheet = ({ visible, onClose, selectedTheme, onSelectTheme }) =>
 
                         </View>
                         <View style={styles.content}>
-                            <TouchableOpacity style={styles.optionItem}
+                            {/* <TouchableOpacity style={styles.optionItem}
                                 onPress={() => {
                                     onSelectTheme('system');
                                     onClose();
                                 }}>
                                 <Text style={styles.optionText}>System default</Text>
                                 {selectedTheme === 'system' && <Ionicons name="checkmark-circle" size={20} color={colors.primary} />}
-                            </TouchableOpacity>
+                            </TouchableOpacity> */}
                             <TouchableOpacity style={styles.optionItem}
                                 onPress={() => {
+                                    isDarkMode? toggleDarkMode() : '';
                                     onSelectTheme('light');
                                     onClose();
                                 }}
@@ -101,6 +108,7 @@ const ThemeBottomSheet = ({ visible, onClose, selectedTheme, onSelectTheme }) =>
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.optionItem}
                                 onPress={() => {
+                                    isDarkMode? '' : toggleDarkMode();
                                     onSelectTheme('dark');
                                     onClose();
                                 }}
@@ -117,13 +125,14 @@ const ThemeBottomSheet = ({ visible, onClose, selectedTheme, onSelectTheme }) =>
     );
 };
 
-const styles = StyleSheet.create({
+const createStyle = (colors) => {
+  return StyleSheet.create({
     container: { ...StyleSheet.absoluteFillObject, justifyContent: 'flex-end' },
     backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'black' },
     backdropTouch: { flex: 1 },
     sheet: {
         height: SHEET_HEIGHT,
-        backgroundColor: 'white',
+        backgroundColor: colors.surface,
         borderTopLeftRadius: 16,
         borderTopRightRadius: 16,
         overflow: 'hidden',
@@ -134,7 +143,7 @@ const styles = StyleSheet.create({
     handle: {
         width: 40,
         height: 5,
-        backgroundColor: '#ccc',
+        backgroundColor: colors.primary,
         borderRadius: 3,
         alignSelf: 'center',
         marginVertical: 8,
@@ -144,10 +153,10 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         paddingVertical: 12,
         borderBottomWidth: 1,
-        borderBottomColor: '#eee',
+        borderBottomColor: colors.border,
         position: 'relative',
     },
-    title: { fontSize: 18, fontWeight: 'bold' },
+    title: { fontSize: 18, fontWeight: 'bold', color: colors.text },
     closeButton: {
         position: 'absolute',
         right: 16,
@@ -167,8 +176,9 @@ const styles = StyleSheet.create({
     },
     optionText: {
         fontSize: 16,
-        color: '#000',
+        color: colors.text,
     },
 });
+}
 
 export default ThemeBottomSheet;

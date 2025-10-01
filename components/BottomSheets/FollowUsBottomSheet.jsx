@@ -87,7 +87,9 @@ const FollowUsBottomSheet = ({ visible, onClose }) => {
 
                         </View>
                         <View style={styles.content}>
-                            <SocialMediaItem iconName="logo-facebook" name="Facebook" colors={colors} />
+                            <SocialMediaItem iconName="logo-facebook" name="Facebook" colors={colors} 
+                            onPress={() => Linking.openURL("https://www.facebook.com/simaduni1999")}
+                            />
                             <SocialMediaItem iconName="logo-instagram" name="Instagram" colors={colors} />
                             <SocialMediaItem iconName="logo-tiktok" name="TikTok" colors={colors} />
                             <SocialMediaItem iconName="logo-twitter" name="X" colors={colors} />

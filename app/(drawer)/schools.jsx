@@ -99,13 +99,7 @@ const AcademicProgramsScreen = () => {
         {categories.map((category, index) => (
           <Pressable
             key={category._id}
-            style={({ pressed }) => [
-              styles.card,
-              { 
-                backgroundColor: getCategoryColor(index),
-                opacity: pressed ? 0.8 : 1 
-              }
-            ]}
+            style={styles.card}
             onPress={() => handleCategoryPress(category)}
           >
             <View>
@@ -123,10 +117,13 @@ const AcademicProgramsScreen = () => {
 };
 
 // Helper function to assign colors based on index
-const getCategoryColor = (index) => {
-  const colors = ['#f1f8f2', '#f0f4ff', '#fff8f0'];
-  return colors[index % colors.length];
-};
+// const getCategoryColor = (index) => {
+//   const { colors } = useTheme();
+//   const styles = createStyle(colors);
+
+//   const color = [colors.primary, colors.secondary, colors.tertiary];
+//   return color[index % color.length];
+// };
 
 const createStyle = (colors) => {
   return StyleSheet.create({
@@ -148,13 +145,16 @@ const createStyle = (colors) => {
       justifyContent: 'space-between',
       alignItems: 'center',
       borderRadius: 15,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surface,
       padding: 25,
       marginBottom: 20,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.1,
       shadowRadius: 8,
-      elevation: 5,
+      elevation: 1,
     },
     cardTitle: {
       fontSize: 22,

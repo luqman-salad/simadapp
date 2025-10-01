@@ -90,7 +90,7 @@ const Setting = ({ navigation }) => {
               })}
               colors={colors}
             />
-            <SettingsItem
+            {/* <SettingsItem
               icon="earth-outline"
               title="Select the interface language"
               subtitle={language}
@@ -99,7 +99,7 @@ const Setting = ({ navigation }) => {
 
               })}
               colors={colors}
-            />
+            /> */}
             <SettingsItem
               icon="notifications-outline"
               title="Notification"
@@ -130,8 +130,8 @@ const Setting = ({ navigation }) => {
           <View style={createStyles(colors).section}>
             <SettingsItem
               icon="help-circle-outline"
-              title="Tips & Support"
-              // onPress={() => handleNavigation('TipsSupport')}
+              title="Help & Support"
+              onPress={() => router.push("../../contact")}
               colors={colors}
             />
             <SettingsItem

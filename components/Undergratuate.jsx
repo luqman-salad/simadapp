@@ -147,6 +147,7 @@ const createStyle = (colors) => {
       paddingVertical: 20,
       backgroundColor: colors.bg,
       paddingBottom: 20,
+      width: "100%"
     },
     column: {
       marginRight: 10,

@@ -35,7 +35,7 @@ const SettingsItem = ({ icon, title, subtitle, onPress, colors }) => {
             <Text style={createStyles(colors).indicatorText}>{indicatorCount}</Text>
           </View>
         )} */}
-        <Ionicons name="chevron-forward" size={24} color={colors.textSecondary} />
+        <Ionicons name="chevron-forward" size={24} color={colors.text} />
       </View>
     </TouchableOpacity>
   );

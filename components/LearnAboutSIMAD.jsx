@@ -41,7 +41,7 @@ const LearnAboutSIMAD = () => {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
-      {/* Top Banner Section */}
+      {/* Top Banner Section
       <View style={styles.bannerContainer}>
         <Image
           source={require("../assets/images/fablab.jpg")}
@@ -54,7 +54,7 @@ const LearnAboutSIMAD = () => {
             Learn About SIMAD UNIVERSITY in 5 min
           </Text>
         </Pressable>
-      </View>
+      </View> */}
 
       {/* Title */}
       <View style={styles.whySimadContainer}>

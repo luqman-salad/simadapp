@@ -145,18 +145,18 @@ const createStyles = (colors) =>
     },
     message: {
       fontSize: 14,
-      color: colors.textSecondary,
+      color: colors.text,
       marginBottom: 6,
     },
     time: {
       fontSize: 12,
-      color: colors.textSecondary,
+      color: colors.text,
     },
     emptyText: {
       textAlign: "center",
       marginTop: 50,
       fontSize: 16,
-      color: colors.textSecondary,
+      color: colors.text,
     },
     clearBtn: {
       position: "absolute",

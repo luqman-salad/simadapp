@@ -77,7 +77,7 @@ export default function HistoryAwards() {
 
     return (
         <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-            <View style={styles.bannerContainer}>
+            {/* <View style={styles.bannerContainer}>
                 <Image
                     source={require('../assets/images/fablab.jpg')}
                     style={styles.bannerImage}
@@ -86,7 +86,7 @@ export default function HistoryAwards() {
                 <Pressable style={styles.learnMoreButton}>
                     <Text style={styles.buttonText}>History & Awards</Text>
                 </Pressable>
-            </View>
+            </View> */}
             
             <View style={styles.content}>
                 <Text style={styles.title}>SIMAD Timeline</Text>

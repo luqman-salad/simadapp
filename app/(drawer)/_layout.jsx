@@ -45,28 +45,28 @@ export default function Layout() {
       }} />
       <Drawer.Screen name='message' options={{
         headerShown: false,
-        // title: "Message",
+        title: "Message",
         drawerIcon: ({ size, color }) => (
           <Ionicons name="information-circle-outline" size={size} color={color} />
         ),
       }} />
       <Drawer.Screen name='schools' options={{
         headerShown: false,
-        // title: "Schools",
+        title: "Schools",
         drawerIcon: ({ size, color }) => (
           <Ionicons name="bookmark-outline" size={size} color={color} />
         ),
       }} />
       <Drawer.Screen name='institutions' options={{
         headerShown: false,
-        // title: "Institutions",
+        title: "Institutions",
         drawerIcon: ({ size, color }) => (
           <Ionicons name="location-outline" size={size} color={color} />
         ),
       }} />
       <Drawer.Screen name='student' options={{
         headerShown: false,
-        // title: "Student",
+        title: "Student",
         drawerIcon: ({ size, color }) => (
           <Ionicons name="person-outline" size={size} color={color} />
         ),
@@ -89,7 +89,7 @@ export default function Layout() {
       
       <Drawer.Screen name='contact' options={{
         headerShown: false,
-        // title: "Contact",
+        title: "Contact",
         drawerIcon: ({ size, color }) => (
           <Ionicons name="call-outline" size={size} color={color} />
         ),

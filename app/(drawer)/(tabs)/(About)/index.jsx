@@ -11,32 +11,32 @@ const cardData = [
   {
     id: '1',
     title: 'Learn About SIMAD University in 5 min',
-    image: require('../../../../assets/images/fablab.jpg'), // Placeholder image 1
+    image: require('../../../../assets/images/simadMainCampus.png'), // Placeholder image 1
   },
   {
     id: '2',
     title: 'The Rector\'s Office',
-    image: require('../../../../assets/images/fablab.jpg'), // Placeholder image 2
+    image: require('../../../../assets/images/simadMeeting.png'), // Placeholder image 2
   },
   {
     id: '3',
     title: 'The Senate',
-    image: require('../../../../assets/images/fablab.jpg'), // Placeholder image 3
+    image: require('../../../../assets/images/simadMeeting2.png'), // Placeholder image 3
   },
   {
     id: '4',
     title: 'Vision and Purpose',
-    image: require('../../../../assets/images/fablab.jpg'), // Placeholder image 4
+    image: require('../../../../assets/images/missionvisinvalue.png'), // Placeholder image 4
   },
   {
     id: '5',
     title: 'History & Awards',
-    image: require('../../../../assets/images/fablab.jpg'), // Placeholder image 5
+    image: require('../../../../assets/images/simadAwards.png'), // Placeholder image 5
   },
   {
     id: '6',
     title: 'Accreditation, Ranking, & Memberships',
-    image: require('../../../../assets/images/fablab.jpg'), // Placeholder image 6
+    image: require('../../../../assets/images/simadAccreditation.png'), // Placeholder image 6
   },
 ];
 

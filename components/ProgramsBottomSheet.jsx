@@ -1,3 +1,4 @@
+import useTheme from '../hooks/usetheme';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
@@ -8,136 +9,131 @@ import {
     StyleSheet,
     Text,
     TouchableOpacity,
-    View,
-    ActivityIndicator,
-    Image
+    View
 } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import { getProgramsByCategoryId } from '../apis/academicProgramsApi';
-import useTheme from '../hooks/usetheme';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const MAX_SHEET_HEIGHT = SCREEN_HEIGHT * 0.9;
 const ITEM_HEIGHT = 80;
 const PADDING_BOTTOM = 40;
 
-const SchoolItem = ({ school, onClose }) => {
+const ProgramItem = ({ program, onToggleExpand, isExpanded, isSubItem = false, onClose }) => {
     const { colors } = useTheme();
     const styles = createStyle(colors);
+    // Map FontAwesome icons to Ionicons
+    const getIconName = (faIcon) => {
+        const iconMap = {
+            'fa-laptop-code': 'laptop-outline',
+            'fa-network-wired': 'wifi-outline',
+            'fa-photo-video': 'images-outline',
+            'fa-laptop': 'laptop-outline',
+            'fa-code': 'code-outline',
+            'fa-book': 'book-outline',
+            'fa-graduation-cap': 'school-outline',
+            'fa-flask': 'flask-outline',
+            'fa-briefcase': 'briefcase-outline',
+            'fa-calculator': 'calculator-outline',
+            'fa-balance-scale': 'scale-outline',
+            'fa-heart': 'heart-outline',
+            'fa-stethoscope': 'medical-outline',
+            'fa-pencil-alt': 'pencil-outline',
+            'fa-users': 'people-outline',
+            'fa-desktop': 'desktop-outline',
+            'fa-server': 'server-outline',
+            'fa-cash': 'cash-outline',
+            'fa-library': 'library-outline'
+        };
+        return iconMap[faIcon] || 'school-outline';
+    };
+
+    if (program.type === 'category') {
+        return (
+            <View style={styles.categoryContainer}>
+                <TouchableOpacity
+                    onPress={() => onToggleExpand(program.id)}
+                    style={styles.categoryHeader}
+                >
+                    <View style={styles.categoryInfo}>
+                        <Ionicons name="folder-open-outline" size={24} color="#6B7280" />
+                        <View style={{ marginLeft: 15 }}>
+                            <Text style={styles.categoryTitle}>{program.name}</Text>
+                            <Text style={styles.categoryCount}>
+                                {program.programs?.length || 0} Program{program.programs?.length !== 1 ? 's' : ''} available
+                            </Text>
+                        </View>
+                    </View>
+                    <Ionicons
+                        name={isExpanded ? 'chevron-up' : 'chevron-down'}
+                        size={20}
+                        color="#6B7280"
+                    />
+                </TouchableOpacity>
+                {isExpanded && program.programs && program.programs.length > 0 && (
+                    <View style={styles.subProgramsContainer}>
+                        {program.programs.map((subProgram) => (
+                            <ProgramItem
+                                key={subProgram.id}
+                                program={subProgram}
+                                isSubItem={true}
+                                onClose={onClose}
+                            />
+                        ))}
+                    </View>
+                )}
+            </View>
+        );
+    }
+
     return (
         <TouchableOpacity
-            style={styles.schoolItem}
+            style={[styles.programItem, isSubItem && styles.subProgramItem]}
             onPress={() => {
                 onClose();
-                router.push('/(screens)/ProgramsInfoScreen')
+                router.push('/(screens)/ProgramsInfoScreen');
             }}
         >
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                {school.logoUrl ? (
-                    <Image 
-                        source={{ uri: school.logoUrl }} 
-                        style={styles.schoolLogo} 
-                        resizeMode="contain" 
-                    />
-                ) : (
-                    <View style={styles.placeholderLogo}>
-                        <Ionicons name="school-outline" size={24} color="#6B7280" />
-                    </View>
-                )}
-                <Text style={styles.schoolText}>{school.name}</Text>
+                <Ionicons 
+                    name={getIconName(program.icon)} 
+                    size={24} 
+                    color="#6B7280" 
+                />
+                <Text style={styles.programText}>{program.name}</Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color="#6B7280" />
+            <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
         </TouchableOpacity>
     );
 };
 
-export default function ProgramsBottomSheet({ visible, onClose, categoryId }) {
+export default function ProgramsBottomSheet({ visible, onClose, programsData }) {
     const translateY = useSharedValue(SCREEN_HEIGHT);
     const opacity = useSharedValue(0);
     const contextY = useSharedValue(0);
     const [sheetHeight, setSheetHeight] = useState(0);
+    const [expandedCategoryId, setExpandedCategoryId] = useState(null);
 
     const { colors } = useTheme();
     const styles = createStyle(colors);
-    
-    const [schools, setSchools] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [categoryName, setCategoryName] = useState('');
 
-    // Fetch schools data when categoryId changes and sheet becomes visible
-    const fetchSchoolsData = useCallback(async () => {
-        if (!categoryId) return;
+    const calculateAndSetHeight = useCallback((idToExpand) => {
+        if (!programsData) return;
         
-        try {
-            setLoading(true);
-            setError(null);
-            const result = await getProgramsByCategoryId(categoryId);
-            
-            if (result?.success && result.data?.schools) {
-                setSchools(result.data.schools);
-                // Set category name based on the ID (you might want to fetch this from API)
-                setCategoryName(getCategoryName(categoryId));
-            } else {
-                throw new Error('No schools data received');
-            }
-        } catch (err) {
-            setError(err.message);
-            console.error('Error fetching schools:', err);
-        } finally {
-            setLoading(false);
-        }
-    }, [categoryId]);
-
-    // Helper function to get category name from ID
-    const getCategoryName = (id) => {
-        const categoryMap = {
-            '68d7be340d572b80fc72ecde': 'Postgraduate',
-            '68d7be410d572b80fc72ece1': 'Undergraduate', 
-            '68d7be570d572b80fc72ece4': 'Olearn'
-        };
-        return categoryMap[id] || 'Programs';
-    };
-
-    // Calculate sheet height based on schools data
-    const calculateAndSetHeight = useCallback(() => {
         const baseHeight = 150;
         let contentHeight = 0;
 
-        if (loading) {
-            contentHeight = ITEM_HEIGHT; // Height for loading indicator
-        } else if (error) {
-            contentHeight = ITEM_HEIGHT * 2; // Height for error message
-        } else if (schools.length > 0) {
-            contentHeight = schools.length * ITEM_HEIGHT;
-        } else {
-            contentHeight = ITEM_HEIGHT; // Height for empty state
-        }
+        programsData.subPrograms?.forEach((program) => {
+            contentHeight += ITEM_HEIGHT;
+            if (program.type === 'category' && program.id === idToExpand && program.programs) {
+                contentHeight += program.programs.length * ITEM_HEIGHT;
+            }
+        });
 
         const newHeight = baseHeight + contentHeight + PADDING_BOTTOM;
         setSheetHeight(Math.min(newHeight, MAX_SHEET_HEIGHT));
-    }, [schools, loading, error]);
+    }, [programsData]);
 
-    // Handle visibility and data fetching
-    useEffect(() => {
-        if (visible && categoryId) {
-            fetchSchoolsData();
-        } else {
-            // Reset states when closing
-            setSchools([]);
-            setLoading(true);
-            setError(null);
-            setCategoryName('');
-        }
-    }, [visible, categoryId, fetchSchoolsData]);
-
-    // Calculate height when data changes
-    useEffect(() => {
-        calculateAndSetHeight();
-    }, [calculateAndSetHeight]);
-
-    // Animate sheet when visible or height changes
     useEffect(() => {
         if (visible) {
             if (sheetHeight > 0) {
@@ -149,6 +145,15 @@ export default function ProgramsBottomSheet({ visible, onClose, categoryId }) {
             opacity.value = withSpring(0);
         }
     }, [visible, sheetHeight]);
+
+    useEffect(() => {
+        calculateAndSetHeight(expandedCategoryId);
+    }, [calculateAndSetHeight, expandedCategoryId]);
+
+    const handleToggleExpand = useCallback((categoryId) => {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        setExpandedCategoryId((prevId) => prevId === categoryId ? null : categoryId);
+    }, []);
 
     const panGesture = Gesture.Pan()
         .onStart(() => {
@@ -178,7 +183,7 @@ export default function ProgramsBottomSheet({ visible, onClose, categoryId }) {
         height: sheetHeight,
     }));
 
-    if (!visible || !categoryId) return null;
+    if (!visible || !programsData) return null;
 
     return (
         <>
@@ -189,14 +194,14 @@ export default function ProgramsBottomSheet({ visible, onClose, categoryId }) {
                 <GestureDetector gesture={panGesture}>
                     <Animated.View
                         style={{
-                            backgroundColor: '#F9FAFB',
+                            backgroundColor: colors.surface,
                             borderTopLeftRadius: 20,
                             borderTopRightRadius: 20,
                         }}
                     >
                         <View style={styles.handle} />
                         <View style={styles.header}>
-                            <Text style={styles.title}>{categoryName} Programs</Text>
+                            <Text style={styles.title}>{programsData.title}</Text>
                             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                                 <Ionicons name="close" size={24} color="#6B7280" />
                             </TouchableOpacity>
@@ -210,39 +215,21 @@ export default function ProgramsBottomSheet({ visible, onClose, categoryId }) {
                     bounces={false}
                     overScrollMode="never"
                 >
-                    {loading ? (
-                        <View style={styles.loadingContainer}>
-                            <ActivityIndicator size="large" color="#3B82F6" />
-                            <Text style={styles.loadingText}>Loading schools...</Text>
-                        </View>
-                    ) : error ? (
-                        <View style={styles.errorContainer}>
-                            <Ionicons name="alert-circle-outline" size={48} color="#EF4444" />
-                            <Text style={styles.errorText}>Failed to load schools</Text>
-                            <Text style={styles.errorDetail}>{error}</Text>
-                            <TouchableOpacity 
-                                style={styles.retryButton} 
-                                onPress={fetchSchoolsData}
-                            >
-                                <Text style={styles.retryText}>Try Again</Text>
-                            </TouchableOpacity>
-                        </View>
-                    ) : schools.length === 0 ? (
-                        <View style={styles.emptyContainer}>
-                            <Ionicons name="school-outline" size={48} color="#6B7280" />
-                            <Text style={styles.emptyText}>No schools available</Text>
-                            <Text style={styles.emptyDetail}>
-                                There are currently no schools for this category.
-                            </Text>
-                        </View>
-                    ) : (
-                        schools.map((school) => (
-                            <SchoolItem
-                                key={school._id}
-                                school={school}
+                    {programsData.subPrograms && programsData.subPrograms.length > 0 ? (
+                        programsData.subPrograms.map((program) => (
+                            <ProgramItem
+                                key={program.id}
+                                program={program}
+                                onToggleExpand={handleToggleExpand}
+                                isExpanded={program.id === expandedCategoryId}
                                 onClose={onClose}
                             />
                         ))
+                    ) : (
+                        <View style={styles.emptyContainer}>
+                            <Ionicons name="school-outline" size={48} color="#9CA3AF" />
+                            <Text style={styles.emptyText}>No programs available</Text>
+                        </View>
                     )}
                 </ScrollView>
             </Animated.View>
@@ -254,13 +241,13 @@ const createStyle = (colors) => {
   return StyleSheet.create({
     backdrop: {
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: colors.black,
+        backgroundColor: colors.shadow,
     },
     sheet: {
         position: 'absolute',
         left: 0,
         right: 0,
-        backgroundColor: colors.bg,
+        backgroundColor: colors.surface,
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
         shadowColor: '#000',
@@ -272,8 +259,8 @@ const createStyle = (colors) => {
     handle: {
         width: 40,
         height: 4,
-        backgroundColor: colors.text,
-        borderRadius: 12,
+        backgroundColor: colors.primary,
+        borderRadius: 2,
         alignSelf: 'center',
         marginTop: 12,
         marginBottom: 20,
@@ -286,6 +273,7 @@ const createStyle = (colors) => {
         paddingBottom: 16,
         borderBottomWidth: 1,
         borderBottomColor: colors.border,
+        backgroundColor: colors.surface,
     },
     title: {
         fontSize: 18,
@@ -294,7 +282,6 @@ const createStyle = (colors) => {
     },
     closeButton: {
         padding: 4,
-        color: colors.text
     },
     scrollView: {
         flex: 1,
@@ -303,93 +290,71 @@ const createStyle = (colors) => {
         padding: 20,
         paddingBottom: 40,
     },
-    schoolItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
+    categoryContainer: {
         backgroundColor: colors.surface,
-        borderRadius: 10,
-        padding: 16,
-        marginBottom: 10,
+        borderRadius: 15,
+        marginBottom: 15,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.05,
         shadowRadius: 3,
         elevation: 2,
     },
-    schoolLogo: {
-        width: 40,
-        height: 40,
-        borderRadius: 8,
-        marginRight: 12,
-    },
-    placeholderLogo: {
-        width: 40,
-        height: 40,
-        borderRadius: 8,
-        backgroundColor: colors.bg,
-        justifyContent: 'center',
+    categoryHeader: {
+        flexDirection: 'row',
         alignItems: 'center',
-        marginRight: 12,
+        justifyContent: 'space-between',
+        padding: 20,
     },
-    schoolText: {
-        fontSize: 16,
-        color: colors.text,
-        fontWeight: '500',
+    categoryInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
         flex: 1,
     },
-    loadingContainer: {
-        alignItems: 'center',
-        padding: 20,
-    },
-    loadingText: {
-        marginTop: 12,
+    categoryTitle: {
         fontSize: 16,
+        fontWeight: '600',
         color: colors.text,
     },
-    errorContainer: {
+    categoryCount: {
+        fontSize: 12,
+        color: colors.text,
+        marginTop: 2,
+    },
+    subProgramsContainer: {
+        paddingHorizontal: 20,
+        paddingBottom: 10,
+    },
+    programItem: {
+        flexDirection: 'row',
         alignItems: 'center',
-        padding: 20,
+        justifyContent: 'space-between',
+        backgroundColor: colors.bg,
+        borderRadius: 10,
+        padding: 15,
+        marginBottom: 10,
     },
-    errorText: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: colors.danger,
-        marginTop: 12,
-        marginBottom: 8,
+    subProgramItem: {
+        backgroundColor: colors.surface,
+        borderWidth: 1,
+        borderColor: colors.border,
+        marginLeft: 10,
     },
-    errorDetail: {
-        fontSize: 14,
-        color: colors.textMuted,
-        textAlign: 'center',
-        marginBottom: 20,
+    programText: {
+        marginLeft: 15,
+        fontSize: 15,
+        color: colors.text,
+        flex: 1,
     },
     emptyContainer: {
         alignItems: 'center',
-        padding: 20,
+        justifyContent: 'center',
+        paddingVertical: 40,
     },
     emptyText: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: colors.textMuted,
-        marginTop: 12,
-        marginBottom: 8,
-    },
-    emptyDetail: {
-        fontSize: 14,
-        color: colors.textMuted,
-        textAlign: 'center',
-    },
-    retryButton: {
-        backgroundColor: colors.secondary,
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-        borderRadius: 8,
-    },
-    retryText: {
-        color: colors.text,
         fontSize: 16,
-        fontWeight: '500',
+        color: colors.text,
+        marginTop: 12,
     },
 });
 }

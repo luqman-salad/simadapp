@@ -31,7 +31,7 @@ export default function AuthLayout() {
                 options={{
                     headerShown: false,
                     tabBarLabel: ({ focused }) => (
-                        <Text style={{ fontSize: 12, color: focused ? colors.secondary : colors.success, fontWeight: focused ? 'bold' : 'normal' }}>
+                        <Text style={{ fontSize: 12, color: focused ? colors.primary : colors.success, fontWeight: focused ? 'bold' : 'normal' }}>
                             Home
                         </Text>
                     ),
@@ -50,7 +50,7 @@ export default function AuthLayout() {
                 options={{
                     headerShown: false,
                     tabBarLabel: ({ focused }) => (
-                        <Text style={{ fontSize: 12, color: focused ? colors.secondary : colors.success, fontWeight: focused ? 'bold' : 'normal' }}>
+                        <Text style={{ fontSize: 12, color: focused ? colors.primary : colors.success, fontWeight: focused ? 'bold' : 'normal' }}>
                             About
                         </Text>
                     ),
@@ -68,7 +68,7 @@ export default function AuthLayout() {
                 options={{
                     headerShown: false,
                     tabBarLabel: ({ focused }) => (
-                        <Text style={{ fontSize: 12, color: focused ? colors.secondary : colors.success, fontWeight: focused ? 'bold' : 'normal' }}>
+                        <Text style={{ fontSize: 12, color: focused ? colors.primary : colors.success, fontWeight: focused ? 'bold' : 'normal' }}>
                             Updates
                         </Text>
                     ),
@@ -86,7 +86,7 @@ export default function AuthLayout() {
                 options={{
                     headerShown: false,
                     tabBarLabel: ({ focused }) => (
-                        <Text style={{ fontSize: 12, color: focused ? colors.secondary : colors.success, fontWeight: focused ? 'bold' : 'normal' }}>
+                        <Text style={{ fontSize: 12, color: focused ? colors.primary : colors.success, fontWeight: focused ? 'bold' : 'normal' }}>
                             Settings
                         </Text>
                     ),

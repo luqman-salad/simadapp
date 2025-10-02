@@ -1,6 +1,16 @@
 // apis/programApis.js
 import apiClient from "./apiClient";
 
+
+export const getAvailableProgramsInfo = async () => {
+  try {
+    const response = await apiClient.get("/programs/getAvaliableProgramsInfo");
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getProgramsCategories = async () => {
   try {
     const response = await apiClient.get("/program-categories");

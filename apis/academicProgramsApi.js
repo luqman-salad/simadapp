@@ -28,3 +28,13 @@ export const getProgramsByCategoryId = async (categoryId) => {
     throw error;
   }
 };
+
+
+export const getProgramInfoById = async (programId) => {
+  try {
+    const response = await apiClient.get(`/programs/getProgramsInfoByID/${programId}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

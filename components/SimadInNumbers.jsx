@@ -1,95 +1,264 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, Animated, Dimensions, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import useTheme from '../hooks/usetheme';
+import { getUniversityStats } from '../apis/simadInNumbersApi';
 
-// Import your icons. Remember to replace these with your actual image file paths.
-import graduatesIcon from '../assets/images/react-logo.png';
-import studentsIcon from '../assets/images/react-logo.png';
-import schoolsIcon from '../assets/images/react-logo.png';
-import campusesIcon from '../assets/images/react-logo.png';
-import programsIcon from '../assets/images/react-logo.png';
-import labsIcon from '../assets/images/react-logo.png';
-import relationsIcon from '../assets/images/react-logo.png';
+const { width } = Dimensions.get('window');
 
-const timelineData = [
-  {
-    id: '1',
-    number: '8400+',
-    description: 'Graduates',
-    icon: graduatesIcon,
-    position: 'left',
-  },
-  {
-    id: '2',
-    number: '4500+',
-    description: 'Students',
-    icon: studentsIcon,
-    position: 'right',
-  },
-  {
-    id: '3',
-    number: '9+',
-    description: 'Schools',
-    icon: schoolsIcon,
-    position: 'left',
-  },
-  {
-    id: '4',
-    number: '2',
-    description: 'Campuses',
-    icon: campusesIcon,
-    position: 'right',
-  },
-  {
-    id: '5',
-    number: '40+',
-    description: 'Programs',
-    icon: programsIcon,
-    position: 'left',
-  },
-  {
-    id: '6',
-    number: '8+',
-    description: 'Labs',
-    icon: labsIcon,
-    position: 'right',
-  },
-  {
-    id: '7',
-    number: '25+',
-    description: 'Inter-Relations',
-    icon: relationsIcon,
-    position: 'left',
-  },
-];
+const StatCard = ({ item, index, animation }) => {
+  const { colors } = useTheme();
+  const styles = createStyle(colors);
+  
+  const translateY = animation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [50, 0],
+  });
 
-const TimelineCard = ({ item, styles, isLeft }) => (
-  <View style={isLeft ? styles.cardContainerLeft : styles.cardContainerRight}>
-    <View style={styles.card}>
-      {isLeft && <Image source={item.icon} style={styles.cardIcon} />}
-      <View style={[styles.textColumn, isLeft && styles.textColumnLeft]}>
-        <Text style={styles.cardNumber}>{item.number}</Text>
-        <Text style={styles.cardDescription}>{item.description}</Text>
-      </View>
-      {!isLeft && <Image source={item.icon} style={styles.cardIcon} />}
-    </View>
-  </View>
-);
+  const opacity = animation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 1],
+  });
 
-export default function PerfectTimeline() {
+  return (
+    <Animated.View 
+      style={[
+        styles.statCard,
+        {
+          transform: [{ translateY }],
+          opacity,
+        }
+      ]}
+    >
+      <LinearGradient
+        colors={[colors.primary + '20', colors.primary + '10']}
+        style={styles.cardGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <View style={styles.cardContent}>
+          <View style={styles.iconContainer}>
+            <Ionicons name={item.icon} size={32} color={colors.primary} />
+          </View>
+          <View style={styles.textContainer}>
+            <Text style={styles.statNumber}>{item.number}</Text>
+            <Text style={styles.statLabel}>{item.description}</Text>
+          </View>
+          <View style={styles.decorationCircle} />
+        </View>
+      </LinearGradient>
+    </Animated.View>
+  );
+};
+
+const AnimatedCounter = ({ value, duration = 2000 }) => {
+  const [animatedValue] = useState(new Animated.Value(0));
   const { colors } = useTheme();
   const styles = createStyle(colors);
 
+  useEffect(() => {
+    const numericValue = parseFloat(value) || 0;
+    Animated.timing(animatedValue, {
+      toValue: numericValue,
+      duration,
+      useNativeDriver: true,
+    }).start();
+  }, [value]);
+
+  const animatedText = animatedValue.interpolate({
+    inputRange: [0, parseFloat(value) || 0],
+    outputRange: ['0', value],
+  });
+
   return (
-      <View style={styles.timelineWrapper}>
-        <View style={styles.timelineLine} />
-        {timelineData.map((item, index) => (
-          <View key={item.id} style={styles.timelineItem}>
-            <TimelineCard item={item} styles={styles} isLeft={item.position === 'left'} />
-            <View style={styles.timelineDot} />
-          </View>
-        ))}
+    <Animated.Text style={styles.heroNumber}>
+      {animatedValue._value}
+    </Animated.Text>
+  );
+};
+
+export default function UniversityStats() {
+  const { colors } = useTheme();
+  const styles = createStyle(colors);
+  const [statsData, setStatsData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [animations] = useState(() => 
+    Array(7).fill(0).map(() => new Animated.Value(0))
+  );
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  useEffect(() => {
+    if (statsData.length > 0) {
+      Animated.stagger(100, animations.map(anim => 
+        Animated.spring(anim, {
+          toValue: 1,
+          tension: 50,
+          friction: 7,
+          useNativeDriver: true,
+        })
+      )).start();
+    }
+  }, [statsData]);
+
+  const fetchStats = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await getUniversityStats();
+      
+      if (response.success && response.data) {
+        const transformedData = [
+          {
+            id: '1',
+            number: response.data.totalAlumniStudents,
+            description: 'Graduates',
+            icon: 'school-outline',
+          },
+          {
+            id: '2',
+            number: response.data.totalCurrentStudents,
+            description: 'Students',
+            icon: 'people-outline',
+          },
+          {
+            id: '3',
+            number: response.data.schoolsNumber,
+            description: 'Schools',
+            icon: 'business-outline',
+          },
+          {
+            id: '4',
+            number: response.data.totalCampuses,
+            description: 'Campuses',
+            icon: 'location-outline',
+          },
+          {
+            id: '5',
+            number: response.data.programsNumber,
+            description: 'Programs',
+            icon: 'library-outline',
+          },
+          {
+            id: '6',
+            number: response.data.totalLabs,
+            description: 'Labs',
+            icon: 'flask-outline',
+          },
+          {
+            id: '7',
+            number: response.data.partnersNumber,
+            description: 'Partners',
+            icon: 'hand-left-outline',
+          },
+        ];
+        setStatsData(transformedData);
+      } else {
+        throw new Error('Failed to load university stats');
+      }
+    } catch (err) {
+      console.error('Error fetching stats:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRetry = () => {
+    fetchStats();
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <LinearGradient
+          colors={[colors.primary, colors.secondary]}
+          style={styles.heroSection}
+        >
+          <Text style={styles.heroTitle}>University Stats</Text>
+          <Text style={styles.heroSubtitle}>Loading amazing numbers...</Text>
+        </LinearGradient>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.loadingText}>Loading university statistics...</Text>
+        </View>
       </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <LinearGradient
+          colors={[colors.primary, colors.secondary]}
+          style={styles.heroSection}
+        >
+          <Text style={styles.heroTitle}>University Stats</Text>
+          <Text style={styles.heroSubtitle}>Something went wrong</Text>
+        </LinearGradient>
+        <View style={styles.errorContainer}>
+          <Ionicons name="alert-circle-outline" size={64} color={colors.error} />
+          <Text style={styles.errorText}>Unable to load data</Text>
+          <Text style={styles.errorDetail}>{error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
+            <Text style={styles.retryText}>Try Again</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <LinearGradient
+        colors={[colors.primary, colors.secondary]}
+        style={styles.heroSection}
+      >
+        <Text style={styles.heroTitle}>SIMAD in Numbers</Text>
+        <Text style={styles.heroSubtitle}>Our impact and achievements</Text>
+        <View style={styles.heroStats}>
+          <View style={styles.heroStat}>
+            <Text style={styles.heroNumber}>{statsData[0]?.number}</Text>
+            <Text style={styles.heroLabel}>Graduates</Text>
+          </View>
+          <View style={styles.heroDivider} />
+          <View style={styles.heroStat}>
+            <Text style={styles.heroNumber}>{statsData[1]?.number}</Text>
+            <Text style={styles.heroLabel}>Active Students</Text>
+          </View>
+        </View>
+      </LinearGradient>
+
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.statsGrid}>
+          {statsData.map((item, index) => (
+            <StatCard 
+              key={item.id} 
+              item={item} 
+              index={index}
+              animation={animations[index]}
+            />
+          ))}
+        </View>
+
+        <View style={styles.footer}>
+          <Ionicons name="trophy-outline" size={48} color={colors.primary} />
+          <Text style={styles.footerTitle}>Excellence in Education</Text>
+          <Text style={styles.footerText}>
+            These numbers represent our commitment to providing quality education 
+            and creating opportunities for our students and community.
+          </Text>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -98,90 +267,186 @@ const createStyle = (colors) => {
     container: {
       flex: 1,
       backgroundColor: colors.bg,
-      paddingVertical: 20,
     },
-    timelineWrapper: {
-      position: 'relative',
+    heroSection: {
+      paddingTop: 60,
+      paddingBottom: 30,
       paddingHorizontal: 20,
+      borderBottomLeftRadius: 30,
+      borderBottomRightRadius: 30,
     },
-    timelineLine: {
-      position: 'absolute',
-      left: '50%',
-      width: 4,
-      backgroundColor: colors.primary,
-      top: 0,
-      bottom: 0,
-      borderRadius: 2,
-      marginLeft: 10,
+    heroTitle: {
+      fontSize: 32,
+      fontWeight: 'bold',
+      color: colors.white,
+      textAlign: 'center',
+      marginBottom: 8,
     },
-    timelineItem: {
+    heroSubtitle: {
+      fontSize: 16,
+      color: colors.white + 'CC',
+      textAlign: 'center',
+      marginBottom: 30,
+    },
+    heroStats: {
       flexDirection: 'row',
+      justifyContent: 'center',
       alignItems: 'center',
-      marginBottom: 0,
-      minHeight: 100,
     },
-    timelineDot: {
-      width: 16,
-      height: 16,
-      borderRadius: 8,
-      backgroundColor: colors.primary,
-      position: 'absolute',
-      left: '50%',
-      marginLeft: -15,
-      zIndex: 1,
-    },
-    cardContainerLeft: {
+    heroStat: {
+      alignItems: 'center',
       flex: 1,
-      paddingRight: 15,
-      alignItems: 'flex-end',
     },
-    cardContainerRight: {
+    heroNumber: {
+      fontSize: 36,
+      fontWeight: 'bold',
+      color: colors.white,
+      marginBottom: 4,
+    },
+    heroLabel: {
+      fontSize: 14,
+      color: colors.white + 'CC',
+      fontWeight: '500',
+    },
+    heroDivider: {
+      width: 2,
+      height: 40,
+      backgroundColor: colors.border + '4D',
+      marginHorizontal: 20,
+    },
+    scrollView: {
       flex: 1,
-      paddingLeft: -20,
-      alignItems: 'flex-start',
     },
-    card: {
+    scrollContent: {
+      padding: 20,
+      paddingBottom: 40,
+    },
+    statsGrid: {
       flexDirection: 'row',
-      backgroundColor: colors.surface,
-      borderRadius: 12,
-      paddingVertical: 15,
-      paddingHorizontal: 8,
-      width: 150,
-      alignItems: 'center',
+      flexWrap: 'wrap',
       justifyContent: 'space-between',
-      shadowColor: '#000',
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-      shadowOpacity: 0.1,
-      shadowRadius: 3.84,
+    },
+    statCard: {
+      width: (width - 60) / 2,
+      height: 140,
+      marginBottom: 20,
+      borderRadius: 20,
+      overflow: 'hidden',
+    },
+    cardGradient: {
+      flex: 1,
+      borderRadius: 20,
+    },
+    cardContent: {
+      flex: 1,
+      padding: 16,
+      justifyContent: 'space-between',
+      backgroundColor: colors.surface,
+      // borderWidth: 1,
+      // borderColor: colors.border,
+      marginRight: 5
+    },
+    iconContainer: {
+      width: 50,
+      height: 50,
+      borderRadius: 25,
+      backgroundColor: colors.white,
+      justifyContent: 'center',
+      alignItems: 'center',
+      shadowColor: colors.primary,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
       elevation: 5,
     },
-    textColumn: {
-      flex: 1,
-      marginLeft: 10,
+    textContainer: {
+      marginTop: 8,
     },
-    textColumnLeft: {
-      marginRight: 10,
-      marginLeft: 0,
-      alignItems: 'flex-end',
-    },
-    cardNumber: {
-      fontSize: 18,
-      fontWeight: '700',
+    statNumber: {
+      fontSize: 20,
+      fontWeight: 'bold',
       color: colors.text,
       marginBottom: 2,
     },
-    cardDescription: {
-      fontSize: 13,
+    statLabel: {
+      fontSize: 12,
       color: colors.text,
       fontWeight: '500',
     },
-    cardIcon: {
-      width: 45,
-      height: 45,
-      resizeMode: 'contain',
+    decorationCircle: {
+      position: 'absolute',
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      backgroundColor: colors.primary + '15',
+      top: -20,
+      right: -20,
+    },
+    footer: {
+      alignItems: 'center',
+      padding: 30,
+      backgroundColor: colors.surface,
+      borderRadius: 20,
+      marginTop: 10,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 8,
+      elevation: 3,
+    },
+    footerTitle: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      color: colors.text,
+      marginTop: 16,
+      marginBottom: 8,
+    },
+    footerText: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      lineHeight: 20,
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 40,
+    },
+    loadingText: {
+      marginTop: 16,
+      fontSize: 16,
+      color: colors.text,
+    },
+    errorContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 40,
+    },
+    errorText: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      color: colors.error,
+      marginTop: 16,
+      marginBottom: 8,
+    },
+    errorDetail: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      marginBottom: 24,
+    },
+    retryButton: {
+      backgroundColor: colors.primary,
+      paddingHorizontal: 24,
+      paddingVertical: 12,
+      borderRadius: 25,
+    },
+    retryText: {
+      color: colors.white,
+      fontSize: 16,
+      fontWeight: '600',
     },
   });
 };

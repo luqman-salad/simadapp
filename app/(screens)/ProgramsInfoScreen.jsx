@@ -1,65 +1,12 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
 import { Header } from '../../components/Headrer';
 import useTheme from '../../hooks/usetheme';
-
-const departmentDetails = {
-    title: 'Computer Science Program',
-    subtitle: 'Your journey into the future of technology starts here.',
-    about: 'Our Bachelor of Computer Science program provides a strong foundation in the theoretical principles and practical application of computing. You will learn to think critically, solve complex problems, and innovate across various technological domains. The curriculum is designed to be rigorous, up-to-date, and globally competitive, preparing you for a successful career or further academic pursuits.',
-    fees: {
-        semester: '$1,200',
-        duration: '4 Years',
-    },
-    curriculum: [
-        {
-            title: 'Programming Fundamentals',
-            subtitle: 'Master core programming concepts and languages like Python, Java, and C++ to build a solid foundation.',
-            icon: 'code-tags',
-        },
-        {
-            title: 'Data & Algorithms',
-            subtitle: 'Study data structures, algorithm design, and computational theory, which are essential for solving complex problems efficiently.',
-            icon: 'database',
-        },
-        {
-            title: 'Computer Systems & Architecture',
-            subtitle: 'Understand the inner workings of computers, including operating systems, networking, and hardware principles.',
-            icon: 'desktop-classic',
-        },
-    ],
-    admissions: [
-        'Completion of a recognized high school diploma or equivalent.',
-        'Strong academic performance in mathematics and science-related subjects.',
-        'Submission of a completed application form with all required documents.',
-        "Successful completion of the university's entrance examination.",
-        'A personal statement outlining your passion for technology and computer science.',
-    ],
-    careers: [
-        {
-            title: 'Software Engineer',
-            subtitle: 'Design, develop, and maintain software applications and systems.',
-            icon: 'monitor-edit',
-        },
-        {
-            title: 'Data Scientist',
-            subtitle: 'Analyze complex datasets to extract insights and drive data-driven decisions.',
-            icon: 'chart-line',
-        },
-        {
-            title: 'Cybersecurity Analyst',
-            subtitle: 'Protect networks and systems from malicious cyberattacks and threats.',
-            icon: 'shield-lock',
-        },
-        {
-            title: 'Cloud Engineer',
-            subtitle: 'Design and manage cloud infrastructure on platforms like AWS, Azure, and Google Cloud.',
-            icon: 'cloud',
-        },
-    ],
-};
+import { getProgramInfoById } from '../../apis/academicProgramsApi';
+import { useEffect, useState } from 'react';
+import { useLocalSearchParams } from 'expo-router';
 
 const SectionHeader = ({ iconName, iconColor, title, subtitle }) => {
     const { colors } = useTheme();
@@ -97,11 +44,123 @@ const DepartmentDetails = () => {
     const { colors } = useTheme();
     const styles = createStyle(colors);
     const navigation = useNavigation();
+    const { programId } = useLocalSearchParams();
+    
+    const [programData, setProgramData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    // Map FontAwesome icons to MaterialCommunityIcons
+    const getMaterialIconName = (faIcon) => {
+        const iconMap = {
+            'fa-info-circle': 'information-outline',
+            'fa-book': 'book-open-variant',
+            'fa-university': 'school-outline',
+            'fa-briefcase': 'briefcase-outline',
+            'fa-clock': 'clock-outline',
+            'fa-dollar-sign': 'currency-usd',
+            'fa-code': 'code-tags',
+            'fa-project-diagram': 'chart-tree',
+            'fa-laptop-code': 'monitor-edit',
+            'fa-robot': 'robot-outline'
+        };
+        return iconMap[faIcon] || 'information-outline';
+    };
+
+    useEffect(() => {
+        if (programId) {
+            fetchProgramData();
+        }
+    }, [programId]);
+
+    const fetchProgramData = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const response = await getProgramInfoById(programId);
+            
+            if (response.success && response.data?.program) {
+                setProgramData(response.data.program);
+            } else {
+                throw new Error('Program data not found');
+            }
+        } catch (err) {
+            console.error('Error fetching program data:', err);
+            setError(err.message || 'Failed to load program details');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleRetry = () => {
+        fetchProgramData();
+    };
+
+    if (loading) {
+        return (
+            <View style={styles.container}>
+                <Header
+                    title="Program Details"
+                    showLeftIcon
+                    leftIconName="chevron-back"
+                    onLeftIconPress={() => navigation.goBack()}
+                />
+                <View style={styles.center}>
+                    <ActivityIndicator size="large" color={colors.primary} />
+                    <Text style={styles.loadingText}>Loading program details...</Text>
+                </View>
+            </View>
+        );
+    }
+
+    if (error) {
+        return (
+            <View style={styles.container}>
+                <Header
+                    title="Program Details"
+                    showLeftIcon
+                    leftIconName="chevron-back"
+                    onLeftIconPress={() => navigation.goBack()}
+                />
+                <View style={styles.center}>
+                    <MaterialCommunityIcons name="alert-circle-outline" size={64} color={colors.error} />
+                    <Text style={styles.errorText}>Unable to Load Program</Text>
+                    <Text style={styles.errorDetail}>{error}</Text>
+                    <Pressable style={styles.retryButton} onPress={handleRetry}>
+                        <Text style={styles.retryText}>Try Again</Text>
+                    </Pressable>
+                </View>
+            </View>
+        );
+    }
+
+    if (!programData) {
+        return (
+            <View style={styles.container}>
+                <Header
+                    title="Program Details"
+                    showLeftIcon
+                    leftIconName="chevron-back"
+                    onLeftIconPress={() => navigation.goBack()}
+                />
+                <View style={styles.center}>
+                    <MaterialCommunityIcons name="school-outline" size={64} color={colors.textSecondary} />
+                    <Text style={styles.emptyText}>Program Not Found</Text>
+                    <Text style={styles.emptyDetail}>
+                        The program you're looking for is not available.
+                    </Text>
+                    <Pressable style={styles.retryButton} onPress={() => navigation.goBack()}>
+                        <Text style={styles.retryText}>Go Back</Text>
+                    </Pressable>
+                </View>
+            </View>
+        );
+    }
 
     return (
         <View style={styles.container}>
             <Header
-                title="CS Program"
+                title={programData.title || "Program Details"}
                 showLeftIcon
                 leftIconName="chevron-back"
                 onLeftIconPress={() => navigation.goBack()}
@@ -112,84 +171,98 @@ const DepartmentDetails = () => {
                     colors={[colors.primary, colors.secondary]}
                     style={styles.departmentHeader}
                 >
-                    <Text style={styles.departmentTitle}>{departmentDetails.title}</Text>
-                    <Text style={styles.departmentSubtitle}>{departmentDetails.subtitle}</Text>
+                    <Text style={styles.departmentTitle}>{programData.title}</Text>
+                    <Text style={styles.departmentSubtitle}>{programData.subtitle}</Text>
                 </LinearGradient>
 
-
-                <View style={styles.cardSection}>
-                    <SectionHeader
-                        iconName="book-open-variant"
-                        iconColor={colors.primary}
-                        title="About the Program"
-                    />
-                    <Text style={styles.aboutText}>{departmentDetails.about}</Text>
-                    {/* New container for fee and duration */}
-                    <View style={styles.feeInfoContainer}>
-                        <View style={styles.feeInfoCard}>
-                            <MaterialCommunityIcons name="currency-usd" size={24} color={colors.text} />
-                            <Text style={styles.feeTitle}>Semester Fee</Text>
-                            <Text style={styles.feeValue}>{departmentDetails.fees.semester}</Text>
-                        </View>
-                        <View style={styles.feeInfoCard}>
-                            <MaterialCommunityIcons name="clock-outline" size={24} color={colors.text} />
-                            <Text style={styles.feeTitle}>Duration</Text>
-                            <Text style={styles.feeValue}>{departmentDetails.fees.duration}</Text>
-                        </View>
-                    </View>
-                </View>
-
-                <View style={styles.cardSection}>
-                    <SectionHeader
-                        iconName="format-list-checks"
-                        iconColor={colors.primary}
-                        title="Curriculum Highlights"
-                        subtitle="The program is structured to provide a comprehensive and hands-on learning experience. Key areas of study include:"
-                    />
-                    {departmentDetails.curriculum.map((item, index) => (
-                        <CurriculumCard
-                            key={index}
-                            iconName={item.icon}
-                            title={item.title}
-                            subtitle={item.subtitle}
+                {/* About Section */}
+                {programData.about && (
+                    <View style={styles.cardSection}>
+                        <SectionHeader
+                            iconName="book-open-variant"
+                            iconColor={colors.primary}
+                            title={programData.about.title || "About the Program"}
                         />
-                    ))}
-                </View>
-
-                <View style={styles.cardSection}>
-                    <SectionHeader
-                        iconName="clipboard-list-outline"
-                        iconColor={colors.secondary}
-                        title="Admission Requirements"
-                        subtitle="To be considered for admission, applicants must meet the following criteria:"
-                    />
-                    <View style={styles.requirementsList}>
-                        {departmentDetails.admissions.map((item, index) => (
-                            <View key={index} style={styles.requirementItem}>
-                                <Text style={styles.bullet}>•</Text>
-                                <Text style={styles.requirementText}>{item}</Text>
+                        <Text style={styles.aboutText}>{programData.about.subtitle}</Text>
+                        {/* Fee and Duration Container */}
+                        {programData.fees && (
+                            <View style={styles.feeInfoContainer}>
+                                <View style={styles.feeInfoCard}>
+                                    <MaterialCommunityIcons name="currency-usd" size={24} color={colors.text} />
+                                    <Text style={styles.feeTitle}>Semester Fee</Text>
+                                    <Text style={styles.feeValue}>{programData.fees.semester}</Text>
+                                </View>
+                                <View style={styles.feeInfoCard}>
+                                    <MaterialCommunityIcons name="clock-outline" size={24} color={colors.text} />
+                                    <Text style={styles.feeTitle}>Duration</Text>
+                                    <Text style={styles.feeValue}>{programData.fees.duration}</Text>
+                                </View>
                             </View>
+                        )}
+                    </View>
+                )}
+
+                {/* Curriculum Section */}
+                {programData.curriculum && programData.curriculum.list && (
+                    <View style={styles.cardSection}>
+                        <SectionHeader
+                            iconName="format-list-checks"
+                            iconColor={colors.primary}
+                            title={programData.curriculum.title || "Curriculum Highlights"}
+                            subtitle={programData.curriculum.subtitle}
+                        />
+                        {programData.curriculum.list.map((item, index) => (
+                            <CurriculumCard
+                                key={index}
+                                iconName={getMaterialIconName(item.icon)}
+                                title={item.title}
+                                subtitle={item.subtitle}
+                            />
                         ))}
                     </View>
-                </View>
+                )}
 
-                <View style={styles.cardSection}>
-                    <SectionHeader
-                        iconName="briefcase-outline"
-                        iconColor={colors.tertiary}
-                        title="Career Paths"
-                    />
-                    <Text style={styles.careerIntroText}>A Computer Science degree opens up a vast number of high-demand career opportunities across a wide range of industries. Graduates are prepared for roles such as:</Text>
-                    {departmentDetails.careers.map((item, index) => (
-                        <CurriculumCard
-                            key={index}
-                            iconName={item.icon}
-                            title={item.title}
-                            subtitle={item.subtitle}
+                {/* Admissions Section */}
+                {programData.admissions && (
+                    <View style={styles.cardSection}>
+                        <SectionHeader
+                            iconName="clipboard-list-outline"
+                            iconColor={colors.secondary}
+                            title={programData.admissions.title || "Admission Requirements"}
+                            subtitle={programData.admissions.subtitle}
                         />
-                    ))}
-                </View>
+                        <View style={styles.requirementsList}>
+                            {programData.admissions.list?.map((item, index) => (
+                                <View key={index} style={styles.requirementItem}>
+                                    <Text style={styles.bullet}>•</Text>
+                                    <Text style={styles.requirementText}>{item}</Text>
+                                </View>
+                            ))}
+                        </View>
+                    </View>
+                )}
 
+                {/* Careers Section */}
+                {programData.careers && programData.careers.list && (
+                    <View style={styles.cardSection}>
+                        <SectionHeader
+                            iconName="briefcase-outline"
+                            iconColor={colors.tertiary}
+                            title={programData.careers.title || "Career Paths"}
+                        />
+                        <Text style={styles.careerIntroText}>{programData.careers.subtitle}</Text>
+                        {programData.careers.list.map((item, index) => (
+                            <CurriculumCard
+                                key={index}
+                                iconName={getMaterialIconName(item.icon)}
+                                title={item.title}
+                                subtitle={item.subtitle}
+                            />
+                        ))}
+                    </View>
+                )}
+
+                {/* CTA Section */}
                 <LinearGradient colors={[colors.secondary, colors.primary]} style={[styles.ctaCard, { backgroundColor: colors.primary }]}>
                     <Text style={styles.ctaTitle}>Ready to Start Your Journey?</Text>
                     <Text style={styles.ctaSubtitle}>Join our community of innovators and start building your future today.</Text>
@@ -378,8 +451,61 @@ const createStyle = (colors) => {
             fontSize: 16,
             fontWeight: 'bold',
         },
+        // Loading and Error States
+        center: {
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: 20,
+        },
+        loadingText: {
+            marginTop: 10,
+            color: colors.text,
+            fontSize: 16,
+        },
+        errorText: {
+            color: colors.error,
+            fontSize: 20,
+            fontWeight: 'bold',
+            textAlign: 'center',
+            marginBottom: 10,
+            marginTop: 10,
+        },
+        errorDetail: {
+            color: colors.textSecondary,
+            fontSize: 14,
+            textAlign: 'center',
+            marginBottom: 20,
+            lineHeight: 20,
+        },
+        emptyText: {
+            color: colors.textSecondary,
+            fontSize: 20,
+            fontWeight: 'bold',
+            textAlign: 'center',
+            marginBottom: 10,
+            marginTop: 10,
+        },
+        emptyDetail: {
+            color: colors.textSecondary,
+            fontSize: 14,
+            textAlign: 'center',
+            marginBottom: 20,
+            lineHeight: 20,
+        },
+        retryButton: {
+            backgroundColor: colors.primary,
+            paddingHorizontal: 24,
+            paddingVertical: 12,
+            borderRadius: 8,
+            marginTop: 10,
+        },
+        retryText: {
+            color: colors.white,
+            fontSize: 16,
+            fontWeight: '500',
+        },
     });
 };
 
 export default DepartmentDetails;
-

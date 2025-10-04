@@ -22,6 +22,7 @@ const PADDING_BOTTOM = 40;
 const ProgramItem = ({ program, onToggleExpand, isExpanded, isSubItem = false, onClose }) => {
     const { colors } = useTheme();
     const styles = createStyle(colors);
+    
     // Map FontAwesome icons to Ionicons
     const getIconName = (faIcon) => {
         const iconMap = {
@@ -46,6 +47,15 @@ const ProgramItem = ({ program, onToggleExpand, isExpanded, isSubItem = false, o
             'fa-library': 'library-outline'
         };
         return iconMap[faIcon] || 'school-outline';
+    };
+
+    const handleProgramPress = () => {
+        onClose();
+        // Pass the program ID to the ProgramsInfoScreen
+        router.push({
+            pathname: '/(screens)/ProgramsInfoScreen',
+            params: { programId: program.id }
+        });
     };
 
     if (program.type === 'category') {
@@ -89,10 +99,7 @@ const ProgramItem = ({ program, onToggleExpand, isExpanded, isSubItem = false, o
     return (
         <TouchableOpacity
             style={[styles.programItem, isSubItem && styles.subProgramItem]}
-            onPress={() => {
-                onClose();
-                router.push('/(screens)/ProgramsInfoScreen');
-            }}
+            onPress={handleProgramPress}
         >
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Ionicons 

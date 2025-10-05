@@ -167,13 +167,21 @@ const DepartmentDetails = () => {
             />
 
             <ScrollView contentContainerStyle={styles.scrollViewContent}>
-                <LinearGradient
-                    colors={[colors.primary, colors.secondary]}
-                    style={styles.departmentHeader}
-                >
-                    <Text style={styles.departmentTitle}>{programData.title}</Text>
-                    <Text style={styles.departmentSubtitle}>{programData.subtitle}</Text>
-                </LinearGradient>
+                {/* Safe LinearGradient with fallback */}
+                {colors.primary && colors.secondary ? (
+                    <LinearGradient
+                        colors={[colors.primary, colors.secondary]}
+                        style={styles.departmentHeader}
+                    >
+                        <Text style={styles.departmentTitle}>{programData.title}</Text>
+                        <Text style={styles.departmentSubtitle}>{programData.subtitle}</Text>
+                    </LinearGradient>
+                ) : (
+                    <View style={[styles.departmentHeader, { backgroundColor: colors.primary || '#0066cc' }]}>
+                        <Text style={styles.departmentTitle}>{programData.title}</Text>
+                        <Text style={styles.departmentSubtitle}>{programData.subtitle}</Text>
+                    </View>
+                )}
 
                 {/* About Section */}
                 {programData.about && (
@@ -227,7 +235,7 @@ const DepartmentDetails = () => {
                     <View style={styles.cardSection}>
                         <SectionHeader
                             iconName="clipboard-list-outline"
-                            iconColor={colors.secondary}
+                            iconColor={colors.primary}
                             title={programData.admissions.title || "Admission Requirements"}
                             subtitle={programData.admissions.subtitle}
                         />
@@ -247,7 +255,7 @@ const DepartmentDetails = () => {
                     <View style={styles.cardSection}>
                         <SectionHeader
                             iconName="briefcase-outline"
-                            iconColor={colors.tertiary}
+                            iconColor={colors.primary}
                             title={programData.careers.title || "Career Paths"}
                         />
                         <Text style={styles.careerIntroText}>{programData.careers.subtitle}</Text>
@@ -262,15 +270,27 @@ const DepartmentDetails = () => {
                     </View>
                 )}
 
-                {/* CTA Section */}
-                <LinearGradient colors={[colors.secondary, colors.primary]} style={[styles.ctaCard, { backgroundColor: colors.primary }]}>
-                    <Text style={styles.ctaTitle}>Ready to Start Your Journey?</Text>
-                    <Text style={styles.ctaSubtitle}>Join our community of innovators and start building your future today.</Text>
-                    <Pressable style={({ pressed }) => [styles.applyButton, { opacity: pressed ? 0.8 : 1 }]}>
-                        <Text style={styles.applyButtonText}>Apply Now</Text>
-                    </Pressable>
-                </LinearGradient>
-
+                {/* CTA Section with safe LinearGradient */}
+                {colors.primary && colors.secondary ? (
+                    <LinearGradient 
+                        colors={[colors.secondary, colors.primary]} 
+                        style={styles.ctaCard}
+                    >
+                        <Text style={styles.ctaTitle}>Ready to Start Your Journey?</Text>
+                        <Text style={styles.ctaSubtitle}>Join our community of innovators and start building your future today.</Text>
+                        <Pressable style={({ pressed }) => [styles.applyButton, { opacity: pressed ? 0.8 : 1 }]}>
+                            <Text style={styles.applyButtonText}>Apply Now</Text>
+                        </Pressable>
+                    </LinearGradient>
+                ) : (
+                    <View style={[styles.ctaCard, { backgroundColor: colors.primary || '#0066cc' }]}>
+                        <Text style={styles.ctaTitle}>Ready to Start Your Journey?</Text>
+                        <Text style={styles.ctaSubtitle}>Join our community of innovators and start building your future today.</Text>
+                        <Pressable style={({ pressed }) => [styles.applyButton, { opacity: pressed ? 0.8 : 1 }]}>
+                            <Text style={styles.applyButtonText}>Apply Now</Text>
+                        </Pressable>
+                    </View>
+                )}
             </ScrollView>
         </View>
     );
@@ -293,19 +313,18 @@ const createStyle = (colors) => {
             paddingBottom: 20,
         },
         departmentHeader: {
-            backgroundColor: colors.primary,
             padding: 20,
             marginBottom: 20,
         },
         departmentTitle: {
             fontSize: 24,
             fontWeight: 'bold',
-            color: '#fff',
+            color: colors.text,
             marginBottom: 5,
         },
         departmentSubtitle: {
             fontSize: 16,
-            color: '#fff',
+            color: colors.text,
         },
         cardSection: {
             backgroundColor: colors.surface,
@@ -313,6 +332,7 @@ const createStyle = (colors) => {
             borderRadius: 15,
             padding: 15,
             marginBottom: 20,
+            backgroundColor: colors.surface, 
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.1,
@@ -339,12 +359,12 @@ const createStyle = (colors) => {
         },
         sectionSubtitle: {
             fontSize: 13,
-            color: colors.textMuted,
+            color: colors.text,
             marginTop: 2,
         },
         aboutText: {
             fontSize: 14,
-            color: colors.textSecondary,
+            color: colors.text,
             lineHeight: 22,
             marginBottom: 15,
         },
@@ -369,7 +389,7 @@ const createStyle = (colors) => {
         },
         feeValue: {
             fontSize: 14,
-            color: colors.textSecondary,
+            color: colors.text,
             marginTop: 2,
         },
         curriculumCard: {
@@ -391,7 +411,7 @@ const createStyle = (colors) => {
         },
         curriculumSubtitle: {
             fontSize: 13,
-            color: colors.textMuted,
+            color: colors.text,
             marginTop: 2,
         },
         requirementsList: {
@@ -404,18 +424,18 @@ const createStyle = (colors) => {
         bullet: {
             fontSize: 18,
             marginRight: 10,
-            color: colors.textSecondary,
+            color: colors.text,
             lineHeight: 22,
         },
         requirementText: {
             fontSize: 14,
-            color: colors.textSecondary,
+            color: colors.text,
             flex: 1,
             lineHeight: 22,
         },
         careerIntroText: {
             fontSize: 14,
-            color: colors.textSecondary,
+            color: colors.text,
             lineHeight: 22,
             marginBottom: 15,
         },
@@ -472,14 +492,14 @@ const createStyle = (colors) => {
             marginTop: 10,
         },
         errorDetail: {
-            color: colors.textSecondary,
+            color: colors.text,
             fontSize: 14,
             textAlign: 'center',
             marginBottom: 20,
             lineHeight: 20,
         },
         emptyText: {
-            color: colors.textSecondary,
+            color: colors.text,
             fontSize: 20,
             fontWeight: 'bold',
             textAlign: 'center',
@@ -487,7 +507,7 @@ const createStyle = (colors) => {
             marginTop: 10,
         },
         emptyDetail: {
-            color: colors.textSecondary,
+            color: colors.text,
             fontSize: 14,
             textAlign: 'center',
             marginBottom: 20,

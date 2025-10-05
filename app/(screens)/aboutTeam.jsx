@@ -52,7 +52,7 @@ const teamMembers = [
     bio: 'Member',
     image: require("../../assets/images/zakarie-bakaal.jpg"),
     phone: '+252617741451',
-    website: 'https://simad.edu.so',
+    website: 'https://www.behance.net/zakarieyusuf',
     whatsapp: '+252617741451',
   },
 ];

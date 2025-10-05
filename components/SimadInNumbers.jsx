@@ -39,7 +39,7 @@ const StatCard = ({ item, index, animation }) => {
       >
         <View style={styles.cardContent}>
           <View style={styles.iconContainer}>
-            <Ionicons name={item.icon} size={32} color={colors.primary} />
+            <Ionicons name={item.icon} size={32} color={colors.secondary} />
           </View>
           <View style={styles.textContainer}>
             <Text style={styles.statNumber}>{item.number}</Text>
@@ -318,11 +318,12 @@ const createStyle = (colors) => {
       flex: 1,
     },
     scrollContent: {
-      padding: 20,
+      padding: 15,
       paddingBottom: 40,
     },
     statsGrid: {
       flexDirection: 'row',
+      columnGap:5,
       flexWrap: 'wrap',
       justifyContent: 'space-between',
     },
@@ -341,7 +342,7 @@ const createStyle = (colors) => {
       flex: 1,
       padding: 16,
       justifyContent: 'space-between',
-      backgroundColor: colors.surface,
+      backgroundColor: colors.secondary + "50",
       // borderWidth: 1,
       // borderColor: colors.border,
       marginRight: 5
@@ -353,7 +354,7 @@ const createStyle = (colors) => {
       backgroundColor: colors.white,
       justifyContent: 'center',
       alignItems: 'center',
-      shadowColor: colors.primary,
+      shadowColor: colors.secondary,
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.3,
       shadowRadius: 8,
@@ -378,7 +379,7 @@ const createStyle = (colors) => {
       width: 80,
       height: 80,
       borderRadius: 40,
-      backgroundColor: colors.primary + '15',
+      backgroundColor: colors.secondary + '65',
       top: -20,
       right: -20,
     },
@@ -403,7 +404,7 @@ const createStyle = (colors) => {
     },
     footerText: {
       fontSize: 14,
-      color: colors.textSecondary,
+      color: colors.text,
       textAlign: 'center',
       lineHeight: 20,
     },
@@ -433,7 +434,7 @@ const createStyle = (colors) => {
     },
     errorDetail: {
       fontSize: 14,
-      color: colors.textSecondary,
+      color: colors.text,
       textAlign: 'center',
       marginBottom: 24,
     },

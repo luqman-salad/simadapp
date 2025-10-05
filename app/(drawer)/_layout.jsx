@@ -64,9 +64,9 @@ export default function Layout() {
           <Ionicons name="location-outline" size={size} color={color} />
         ),
       }} />
-      <Drawer.Screen name='student' options={{
+      <Drawer.Screen name='ocms' options={{
         headerShown: false,
-        title: "Student",
+        title: "OCMS",
         drawerIcon: ({ size, color }) => (
           <Ionicons name="person-outline" size={size} color={color} />
         ),
@@ -78,10 +78,11 @@ export default function Layout() {
         drawerIcon: ({ size, color }) => (
           <Ionicons name="person-outline" size={size} color={color} />
         ),
-      }} />
-      <Drawer.Screen name='lecturer' options={{
+      }} /> */}
+
+      {/* <Drawer.Screen name='lecturer' options={{
         headerShown: false,
-        // title: "Lecturer",
+        title: "Lecturer",
         drawerIcon: ({ size, color }) => (
           <Ionicons name="person-outline" size={size} color={color} />
         ),

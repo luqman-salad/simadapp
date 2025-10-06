@@ -63,10 +63,10 @@ export default function ImageGrid() {
         title="About"
         showLeftIcon
         leftIconName="menu"
-        showNotifiction
-        NotificationItemCount={6}
+        // showNotifiction
+        // NotificationItemCount={6}
         onLeftIconPress={() => navigation.openDrawer()}
-        onNotificationPress={() => handleNotificationPress()}
+        // onNotificationPress={() => handleNotificationPress()}
       />
     <ScrollView contentContainerStyle={styles.container}>
       {cardData.map((item) => (

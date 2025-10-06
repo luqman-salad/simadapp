@@ -31,12 +31,7 @@ const StatCard = ({ item, index, animation }) => {
         }
       ]}
     >
-      <LinearGradient
-        colors={[colors.primary + '20', colors.primary + '10']}
-        style={styles.cardGradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
+      <View style={[styles.cardGradient, { backgroundColor: colors.surface }]}>
         <View style={styles.cardContent}>
           <View style={styles.iconContainer}>
             <Ionicons name={item.icon} size={32} color={colors.secondary} />
@@ -47,7 +42,7 @@ const StatCard = ({ item, index, animation }) => {
           </View>
           <View style={styles.decorationCircle} />
         </View>
-      </LinearGradient>
+      </View>
     </Animated.View>
   );
 };
@@ -66,15 +61,10 @@ const AnimatedCounter = ({ value, duration = 2000 }) => {
     }).start();
   }, [value]);
 
-  const animatedText = animatedValue.interpolate({
-    inputRange: [0, parseFloat(value) || 0],
-    outputRange: ['0', value],
-  });
-
   return (
-    <Animated.Text style={styles.heroNumber}>
-      {animatedValue._value}
-    </Animated.Text>
+    <Text style={styles.heroNumber}>
+      {value}
+    </Text>
   );
 };
 
@@ -175,13 +165,21 @@ export default function UniversityStats() {
   if (loading) {
     return (
       <View style={styles.container}>
-        <LinearGradient
-          colors={[colors.primary, colors.secondary]}
-          style={styles.heroSection}
-        >
-          <Text style={styles.heroTitle}>University Stats</Text>
-          <Text style={styles.heroSubtitle}>Loading amazing numbers...</Text>
-        </LinearGradient>
+        {/* Safe hero section */}
+        {colors.primary && colors.secondary ? (
+          <LinearGradient
+            colors={[colors.primary, colors.secondary]}
+            style={styles.heroSection}
+          >
+            <Text style={styles.heroTitle}>University Stats</Text>
+            <Text style={styles.heroSubtitle}>Loading amazing numbers...</Text>
+          </LinearGradient>
+        ) : (
+          <View style={[styles.heroSection, { backgroundColor: colors.primary }]}>
+            <Text style={styles.heroTitle}>University Stats</Text>
+            <Text style={styles.heroSubtitle}>Loading amazing numbers...</Text>
+          </View>
+        )}
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={styles.loadingText}>Loading university statistics...</Text>
@@ -193,15 +191,23 @@ export default function UniversityStats() {
   if (error) {
     return (
       <View style={styles.container}>
-        <LinearGradient
-          colors={[colors.primary, colors.secondary]}
-          style={styles.heroSection}
-        >
-          <Text style={styles.heroTitle}>University Stats</Text>
-          <Text style={styles.heroSubtitle}>Something went wrong</Text>
-        </LinearGradient>
+        {/* Safe hero section */}
+        {colors.primary && colors.secondary ? (
+          <LinearGradient
+            colors={[colors.primary, colors.secondary]}
+            style={styles.heroSection}
+          >
+            <Text style={styles.heroTitle}>University Stats</Text>
+            <Text style={styles.heroSubtitle}>Something went wrong</Text>
+          </LinearGradient>
+        ) : (
+          <View style={[styles.heroSection, { backgroundColor: colors.primary }]}>
+            <Text style={styles.heroTitle}>University Stats</Text>
+            <Text style={styles.heroSubtitle}>Something went wrong</Text>
+          </View>
+        )}
         <View style={styles.errorContainer}>
-          <Ionicons name="alert-circle-outline" size={64} color={colors.error} />
+          <Ionicons name="alert-circle-outline" size={64} color={colors.danger} />
           <Text style={styles.errorText}>Unable to load data</Text>
           <Text style={styles.errorDetail}>{error}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
@@ -214,24 +220,43 @@ export default function UniversityStats() {
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={[colors.primary, colors.secondary]}
-        style={styles.heroSection}
-      >
-        <Text style={styles.heroTitle}>SIMAD in Numbers</Text>
-        <Text style={styles.heroSubtitle}>Our impact and achievements</Text>
-        <View style={styles.heroStats}>
-          <View style={styles.heroStat}>
-            <Text style={styles.heroNumber}>{statsData[0]?.number}</Text>
-            <Text style={styles.heroLabel}>Graduates</Text>
+      {/* Safe hero section */}
+      {colors.primary && colors.secondary ? (
+        <LinearGradient
+          colors={[colors.primary, colors.secondary]}
+          style={styles.heroSection}
+        >
+          <Text style={styles.heroTitle}>SIMAD in Numbers</Text>
+          <Text style={styles.heroSubtitle}>Our impact and achievements</Text>
+          <View style={styles.heroStats}>
+            <View style={styles.heroStat}>
+              <Text style={styles.heroNumber}>{statsData[0]?.number}</Text>
+              <Text style={styles.heroLabel}>Graduates</Text>
+            </View>
+            <View style={styles.heroDivider} />
+            <View style={styles.heroStat}>
+              <Text style={styles.heroNumber}>{statsData[1]?.number}</Text>
+              <Text style={styles.heroLabel}>Active Students</Text>
+            </View>
           </View>
-          <View style={styles.heroDivider} />
-          <View style={styles.heroStat}>
-            <Text style={styles.heroNumber}>{statsData[1]?.number}</Text>
-            <Text style={styles.heroLabel}>Active Students</Text>
+        </LinearGradient>
+      ) : (
+        <View style={[styles.heroSection, { backgroundColor: colors.primary }]}>
+          <Text style={styles.heroTitle}>SIMAD in Numbers</Text>
+          <Text style={styles.heroSubtitle}>Our impact and achievements</Text>
+          <View style={styles.heroStats}>
+            <View style={styles.heroStat}>
+              <Text style={styles.heroNumber}>{statsData[0]?.number}</Text>
+              <Text style={styles.heroLabel}>Graduates</Text>
+            </View>
+            <View style={styles.heroDivider} />
+            <View style={styles.heroStat}>
+              <Text style={styles.heroNumber}>{statsData[1]?.number}</Text>
+              <Text style={styles.heroLabel}>Active Students</Text>
+            </View>
           </View>
         </View>
-      </LinearGradient>
+      )}
 
       <ScrollView 
         style={styles.scrollView}
@@ -284,7 +309,8 @@ const createStyle = (colors) => {
     },
     heroSubtitle: {
       fontSize: 16,
-      color: colors.white + 'CC',
+      color: colors.white,
+      opacity: 0.9,
       textAlign: 'center',
       marginBottom: 30,
     },
@@ -305,13 +331,15 @@ const createStyle = (colors) => {
     },
     heroLabel: {
       fontSize: 14,
-      color: colors.white + 'CC',
+      color: colors.white,
+      opacity: 0.9,
       fontWeight: '500',
     },
     heroDivider: {
       width: 2,
       height: 40,
-      backgroundColor: colors.border + '4D',
+      backgroundColor: colors.white,
+      opacity: 0.3,
       marginHorizontal: 20,
     },
     scrollView: {
@@ -323,7 +351,7 @@ const createStyle = (colors) => {
     },
     statsGrid: {
       flexDirection: 'row',
-      columnGap:5,
+      columnGap: 5,
       flexWrap: 'wrap',
       justifyContent: 'space-between',
     },
@@ -337,14 +365,16 @@ const createStyle = (colors) => {
     cardGradient: {
       flex: 1,
       borderRadius: 20,
+      shadowColor: colors.shadow,
+      shadowOffset: { width: 0, height: 10 },
+      shadowOpacity: 0.1,
+      shadowRadius: 20,
+      elevation: 5,
     },
     cardContent: {
       flex: 1,
       padding: 16,
       justifyContent: 'space-between',
-      backgroundColor: colors.secondary + "50",
-      // borderWidth: 1,
-      // borderColor: colors.border,
       marginRight: 5
     },
     iconContainer: {
@@ -354,7 +384,7 @@ const createStyle = (colors) => {
       backgroundColor: colors.white,
       justifyContent: 'center',
       alignItems: 'center',
-      shadowColor: colors.secondary,
+      shadowColor: colors.shadow,
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.3,
       shadowRadius: 8,
@@ -379,7 +409,7 @@ const createStyle = (colors) => {
       width: 80,
       height: 80,
       borderRadius: 40,
-      backgroundColor: colors.secondary + '65',
+      backgroundColor: colors.secondary + '15',
       top: -20,
       right: -20,
     },
@@ -389,7 +419,7 @@ const createStyle = (colors) => {
       backgroundColor: colors.surface,
       borderRadius: 20,
       marginTop: 10,
-      shadowColor: '#000',
+      shadowColor: colors.shadow,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 8,
@@ -428,7 +458,7 @@ const createStyle = (colors) => {
     errorText: {
       fontSize: 20,
       fontWeight: 'bold',
-      color: colors.error,
+      color: colors.danger,
       marginTop: 16,
       marginBottom: 8,
     },

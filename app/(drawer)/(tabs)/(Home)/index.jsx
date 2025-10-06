@@ -41,10 +41,10 @@ const Home = () => {
                 title="SIMAD"
                 showLeftIcon
                 leftIconName="menu"
-                showNotifiction
-                NotificationItemCount={6}
+                // showNotifiction
+                // NotificationItemCount={6}
                 onLeftIconPress={() => navigation.openDrawer()}
-                onNotificationPress={() => handlePress()}
+                // onNotificationPress={() => handlePress()}
             />
             <ScrollView 
                 showsVerticalScrollIndicator={false} 

@@ -92,13 +92,6 @@ const ContactScreen = () => {
     setExpandedCard(expandedCard === index ? null : index);
   };
 
-  // Helper function to create lighter/darker variants of colors
-  const adjustColor = (color, amount) => {
-    // For now, we'll use solid colors since we can't manipulate hex colors easily
-    // In a real app, you might want to use a color manipulation library
-    return color;
-  };
-
   const ContactCard = ({ office, index, isExpanded }) => {
     const cardScale = new Animated.Value(1);
     
@@ -116,14 +109,14 @@ const ContactScreen = () => {
       }).start();
     };
 
-    // Use theme colors directly without manipulation
+    // Use theme colors with fallbacks
     const cardColors = [
       colors.primary,
       colors.secondary,
-      colors.success || '#4CAF50',
-      colors.warning || '#FF9800',
-      colors.info || '#2196F3',
-      colors.tertiary || colors.primary
+      colors.success,
+      colors.warning,
+      colors.tertiary,
+      colors.primary // fallback
     ];
     const cardColor = cardColors[index % cardColors.length];
 
@@ -187,7 +180,7 @@ const ContactScreen = () => {
                   </TouchableOpacity>
                 ) : (
                   <View style={styles.noEmailContainer}>
-                    <Ionicons name="information-circle-outline" size={20} color={colors.textSecondary} />
+                    <Ionicons name="information-circle-outline" size={20} color={colors.textMuted} />
                     <Text style={styles.noEmail}>Contact through main office</Text>
                   </View>
                 )}
@@ -212,18 +205,31 @@ const ContactScreen = () => {
         contentContainerStyle={styles.scrollViewContent}
         showsVerticalScrollIndicator={false}
       >
-        <LinearGradient
-          colors={[colors.primary, colors.secondary]}
-          style={styles.heroSection}
-        >
-          <View style={styles.heroContent}>
-            <Ionicons name="chatbubbles-outline" size={48} color={colors.white} />
-            <Text style={styles.heroTitle}>Get in Touch</Text>
-            <Text style={styles.heroSubtitle}>
-              Reach the right department for your inquiries. Tap on any office to see details.
-            </Text>
+        {/* Safe LinearGradient with fallback */}
+        {colors.primary && colors.secondary ? (
+          <LinearGradient
+            colors={[colors.primary, colors.secondary]}
+            style={styles.heroSection}
+          >
+            <View style={styles.heroContent}>
+              <Ionicons name="chatbubbles-outline" size={48} color={colors.white} />
+              <Text style={styles.heroTitle}>Get in Touch</Text>
+              <Text style={styles.heroSubtitle}>
+                Reach the right department for your inquiries. Tap on any office to see details.
+              </Text>
+            </View>
+          </LinearGradient>
+        ) : (
+          <View style={[styles.heroSection, { backgroundColor: colors.primary }]}>
+            <View style={styles.heroContent}>
+              <Ionicons name="chatbubbles-outline" size={48} color={colors.white} />
+              <Text style={styles.heroTitle}>Get in Touch</Text>
+              <Text style={styles.heroSubtitle}>
+                Reach the right department for your inquiries. Tap on any office to see details.
+              </Text>
+            </View>
           </View>
-        </LinearGradient>
+        )}
 
         <View style={styles.quickActions}>
           <Text style={styles.quickActionsTitle}>Quick Actions</Text>
@@ -253,7 +259,7 @@ const ContactScreen = () => {
               onPress={() => Linking.openURL('https://maps.google.com')}
             >
               <View style={[styles.quickIcon, { backgroundColor: colors.surface }]}>
-                <Ionicons name="location-outline" size={24} color={colors.success || '#4CAF50'} />
+                <Ionicons name="location-outline" size={24} color={colors.success} />
               </View>
               <Text style={styles.quickText}>Location</Text>
             </TouchableOpacity>
@@ -263,7 +269,7 @@ const ContactScreen = () => {
               onPress={() => Linking.openURL('https://simad.edu.so')}
             >
               <View style={[styles.quickIcon, { backgroundColor: colors.surface }]}>
-                <Ionicons name="globe-outline" size={24} color={colors.info || '#2196F3'} />
+                <Ionicons name="globe-outline" size={24} color={colors.tertiary} />
               </View>
               <Text style={styles.quickText}>Website</Text>
             </TouchableOpacity>
@@ -353,7 +359,7 @@ const createStyle = (colors) =>
       justifyContent: "center",
       alignItems: "center",
       marginBottom: 8,
-      shadowColor: colors.shadow || '#000',
+      shadowColor: colors.shadow,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 4,
@@ -377,7 +383,7 @@ const createStyle = (colors) =>
       borderRadius: 20,
       padding: 20,
       marginBottom: 16,
-      shadowColor: colors.shadow || '#000',
+      shadowColor: colors.shadow,
       shadowOffset: { width: 0, height: 10 },
       shadowOpacity: 0.1,
       shadowRadius: 20,
@@ -410,7 +416,7 @@ const createStyle = (colors) =>
     },
     responsibilityPreview: {
       fontSize: 12,
-      color: colors.textSecondary,
+      color: colors.textMuted,
       backgroundColor: colors.bg,
       paddingHorizontal: 8,
       paddingVertical: 2,
@@ -434,7 +440,7 @@ const createStyle = (colors) =>
     sectionLabel: {
       fontSize: 14,
       fontWeight: "600",
-      color: colors.textSecondary,
+      color: colors.textMuted,
       marginBottom: 12,
     },
     responsibilityItem: {
@@ -479,7 +485,7 @@ const createStyle = (colors) =>
     },
     noEmail: {
       fontSize: 14,
-      color: colors.textSecondary,
+      color: colors.textMuted,
       fontStyle: "italic",
     },
     footer: {
@@ -488,7 +494,7 @@ const createStyle = (colors) =>
       backgroundColor: colors.surface,
       margin: 20,
       borderRadius: 20,
-      shadowColor: colors.shadow || '#000',
+      shadowColor: colors.shadow,
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.1,
       shadowRadius: 8,
@@ -503,7 +509,7 @@ const createStyle = (colors) =>
     },
     footerText: {
       fontSize: 14,
-      color: colors.textSecondary,
+      color: colors.textMuted,
       textAlign: "center",
       lineHeight: 20,
     },

@@ -1,4 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
+import { router } from 'expo-router';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
 import { useState, useEffect } from 'react';
 import useTheme from '../hooks/usetheme';
@@ -51,10 +52,14 @@ export default function HorizontalTwoRowGrid({ route }) {
 
   const handlePress = (schoolId, schoolName) => {
     console.log('School pressed:', schoolId, schoolName);
-    // Navigate to SchoolInfoScreen with school ID and name
-    navigation.navigate('SchoolInfoScreen', { 
-      schoolId: schoolId,
-      schoolName: schoolName
+    
+    // Use Expo Router's router.push() instead of navigation.navigate()
+    router.push({
+      pathname: '/(screens)/SchoolInfoScreen',
+      params: { 
+        schoolId: schoolId,
+        schoolName: schoolName
+      }
     });
   };
 

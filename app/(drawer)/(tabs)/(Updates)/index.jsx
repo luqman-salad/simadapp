@@ -26,10 +26,10 @@ function UpdatesTabs() {
         title="Updates"
         showLeftIcon
         leftIconName="menu"
-        showNotifiction
-        NotificationItemCount={6}
+        // showNotifiction
+        // NotificationItemCount={6}
         onLeftIconPress={() => navigation.openDrawer()}
-        onNotificationPress={() => handlePress()}
+        // onNotificationPress={() => handlePress()}
       />
       <Tab.Navigator
         screenOptions={{

@@ -38,3 +38,12 @@ export const getProgramInfoById = async (programId) => {
     throw error;
   }
 };
+
+export const getSchoolInfoById = async (schoolId) => {
+  try {
+    const response = await apiClient.get(`/schools/getSchoolsInfoByID/${schoolId}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

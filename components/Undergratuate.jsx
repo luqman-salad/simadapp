@@ -52,8 +52,15 @@ export default function HorizontalTwoRowGrid({ route }) {
 
   const handlePress = (schoolId, schoolName) => {
     console.log('School pressed:', schoolId, schoolName);
-    router.push('/(screens)/SchoolInfoScreen');
-    // store SchoolId 
+    
+    // FIXED: Pass parameters correctly using object format
+    router.push({
+      pathname: '/(screens)/SchoolInfoScreen',
+      params: { 
+        schoolId: schoolId, 
+        schoolName: schoolName 
+      }
+    });
   };
 
   const handleRetry = () => {

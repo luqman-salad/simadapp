@@ -4,7 +4,7 @@ import { Image, Pressable, ScrollView, StyleSheet, Text, View, ActivityIndicator
 import { useState, useEffect } from 'react';
 import { Header } from '../../components/Headrer';
 import useTheme from '../../hooks/usetheme';
-import { getSchoolInfoById } from '../../apis/schoolsApi';
+import { getSchoolInfoById } from '../../apis/academicProgramsApi';
 
 const SectionHeader = ({ iconName, iconColor, title, subtitle }) => {
   const { colors } = useTheme();
@@ -57,7 +57,7 @@ const ProgramCard = ({ title, iconName, programId }) => {
   );
 };
 
-const SchoolDetails = () => {
+const SchoolInfoScreen = () => {
   const { colors } = useTheme();
   const styles = createStyle(colors);
   const navigation = useNavigation();
@@ -71,7 +71,9 @@ const SchoolDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  console.log('SchoolDetails received params:', { schoolId, schoolName });
+  console.log('SchoolInfoScreen received params:', params);
+  console.log('Extracted schoolId:', schoolId);
+  console.log('Extracted schoolName:', schoolName);
 
   const fetchSchoolData = async () => {
     if (!schoolId) {
@@ -83,12 +85,15 @@ const SchoolDetails = () => {
     try {
       setLoading(true);
       setError(null);
+      console.log('Fetching school data for ID:', schoolId);
       const result = await getSchoolInfoById(schoolId);
+      
+      console.log('API Response:', result);
       
       if (result?.success && result.data?.school) {
         setSchoolData(result.data.school);
       } else {
-        throw new Error('No school data received');
+        throw new Error(result?.message || 'No school data received');
       }
     } catch (err) {
       setError(err.message);
@@ -101,6 +106,9 @@ const SchoolDetails = () => {
   useEffect(() => {
     if (schoolId) {
       fetchSchoolData();
+    } else {
+      setError('No school ID provided');
+      setLoading(false);
     }
   }, [schoolId]);
 
@@ -119,7 +127,9 @@ const SchoolDetails = () => {
       'fa-chart-bar': 'chart-bar',
       'fa-comments': 'comment-multiple-outline',
       'fa-book': 'book-open-variant',
-      'fa-envelope': 'email-outline'
+      'fa-envelope': 'email-outline',
+      'ri-computer-line': 'laptop',
+      'ri-video-line': 'video'
     };
     return iconMap[apiIconName] || 'help-circle-outline';
   };
@@ -197,9 +207,18 @@ const SchoolDetails = () => {
         {/* Header Section */}
         <View style={styles.headerBackground}>
           {schoolData.coverImage ? (
-            <Image source={{ uri: schoolData.coverImage }} style={styles.headerImage} resizeMode="cover" />
+            <Image 
+              source={{ uri: schoolData.coverImage }} 
+              style={styles.headerImage} 
+              resizeMode="cover" 
+              onError={() => console.log('Failed to load cover image')}
+            />
           ) : (
-            <Image source={require('../../assets/images/computerlabs.jpeg')} style={styles.headerImage} resizeMode="cover" />
+            <Image 
+              source={require('../../assets/images/computerlabs.jpeg')} 
+              style={styles.headerImage} 
+              resizeMode="cover" 
+            />
           )}
           <View style={styles.overlay}>
             <Text style={styles.schoolTitle}>{schoolData.name}</Text>
@@ -263,7 +282,9 @@ const SchoolDetails = () => {
               subtitle={schoolData.dean.section?.subtitle || "Leadership & Vision"}
             />
             <View style={styles.deanContainer}>
-              <View style={styles.deanImagePlaceholder} />
+              <View style={styles.deanImagePlaceholder}>
+                <MaterialCommunityIcons name="account-tie" size={40} color={colors.white} />
+              </View>
               <Text style={styles.deanName}>{schoolData.dean.name}</Text>
               <Text style={styles.deanTitle}>{schoolData.dean.title}</Text>
             </View>
@@ -283,14 +304,30 @@ const SchoolDetails = () => {
               subtitle={schoolData.factsSection?.subtitle || "Our distinctive features"}
             />
             <View style={styles.factGrid}>
-              {Object.entries(schoolData.facts).map(([key, value], index) => (
-                <View key={index} style={styles.factCard}>
-                  <Text style={styles.factValue}>{value}</Text>
-                  <Text style={styles.factLabel}>
-                    {key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                  </Text>
+              {schoolData.facts.academic_programs && (
+                <View style={styles.factCard}>
+                  <Text style={styles.factValue}>{schoolData.facts.academic_programs}</Text>
+                  <Text style={styles.factLabel}>Academic Programs</Text>
                 </View>
-              ))}
+              )}
+              {schoolData.facts.academic_staff && (
+                <View style={styles.factCard}>
+                  <Text style={styles.factValue}>{schoolData.facts.academic_staff}</Text>
+                  <Text style={styles.factLabel}>Academic Staff</Text>
+                </View>
+              )}
+              {schoolData.facts.student_population && (
+                <View style={styles.factCard}>
+                  <Text style={styles.factValue}>{schoolData.facts.student_population}</Text>
+                  <Text style={styles.factLabel}>Students</Text>
+                </View>
+              )}
+              {schoolData.facts.founded_year && (
+                <View style={styles.factCard}>
+                  <Text style={styles.factValue}>{schoolData.facts.founded_year}</Text>
+                  <Text style={styles.factLabel}>Founded</Text>
+                </View>
+              )}
             </View>
           </View>
         )}
@@ -331,6 +368,9 @@ const SchoolDetails = () => {
             {schoolData.contact.location && (
               <InfoCard iconName="map-marker-outline" title="Location" value={schoolData.contact.location} />
             )}
+            {schoolData.contact.website && (
+              <InfoCard iconName="web" title="Website" value={schoolData.contact.website} />
+            )}
           </View>
         )}
       </ScrollView>
@@ -338,7 +378,6 @@ const SchoolDetails = () => {
   );
 };
 
-// ... keep all the existing styles the same ...
 const createStyle = (colors) => {
   return StyleSheet.create({
     container: {
@@ -495,8 +534,10 @@ const createStyle = (colors) => {
       width: 100,
       height: 100,
       borderRadius: 50,
-      backgroundColor: colors.textMuted,
+      backgroundColor: colors.primary,
       marginBottom: 10,
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     deanName: {
       fontSize: 18,
@@ -574,4 +615,4 @@ const createStyle = (colors) => {
   });
 };
 
-export default SchoolDetails;
+export default SchoolInfoScreen;

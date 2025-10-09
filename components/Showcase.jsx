@@ -1,15 +1,12 @@
-import { FlatList, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native'
+import { FlatList, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator, Dimensions } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { Image } from 'expo-image'
 import useTheme from '../hooks/usetheme'
 import { getUpcomingEvents } from '../apis/upcomingEvents'
 
-// Fallback images in case API images fail to load
-// const fallbackImages = [
-//   require('../assets/images/simadlead.jpg'),
-//   require('../assets/images/simadilab.jpg'),
-//   require('../assets/images/showcase3.jpg'),
-// ];
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const ITEM_WIDTH = 270;
+const ITEM_MARGIN = 10;
 
 export default function ShowCase() {
     const listRef = useRef(null);
@@ -21,21 +18,33 @@ export default function ShowCase() {
     const {colors} = useTheme();
     const styles = createStyle(colors);
 
+    // Connect to global loading state
+    // useWithLoading(componentKey, loading); // Uncomment if you have this hook
+
     useEffect(() => {
         fetchEvents();
     }, []);
 
     useEffect(() => {
-        if (events.length > 0) {
-            const interval = setInterval(() => {
-                setIndex((prev) => {
-                    const next = prev + 1 >= events.length ? 0 : prev + 1;
-                    listRef.current?.scrollToIndex({ index: next, animated: true });
-                    return next;
+        let interval;
+        if (events.length > 1) {
+            interval = setInterval(() => {
+                setIndex((prevIndex) => {
+                    const nextIndex = prevIndex + 1;
+                    if (nextIndex >= events.length) {
+                        // If at the end, scroll back to start smoothly
+                        listRef.current?.scrollToIndex({ index: 0, animated: true });
+                        return 0;
+                    } else {
+                        listRef.current?.scrollToIndex({ index: nextIndex, animated: true });
+                        return nextIndex;
+                    }
                 });
             }, 5000);
-            return () => clearInterval(interval);
         }
+        return () => {
+            if (interval) clearInterval(interval);
+        };
     }, [events.length]);
 
     const fetchEvents = async () => {
@@ -45,10 +54,9 @@ export default function ShowCase() {
             const response = await getUpcomingEvents();
             
             if (response.success && response.data) {
-                // Transform API data to match component structure
                 const transformedEvents = response.data.map(event => ({
                     id: event._id,
-                    source: event.image, // URL from API
+                    source: event.image,
                     title: event.title,
                     date: event.date,
                     duration: event.duration,
@@ -67,12 +75,12 @@ export default function ShowCase() {
     };
 
     const getImageSource = (event, index) => {
-        // If API provides image URL, use it, otherwise use fallback
         if (event.source && event.source.startsWith('http')) {
             return { uri: event.source };
         }
         // Use fallback image based on index
-        return fallbackImages[index % fallbackImages.length] || fallbackImages[0];
+        // return fallbackImages[index % fallbackImages.length] || fallbackImages[0];
+        return require('../assets/images/simadlead.jpg'); // Fallback image
     };
 
     const handleRetry = () => {
@@ -80,15 +88,27 @@ export default function ShowCase() {
     };
 
     const handleEventPress = (event) => {
-        // You can add navigation to event details here
         console.log('Event pressed:', event.title);
-        // Example: navigation.navigate('EventDetails', { event });
     };
+
+    const handleScroll = (event) => {
+        const contentOffsetX = event.nativeEvent.contentOffset.x;
+        const newIndex = Math.round(contentOffsetX / (ITEM_WIDTH + ITEM_MARGIN));
+        
+        if (newIndex >= 0 && newIndex < events.length) {
+            setIndex(newIndex);
+        }
+    };
+
+    const getItemLayout = (data, index) => ({
+        length: ITEM_WIDTH + ITEM_MARGIN,
+        offset: (ITEM_WIDTH + ITEM_MARGIN) * index,
+        index,
+    });
 
     if (loading) {
         return (
             <View style={styles.showCaseContainer}>
-                {/* <Text style={styles.title}>Upcoming Events</Text> */}
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color={colors.primary} />
                     <Text style={styles.loadingText}>Loading events...</Text>
@@ -100,7 +120,6 @@ export default function ShowCase() {
     if (error) {
         return (
             <View style={styles.showCaseContainer}>
-                {/* <Text style={styles.title}>Upcoming Events</Text> */}
                 <View style={styles.errorContainer}>
                     <Text style={styles.errorText}>{error}</Text>
                     <TouchableOpacity onPress={handleRetry} style={styles.retryButton}>
@@ -114,7 +133,6 @@ export default function ShowCase() {
     if (!events || events.length === 0) {
         return (
             <View style={styles.showCaseContainer}>
-                {/* <Text style={styles.title}>Upcoming Events</Text> */}
                 <View style={styles.emptyContainer}>
                     <Text style={styles.emptyText}>No upcoming events</Text>
                 </View>
@@ -124,7 +142,6 @@ export default function ShowCase() {
 
     return (
         <View style={styles.showCaseContainer}>
-            {/* <Text style={styles.title}>Upcoming Events</Text> */}
             <FlatList
                 ref={listRef}
                 style={styles.listContainer}
@@ -134,12 +151,13 @@ export default function ShowCase() {
                 showsHorizontalScrollIndicator={false}
                 keyExtractor={(item) => item.id}
                 initialScrollIndex={0}
-                onMomentumScrollEnd={(event) => {
-                    const newIndex = Math.round(
-                        event.nativeEvent.contentOffset.x / event.nativeEvent.layoutMeasurement.width
-                    );
-                    setIndex(newIndex);
-                }}
+                snapToInterval={ITEM_WIDTH + ITEM_MARGIN}
+                snapToAlignment="start"
+                decelerationRate="fast"
+                onMomentumScrollEnd={handleScroll}
+                onScroll={handleScroll}
+                scrollEventThrottle={16}
+                getItemLayout={getItemLayout}
                 renderItem={({item, index: itemIndex}) => (
                     <TouchableOpacity 
                         style={styles.showCaseItem}
@@ -204,12 +222,13 @@ const createStyle = (colors) => {
             flexGrow: 0,
         },
         showCaseItem: {
-            marginRight: 10,
+            width: ITEM_WIDTH,
+            marginRight: ITEM_MARGIN,
             marginTop: 7,
             position: 'relative',
         },
         showcaseImg: {
-            width: 270,
+            width: ITEM_WIDTH,
             height: 170,
             borderRadius: 15,
             borderWidth: 1,

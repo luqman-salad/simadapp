@@ -1,5 +1,5 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useNavigation, useLocalSearchParams } from 'expo-router';
+import { useNavigation, useLocalSearchParams, useRouter } from 'expo-router';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
 import { useState, useEffect } from 'react';
 import { Header } from '../../components/Headrer';
@@ -40,15 +40,19 @@ const ProgramCard = ({ title, iconName, programId }) => {
   const { colors } = useTheme();
   const styles = createStyle(colors);
   const navigation = useNavigation();
+  const router = useRouter();
+
+  const handleProgramPress = () => {
+        // Pass the program ID to the ProgramsInfoScreen
+        router.push({
+            pathname: '/(screens)/ProgramsInfoScreen',
+            params: { programId: programId }
+        });
+    };
 
   return (
     <Pressable style={styles.programCard}
-      onPress={() => {
-        navigation.navigate('ProgramsInfoScreen', { 
-          programId: programId, 
-          programName: title 
-        });
-      }}
+      onPress={handleProgramPress}
     >
       <MaterialCommunityIcons name={iconName} size={28} color={colors.textSecondary} />
       <Text style={styles.programText}>{title}</Text>

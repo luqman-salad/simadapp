@@ -101,7 +101,7 @@ const ProgramItem = ({ program, onToggleExpand, isExpanded, isSubItem = false, o
             style={[styles.programItem, isSubItem && styles.subProgramItem]}
             onPress={handleProgramPress}
         >
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', }}>
                 <Ionicons 
                     name={getIconName(program.icon)} 
                     size={24} 
@@ -109,7 +109,7 @@ const ProgramItem = ({ program, onToggleExpand, isExpanded, isSubItem = false, o
                 />
                 <Text style={styles.programText}>{program.name}</Text>
             </View>
-            <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
+            <Ionicons name="chevron-forward" size={16} color="#9CA3AF" style={styles.subProgramsIconChev}/>
         </TouchableOpacity>
     );
 };
@@ -346,6 +346,10 @@ const createStyle = (colors) => {
         borderWidth: 1,
         borderColor: colors.border,
         marginLeft: 10,
+        // paddingRight: 10
+    },
+    subProgramsIconChev:{
+        marginRight: 0
     },
     programText: {
         marginLeft: 15,

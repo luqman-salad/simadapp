@@ -140,7 +140,7 @@ const createStyle = (colors) => {
             fontSize: 16,
         },
         errorText: {
-            color: colors.error,
+            color: colors.danger,
             fontSize: 16,
             textAlign: 'center',
             marginBottom: 10,
@@ -187,7 +187,7 @@ const createStyle = (colors) => {
         title: {
             fontSize: 24,
             fontWeight: 'bold',
-            color: colors.secondary,
+            color: colors.text,
             marginBottom: 20,
         },
         timelineWrapper: {
@@ -208,7 +208,7 @@ const createStyle = (colors) => {
         yearText: {
             fontSize: 16,
             fontWeight: 'bold',
-            color: colors.secondary,
+            color: colors.text,
             textAlign: 'right',
         },
         timelineCenter: {
@@ -219,13 +219,13 @@ const createStyle = (colors) => {
             width: 15,
             height: 15,
             borderRadius: 7.5,
-            backgroundColor: colors.secondary,
+            backgroundColor: colors.text,
             position: 'absolute',
             left: 0,
         },
         line: {
             width: 2,
-            backgroundColor: colors.secondary,
+            backgroundColor: colors.text,
             flex: 1,
             position: 'absolute',
             left: 6.5,
@@ -256,7 +256,7 @@ const createStyle = (colors) => {
             width: 5,
             height: 5,
             borderRadius: 2.5,
-            backgroundColor: colors.secondary,
+            backgroundColor: colors.text,
             marginRight: 10,
             marginTop: 7,
         },

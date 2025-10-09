@@ -1,3 +1,4 @@
+import useTheme from '@/hooks/usetheme';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect } from 'react';
 import {
@@ -25,6 +26,9 @@ export default function PartnerBottomSheet({ visible, onClose, partner }) {
     const translateY = useSharedValue(SCREEN_HEIGHT);
     const opacity = useSharedValue(0);
     const contextY = useSharedValue(0);
+
+    const { colors } = useTheme();
+  const styles = createStyle(colors);
 
     useEffect(() => {
         if (visible) {
@@ -78,10 +82,7 @@ export default function PartnerBottomSheet({ visible, onClose, partner }) {
                     <Animated.View>
                         <View style={styles.handle} />
                         <View style={styles.header}>
-                            <Text style={styles.title}>{partner.name}</Text>
-                            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                                <Ionicons name="close" size={24} color="#6B7280" />
-                            </TouchableOpacity>
+                            <Text style={styles.title}>Partner</Text>
                         </View>
                     </Animated.View>
                 </GestureDetector>
@@ -157,7 +158,8 @@ const getCollaborationAreas = (partnerName) => {
     }
 };
 
-const styles = StyleSheet.create({
+const createStyle = (colors) => {
+  return StyleSheet.create({
     container: { 
         ...StyleSheet.absoluteFillObject, 
         justifyContent: 'flex-end' 
@@ -175,32 +177,36 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 16,
         borderTopRightRadius: 16,
         overflow: 'hidden',
+        backgroundColor: colors.surface
     },
     handle: {
         width: 40,
         height: 5,
-        backgroundColor: '#ccc',
+        backgroundColor: colors.primary,
         borderRadius: 3,
         alignSelf: 'center',
         marginVertical: 8,
     },
     header: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         alignItems: 'center',
         paddingHorizontal: 16,
         paddingVertical: 12,
         borderBottomWidth: 1,
-        borderBottomColor: '#eee',
+        borderBottomColor: colors.border,
     },
     title: { 
         fontSize: 18, 
         fontWeight: 'bold',
+        textAlign: "center",
         flex: 1,
         marginRight: 10,
+        color: colors.text
     },
     closeButton: { 
-        padding: 4 
+        padding: 4,
+        color: colors.text
     },
     scrollView: { 
         flex: 1 
@@ -213,7 +219,7 @@ const styles = StyleSheet.create({
         height: 120,
         marginBottom: 16,
         borderRadius: 12,
-        backgroundColor: '#f3f4f6',
+        backgroundColor: colors.surface,
         alignSelf: 'center',
     },
     placeholderLogo: {
@@ -221,7 +227,7 @@ const styles = StyleSheet.create({
         height: 120,
         marginBottom: 16,
         borderRadius: 12,
-        backgroundColor: '#e5e7eb',
+        backgroundColor: colors.bg,
         justifyContent: 'center',
         alignItems: 'center',
         alignSelf: 'center',
@@ -229,7 +235,7 @@ const styles = StyleSheet.create({
     placeholderText: {
         fontSize: 36,
         fontWeight: 'bold',
-        color: '#6B7280',
+        color: colors.text,
     },
     detailsContainer: {
         alignItems: 'center',
@@ -237,7 +243,7 @@ const styles = StyleSheet.create({
     name: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#1f2937',
+        color: colors.text,
         marginBottom: 20,
         textAlign: 'center',
     },
@@ -249,23 +255,24 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#374151',
+        color: colors.text,
         marginBottom: 8,
     },
     description: {
         fontSize: 15,
-        color: '#4b5563',
+        color: colors.text,
         lineHeight: 22,
         textAlign: 'justify',
     },
     duration: {
-        fontSize: 15,
-        color: '#059669',
+        fontSize: 18,
+        color: colors.primary,
         fontWeight: '500',
     },
     collaboration: {
         fontSize: 15,
-        color: '#4b5563',
+        color: colors.text,
         lineHeight: 22,
     },
 });
+}

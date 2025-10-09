@@ -144,7 +144,7 @@ const createStyle = (colors) =>
     listTitle: {
       fontSize: 18,
       fontWeight: 'bold',
-      color: colors.secondary,
+      color: colors.text,
       paddingHorizontal: 15,
       paddingVertical: 10,
     },
@@ -184,7 +184,7 @@ const createStyle = (colors) =>
     },
     title: {
       fontSize: 14,
-      color: colors.textSecondary || '#666',
+      color: colors.text,
       marginTop: 2,
     },
     profileImageContainer: {

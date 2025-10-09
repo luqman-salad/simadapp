@@ -143,7 +143,7 @@ const createStyle = (colors) =>
     whySimadTitle: {
       fontSize: 24,
       fontWeight: "bold",
-      color: colors.secondary,
+      color: colors.text,
     },
     card: {
       backgroundColor: colors.surface,
@@ -160,17 +160,17 @@ const createStyle = (colors) =>
     cardTitle: {
       fontSize: 18,
       fontWeight: "bold",
-      color: colors.shadow,
+      color: colors.text,
       marginBottom: 5,
     },
     cardDescription: {
       fontSize: 14,
-      color: "#666",
+      color: colors.text,
       lineHeight: 20,
       marginBottom: 10,
     },
     seeMore: {
-      color: colors.secondary,
+      color: colors.primary,
       fontWeight: "bold",
     },
     cardImage: {
@@ -184,12 +184,12 @@ const createStyle = (colors) =>
       marginTop: 20,
     },
     errorText: {
-      color: "red",
+      color: colors.danger,
       fontSize: 16,
       marginBottom: 10,
     },
     retryText: {
-      color: colors.secondary,
+      color: colors.text,
       fontWeight: "bold",
     },
   });

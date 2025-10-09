@@ -179,7 +179,7 @@ const createStyle = (colors) => {
     },
     cardDescription: {
       fontSize: 13,
-      color: colors.textSecondary,
+      color: colors.text,
       marginBottom: 10,
     },
     takeATourButton: {

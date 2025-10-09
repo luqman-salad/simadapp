@@ -81,7 +81,7 @@ const createStyle = (colors) => {
     title: {
       fontSize: 14,
       fontWeight: '600',
-      color: '#fff',
+      color: colors.text,
       textAlign: 'center',
     },
   });

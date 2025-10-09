@@ -157,16 +157,18 @@ const createStyle = (colors) =>
     cardHeaderIcon: {
       fontSize: 24,
       marginRight: 10,
+      color: colors.text
     },
     cardTitle: {
       fontSize: 20,
       fontWeight: "bold",
-      color: colors.secondary,
+      color: colors.text,
     },
     cardSubtitle: {
       fontSize: 16,
       fontWeight: "bold",
       marginBottom: 5,
+      color: colors.text
     },
     cardText: {
       fontSize: 14,
@@ -176,7 +178,7 @@ const createStyle = (colors) =>
       textAlign: "justify",
     },
     emailText: {
-      color: colors.secondary,
+      color: colors.text,
       textDecorationLine: "underline",
     },
   });

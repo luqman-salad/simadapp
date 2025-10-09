@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, ImageBackground, ActivityIndicator } from 'react-native';
 import useTheme from '../hooks/usetheme';
 import { getFacilities } from '../apis/facilitiesApi';
+import { useGlobalLoading } from '../hooks/useGlobalLoading'; // Import the global loading hook
 
 // Fallback local images in case API images fail to load
 const fallbackImages = {
@@ -25,16 +26,19 @@ const chunkArray = (array, size) => {
   return result;
 };
 
-export default function TwoRowHorizontalList() {
+export default function TwoRowHorizontalList({ componentKey = "facilities", refreshTrigger = 0 }) {
   const [facilities, setFacilities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { colors } = useTheme();
   const styles = createStyle(colors);
 
+  // Connect to global loading state
+  useGlobalLoading(componentKey, loading);
+
   useEffect(() => {
     fetchFacilities();
-  }, []);
+  }, [refreshTrigger]); // Add refreshTrigger to dependencies
 
   const fetchFacilities = async () => {
     try {
@@ -74,18 +78,7 @@ export default function TwoRowHorizontalList() {
     fetchFacilities();
   };
 
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.header}>Academic Facilities</Text>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="small" color={colors.primary} />
-          <Text style={styles.loadingText}>Loading facilities...</Text>
-        </View>
-      </View>
-    );
-  }
-
+  // Remove individual loading display - global overlay handles it
   if (error) {
     return (
       <View style={styles.container}>

@@ -3,12 +3,13 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Image } from 'expo-image'
 import useTheme from '../hooks/usetheme'
 import { getUpcomingEvents } from '../apis/upcomingEvents'
+import { useGlobalLoading } from '../hooks/useGlobalLoading' // Import the global loading hook
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const ITEM_WIDTH = 270;
 const ITEM_MARGIN = 10;
 
-export default function ShowCase() {
+export default function ShowCase({ componentKey = "showcase", refreshTrigger = 0 }) {
     const listRef = useRef(null);
     const [index, setIndex] = useState(0);
     const [events, setEvents] = useState([]);
@@ -19,26 +20,23 @@ export default function ShowCase() {
     const styles = createStyle(colors);
 
     // Connect to global loading state
-    // useWithLoading(componentKey, loading); // Uncomment if you have this hook
+    useGlobalLoading(componentKey, loading);
 
     useEffect(() => {
         fetchEvents();
-    }, []);
+    }, [refreshTrigger]); // Add refreshTrigger to dependencies
 
     useEffect(() => {
         let interval;
         if (events.length > 1) {
             interval = setInterval(() => {
                 setIndex((prevIndex) => {
-                    const nextIndex = prevIndex + 1;
-                    if (nextIndex >= events.length) {
-                        // If at the end, scroll back to start smoothly
-                        listRef.current?.scrollToIndex({ index: 0, animated: true });
-                        return 0;
-                    } else {
-                        listRef.current?.scrollToIndex({ index: nextIndex, animated: true });
-                        return nextIndex;
-                    }
+                    const nextIndex = (prevIndex + 1) % events.length; // Use modulo for infinite loop
+                    listRef.current?.scrollToIndex({ 
+                        index: nextIndex, 
+                        animated: true 
+                    });
+                    return nextIndex;
                 });
             }, 5000);
         }
@@ -78,8 +76,6 @@ export default function ShowCase() {
         if (event.source && event.source.startsWith('http')) {
             return { uri: event.source };
         }
-        // Use fallback image based on index
-        // return fallbackImages[index % fallbackImages.length] || fallbackImages[0];
         return require('../assets/images/simadlead.jpg'); // Fallback image
     };
 
@@ -106,17 +102,8 @@ export default function ShowCase() {
         index,
     });
 
-    if (loading) {
-        return (
-            <View style={styles.showCaseContainer}>
-                <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color={colors.primary} />
-                    <Text style={styles.loadingText}>Loading events...</Text>
-                </View>
-            </View>
-        );
-    }
-
+    // Remove the individual loading state since we're using global loading
+    // The global loading overlay will handle the loading state
     if (error) {
         return (
             <View style={styles.showCaseContainer}>

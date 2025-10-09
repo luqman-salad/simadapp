@@ -6,15 +6,19 @@ import Postgratuate from './Postgratuate';
 import SimadOlearn from './SimadOlearn';
 import useTheme from '../hooks/usetheme';
 import { getProgramsCategories } from '../apis/academicProgramsApi';
+import { useGlobalLoading } from '../hooks/useGlobalLoading'; // Import the global loading hook
 
 const Tab = createMaterialTopTabNavigator();
 
-function MyTabs() {
+function MyTabs({ componentKey = "programs", refreshTrigger = 0 }) {
   
     const { colors } = useTheme();
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    // Connect to global loading state
+    useGlobalLoading(componentKey, loading);
 
     const fetchCategories = async () => {
         try {
@@ -37,7 +41,7 @@ function MyTabs() {
 
     useEffect(() => {
         fetchCategories();
-    }, []);
+    }, [refreshTrigger]); // Add refreshTrigger to dependencies
 
     // Function to get the appropriate component for each category
     const getCategoryComponent = (categoryName) => {
@@ -53,17 +57,7 @@ function MyTabs() {
         }
     };
 
-    if (loading) {
-        return (
-            <View style={[styles.container, styles.center]}>
-                <ActivityIndicator size="large" color={colors.primary} />
-                <Text style={[styles.loadingText, { color: colors.text }]}>
-                    Loading programs...
-                </Text>
-            </View>
-        );
-    }
-
+    // Remove individual loading display - global overlay handles it
     if (error) {
         return (
             <View style={[styles.container, styles.center]}>

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import useTheme from '../hooks/usetheme';
 import { useBottomSheet } from '../context/BottomSheetContext';
 import { getPartners } from '../apis/partinershipsApi';
+import { useGlobalLoading } from '../hooks/useGlobalLoading'; // Import the global loading hook
 
 const chunkArray = (array, size) => {
   const result = [];
@@ -13,7 +14,7 @@ const chunkArray = (array, size) => {
   return result;
 };
 
-export default function PartnersCard() {
+export default function PartnersCard({ componentKey = "partners", refreshTrigger = 0 }) {
   const { colors } = useTheme();
   const styles = createStyle(colors);
   const { openSheet } = useBottomSheet();
@@ -21,6 +22,9 @@ export default function PartnersCard() {
   const [partners, setPartners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Connect to global loading state
+  useGlobalLoading(componentKey, loading);
 
   const fetchPartnersData = async () => {
     try {
@@ -45,7 +49,7 @@ export default function PartnersCard() {
 
   useEffect(() => {
     fetchPartnersData();
-  }, []);
+  }, [refreshTrigger]); // Add refreshTrigger to dependencies
 
   const chunkedPartners = chunkArray(partners, 2); // 2 items per column
 
@@ -57,23 +61,7 @@ export default function PartnersCard() {
     fetchPartnersData();
   };
 
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.headerRow}>
-          <Text style={styles.sectionTitle}>Our Partners</Text>
-          <TouchableOpacity onPress={handleSeeAll}>
-            <Text style={styles.seeAllText}>See All</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="small" color={colors.primary} />
-          <Text style={styles.loadingText}>Loading partners...</Text>
-        </View>
-      </View>
-    );
-  }
-
+  // Remove individual loading display - global overlay handles it
   if (error) {
     return (
       <View style={styles.container}>

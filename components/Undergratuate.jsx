@@ -4,6 +4,7 @@ import { Image, Pressable, ScrollView, StyleSheet, Text, View, ActivityIndicator
 import { useState, useEffect } from 'react';
 import useTheme from '../hooks/usetheme';
 import { getProgramsByCategoryId } from '../apis/academicProgramsApi';
+import { useGlobalLoading } from '../hooks/useGlobalLoading'; // Import the global loading hook
 
 const chunkArray = (array, size) => {
   const result = [];
@@ -13,7 +14,7 @@ const chunkArray = (array, size) => {
   return result;
 };
 
-export default function HorizontalTwoRowGrid({ route }) {
+export default function HorizontalTwoRowGrid({ route, componentKey = "institutions", refreshTrigger = 0 }) {
   const { colors } = useTheme();
   const styles = createStyle(colors);
   const navigation = useNavigation();
@@ -22,6 +23,9 @@ export default function HorizontalTwoRowGrid({ route }) {
   const [schools, setSchools] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Connect to global loading state
+  useGlobalLoading(componentKey, loading);
 
   const fetchSchoolsData = async () => {
     if (!categoryId) return;
@@ -48,12 +52,11 @@ export default function HorizontalTwoRowGrid({ route }) {
     if (categoryId) {
       fetchSchoolsData();
     }
-  }, [categoryId]);
+  }, [categoryId, refreshTrigger]); // Add refreshTrigger to dependencies
 
   const handlePress = (schoolId, schoolName) => {
     console.log('School pressed:', schoolId, schoolName);
     
-    // FIXED: Pass parameters correctly using object format
     router.push({
       pathname: '/(screens)/SchoolInfoScreen',
       params: { 
@@ -67,17 +70,7 @@ export default function HorizontalTwoRowGrid({ route }) {
     fetchSchoolsData();
   };
 
-  if (loading) {
-    return (
-      <View style={[styles.loadingContainer, { backgroundColor: colors.bg }]}>
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={[styles.loadingText, { color: colors.text }]}>
-          Loading undergraduate schools...
-        </Text>
-      </View>
-    );
-  }
-
+  // Remove individual loading display - global overlay handles it
   if (error) {
     return (
       <View style={[styles.errorContainer, { backgroundColor: colors.bg }]}>

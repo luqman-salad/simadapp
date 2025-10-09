@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, Image, ActivityIndicator, Dimensions, Pressable } from 'react-native';
 import useTheme from '../hooks/usetheme';
 import { getProgramsByCategoryId } from '../apis/academicProgramsApi'; 
+import { useGlobalLoading } from '../hooks/useGlobalLoading'; // Import the global loading hook
 
 // Constants
 const CARD_MARGIN = 10;
@@ -40,7 +41,7 @@ const GridCard = ({ item, styles }) => (
 );
 
 // ⭐ Component now accepts props, where the categoryId will be found ⭐
-export default function HorizontalTwoRowGrid({ route }) {
+export default function HorizontalTwoRowGrid({ route, componentKey = "institutions", refreshTrigger = 0 }) {
     // The categoryId is passed via the tab navigator's initialParams, 
     // and is accessible either directly via props or via route.params.
     // Assuming the tab component is passed directly:
@@ -53,6 +54,9 @@ export default function HorizontalTwoRowGrid({ route }) {
     const [schools, setSchools] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    // Connect to global loading state
+    useGlobalLoading(componentKey, loading);
 
     const fetchSchools = async (id) => {
         if (!id) {
@@ -88,20 +92,12 @@ export default function HorizontalTwoRowGrid({ route }) {
 
     useEffect(() => {
         fetchSchools(categoryId); // Pass the retrieved categoryId to the fetch function
-    }, [categoryId]); // Re-run effect if categoryId changes (e.g., if component is reused)
+    }, [categoryId, refreshTrigger]); // Add refreshTrigger to dependencies
 
     // A utility style to ensure these states are centered vertically in the available space
     const centerStyle = { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bg, height: 250 };
 
-    if (loading) {
-        return (
-            <View style={centerStyle}>
-                <ActivityIndicator size="large" color={colors.primary} />
-                <Text style={styles.loadingText}>Loading programs...</Text>
-            </View>
-        );
-    }
-
+    // Remove individual loading display - global overlay handles it
     if (error) {
         return (
             <View style={centerStyle}>

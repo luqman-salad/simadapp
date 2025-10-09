@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import useTheme from '../hooks/usetheme';
 import { getUniversityStats } from '../apis/simadInNumbersApi';
+import { useGlobalLoading } from '../hooks/useGlobalLoading'; // Import the global loading hook
 
 const { width } = Dimensions.get('window');
 
@@ -68,7 +69,7 @@ const AnimatedCounter = ({ value, duration = 2000 }) => {
   );
 };
 
-export default function UniversityStats() {
+export default function UniversityStats({ componentKey = "numbers", refreshTrigger = 0 }) {
   const { colors } = useTheme();
   const styles = createStyle(colors);
   const [statsData, setStatsData] = useState([]);
@@ -78,9 +79,12 @@ export default function UniversityStats() {
     Array(7).fill(0).map(() => new Animated.Value(0))
   );
 
+  // Connect to global loading state
+  useGlobalLoading(componentKey, loading);
+
   useEffect(() => {
     fetchStats();
-  }, []);
+  }, [refreshTrigger]); // Add refreshTrigger to dependencies
 
   useEffect(() => {
     if (statsData.length > 0) {
@@ -162,32 +166,8 @@ export default function UniversityStats() {
     fetchStats();
   };
 
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        {/* Safe hero section */}
-        {colors.primary && colors.secondary ? (
-          <LinearGradient
-            colors={[colors.primary, colors.secondary]}
-            style={styles.heroSection}
-          >
-            <Text style={styles.heroTitle}>University Stats</Text>
-            <Text style={styles.heroSubtitle}>Loading amazing numbers...</Text>
-          </LinearGradient>
-        ) : (
-          <View style={[styles.heroSection, { backgroundColor: colors.primary }]}>
-            <Text style={styles.heroTitle}>University Stats</Text>
-            <Text style={styles.heroSubtitle}>Loading amazing numbers...</Text>
-          </View>
-        )}
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.loadingText}>Loading university statistics...</Text>
-        </View>
-      </View>
-    );
-  }
-
+  // Remove individual loading display - global overlay handles it
+  // But keep the hero section visible during loading
   if (error) {
     return (
       <View style={styles.container}>
@@ -220,69 +200,80 @@ export default function UniversityStats() {
 
   return (
     <View style={styles.container}>
-      {/* Safe hero section */}
+      {/* Safe hero section - Always show this even during loading */}
       {colors.primary && colors.secondary ? (
         <LinearGradient
           colors={[colors.primary, colors.secondary]}
           style={styles.heroSection}
         >
           <Text style={styles.heroTitle}>SIMAD in Numbers</Text>
-          <Text style={styles.heroSubtitle}>Our impact and achievements</Text>
-          <View style={styles.heroStats}>
-            <View style={styles.heroStat}>
-              <Text style={styles.heroNumber}>{statsData[0]?.number}</Text>
-              <Text style={styles.heroLabel}>Graduates</Text>
+          <Text style={styles.heroSubtitle}>
+            {loading ? 'Loading amazing numbers...' : 'Our impact and achievements'}
+          </Text>
+          {!loading && statsData.length > 0 && (
+            <View style={styles.heroStats}>
+              <View style={styles.heroStat}>
+                <Text style={styles.heroNumber}>{statsData[0]?.number}</Text>
+                <Text style={styles.heroLabel}>Graduates</Text>
+              </View>
+              <View style={styles.heroDivider} />
+              <View style={styles.heroStat}>
+                <Text style={styles.heroNumber}>{statsData[1]?.number}</Text>
+                <Text style={styles.heroLabel}>Active Students</Text>
+              </View>
             </View>
-            <View style={styles.heroDivider} />
-            <View style={styles.heroStat}>
-              <Text style={styles.heroNumber}>{statsData[1]?.number}</Text>
-              <Text style={styles.heroLabel}>Active Students</Text>
-            </View>
-          </View>
+          )}
         </LinearGradient>
       ) : (
         <View style={[styles.heroSection, { backgroundColor: colors.primary }]}>
           <Text style={styles.heroTitle}>SIMAD in Numbers</Text>
-          <Text style={styles.heroSubtitle}>Our impact and achievements</Text>
-          <View style={styles.heroStats}>
-            <View style={styles.heroStat}>
-              <Text style={styles.heroNumber}>{statsData[0]?.number}</Text>
-              <Text style={styles.heroLabel}>Graduates</Text>
+          <Text style={styles.heroSubtitle}>
+            {loading ? 'Loading amazing numbers...' : 'Our impact and achievements'}
+          </Text>
+          {!loading && statsData.length > 0 && (
+            <View style={styles.heroStats}>
+              <View style={styles.heroStat}>
+                <Text style={styles.heroNumber}>{statsData[0]?.number}</Text>
+                <Text style={styles.heroLabel}>Graduates</Text>
+              </View>
+              <View style={styles.heroDivider} />
+              <View style={styles.heroStat}>
+                <Text style={styles.heroNumber}>{statsData[1]?.number}</Text>
+                <Text style={styles.heroLabel}>Active Students</Text>
+              </View>
             </View>
-            <View style={styles.heroDivider} />
-            <View style={styles.heroStat}>
-              <Text style={styles.heroNumber}>{statsData[1]?.number}</Text>
-              <Text style={styles.heroLabel}>Active Students</Text>
-            </View>
-          </View>
+          )}
         </View>
       )}
 
-      <ScrollView 
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.statsGrid}>
-          {statsData.map((item, index) => (
-            <StatCard 
-              key={item.id} 
-              item={item} 
-              index={index}
-              animation={animations[index]}
-            />
-          ))}
-        </View>
+      {/* Only show content when not loading */}
+      {!loading && statsData.length > 0 && (
+        <ScrollView 
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.statsGrid}>
+            {statsData.map((item, index) => (
+              <StatCard 
+                key={item.id} 
+                item={item} 
+                index={index}
+                animation={animations[index]}
+              />
+            ))}
+          </View>
 
-        <View style={styles.footer}>
-          <Ionicons name="trophy-outline" size={48} color={colors.primary} />
-          <Text style={styles.footerTitle}>Excellence in Education</Text>
-          <Text style={styles.footerText}>
-            These numbers represent our commitment to providing quality education 
-            and creating opportunities for our students and community.
-          </Text>
-        </View>
-      </ScrollView>
+          <View style={styles.footer}>
+            <Ionicons name="trophy-outline" size={48} color={colors.primary} />
+            <Text style={styles.footerTitle}>Excellence in Education</Text>
+            <Text style={styles.footerText}>
+              These numbers represent our commitment to providing quality education 
+              and creating opportunities for our students and community.
+            </Text>
+          </View>
+        </ScrollView>
+      )}
     </View>
   );
 }

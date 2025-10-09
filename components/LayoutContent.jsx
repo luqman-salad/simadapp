@@ -4,14 +4,14 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import FollowUsBottomSheet from '../components/BottomSheets/FollowUsBottomSheet';
 import LanguageBottomSheet from '../components/BottomSheets/LanguageBottomSheet';
 import ThemeBottomSheet from '../components/BottomSheets/ThemeBottomSheet';
-
-
 import PartnerBottomSheet from '../components/PartnerBottomSheet';
 import ProgramsBottomSheet from '../components/ProgramsBottomSheet';
 import SafeAreaScreen from "../components/SafeAreaScreen";
 import { useBottomSheet } from '../context/BottomSheetContext';
 import useTheme from "../hooks/usetheme";
 import useInstitutionsStore from "../store/institutionsStore";
+import GlobalLoadingOverlay from "../components/GlobalLoadingOverlay"
+
 export default function RootLayout() {
   const { colors } = useTheme();
   const { selectedInstitutionTitle } = useInstitutionsStore();
@@ -163,6 +163,8 @@ export default function RootLayout() {
           />
 
         </Stack>
+        
+        <GlobalLoadingOverlay/>
       </SafeAreaScreen>
       <StatusBar barStyle={colors.statusBarStyle} />
       {sheetType === 'programs' && (

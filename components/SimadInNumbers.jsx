@@ -1,17 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Animated, Dimensions, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import useTheme from '../hooks/usetheme';
+import { useEffect, useState } from 'react';
+import { Animated, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { getUniversityStats } from '../apis/simadInNumbersApi';
 import { useGlobalLoading } from '../hooks/useGlobalLoading'; // Import the global loading hook
+import useTheme from '../hooks/usetheme';
 
 const { width } = Dimensions.get('window');
 
 const StatCard = ({ item, index, animation }) => {
   const { colors } = useTheme();
   const styles = createStyle(colors);
-  
+
   const translateY = animation.interpolate({
     inputRange: [0, 1],
     outputRange: [50, 0],
@@ -23,7 +23,7 @@ const StatCard = ({ item, index, animation }) => {
   });
 
   return (
-    <Animated.View 
+    <Animated.View
       style={[
         styles.statCard,
         {
@@ -75,7 +75,7 @@ export default function UniversityStats({ componentKey = "numbers", refreshTrigg
   const [statsData, setStatsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [animations] = useState(() => 
+  const [animations] = useState(() =>
     Array(7).fill(0).map(() => new Animated.Value(0))
   );
 
@@ -88,7 +88,7 @@ export default function UniversityStats({ componentKey = "numbers", refreshTrigg
 
   useEffect(() => {
     if (statsData.length > 0) {
-      Animated.stagger(100, animations.map(anim => 
+      Animated.stagger(100, animations.map(anim =>
         Animated.spring(anim, {
           toValue: 1,
           tension: 50,
@@ -104,7 +104,7 @@ export default function UniversityStats({ componentKey = "numbers", refreshTrigg
       setLoading(true);
       setError(null);
       const response = await getUniversityStats();
-      
+
       if (response.success && response.data) {
         const transformedData = [
           {
@@ -248,16 +248,16 @@ export default function UniversityStats({ componentKey = "numbers", refreshTrigg
 
       {/* Only show content when not loading */}
       {!loading && statsData.length > 0 && (
-        <ScrollView 
+        <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.statsGrid}>
             {statsData.map((item, index) => (
-              <StatCard 
-                key={item.id} 
-                item={item} 
+              <StatCard
+                key={item.id}
+                item={item}
                 index={index}
                 animation={animations[index]}
               />
@@ -268,7 +268,7 @@ export default function UniversityStats({ componentKey = "numbers", refreshTrigg
             <Ionicons name="trophy-outline" size={48} color={colors.primary} />
             <Text style={styles.footerTitle}>Excellence in Education</Text>
             <Text style={styles.footerText}>
-              These numbers represent our commitment to providing quality education 
+              These numbers represent our commitment to providing quality education
               and creating opportunities for our students and community.
             </Text>
           </View>

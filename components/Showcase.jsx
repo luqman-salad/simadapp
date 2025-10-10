@@ -1,9 +1,9 @@
-import { FlatList, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator, Dimensions } from 'react-native'
-import React, { useEffect, useRef, useState } from 'react'
-import { Image } from 'expo-image'
-import useTheme from '../hooks/usetheme'
-import { getUpcomingEvents } from '../apis/upcomingEvents'
-import { useGlobalLoading } from '../hooks/useGlobalLoading' // Import the global loading hook
+import { Image } from 'expo-image';
+import { useEffect, useRef, useState } from 'react';
+import { Dimensions, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { getUpcomingEvents } from '../apis/upcomingEvents';
+import { useGlobalLoading } from '../hooks/useGlobalLoading'; // Import the global loading hook
+import useTheme from '../hooks/usetheme';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const ITEM_WIDTH = 270;
@@ -15,8 +15,8 @@ export default function ShowCase({ componentKey = "showcase", refreshTrigger = 0
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    
-    const {colors} = useTheme();
+
+    const { colors } = useTheme();
     const styles = createStyle(colors);
 
     // Connect to global loading state
@@ -32,9 +32,9 @@ export default function ShowCase({ componentKey = "showcase", refreshTrigger = 0
             interval = setInterval(() => {
                 setIndex((prevIndex) => {
                     const nextIndex = (prevIndex + 1) % events.length; // Use modulo for infinite loop
-                    listRef.current?.scrollToIndex({ 
-                        index: nextIndex, 
-                        animated: true 
+                    listRef.current?.scrollToIndex({
+                        index: nextIndex,
+                        animated: true
                     });
                     return nextIndex;
                 });
@@ -50,7 +50,7 @@ export default function ShowCase({ componentKey = "showcase", refreshTrigger = 0
             setLoading(true);
             setError(null);
             const response = await getUpcomingEvents();
-            
+
             if (response.success && response.data) {
                 const transformedEvents = response.data.map(event => ({
                     id: event._id,
@@ -90,7 +90,7 @@ export default function ShowCase({ componentKey = "showcase", refreshTrigger = 0
     const handleScroll = (event) => {
         const contentOffsetX = event.nativeEvent.contentOffset.x;
         const newIndex = Math.round(contentOffsetX / (ITEM_WIDTH + ITEM_MARGIN));
-        
+
         if (newIndex >= 0 && newIndex < events.length) {
             setIndex(newIndex);
         }
@@ -121,7 +121,12 @@ export default function ShowCase({ componentKey = "showcase", refreshTrigger = 0
         return (
             <View style={styles.showCaseContainer}>
                 <View style={styles.emptyContainer}>
-                    <Text style={styles.emptyText}>No upcoming events</Text>
+                    {
+                        !loading && (
+                            <Text style={styles.emptyText}>No upcoming events</Text>
+                        )
+                    }
+
                 </View>
             </View>
         );
@@ -145,13 +150,13 @@ export default function ShowCase({ componentKey = "showcase", refreshTrigger = 0
                 onScroll={handleScroll}
                 scrollEventThrottle={16}
                 getItemLayout={getItemLayout}
-                renderItem={({item, index: itemIndex}) => (
-                    <TouchableOpacity 
+                renderItem={({ item, index: itemIndex }) => (
+                    <TouchableOpacity
                         style={styles.showCaseItem}
                         onPress={() => handleEventPress(item)}
                     >
-                        <Image 
-                            source={getImageSource(item, itemIndex)} 
+                        <Image
+                            source={getImageSource(item, itemIndex)}
                             style={styles.showcaseImg}
                             contentFit="cover"
                             transition={300}

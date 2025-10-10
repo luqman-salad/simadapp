@@ -1,21 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ActivityIndicator, Text } from 'react-native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import Undergratuate from './Undergratuate';
-import Postgratuate from './Postgratuate';
-import SimadOlearn from './SimadOlearn';
-import useTheme from '../hooks/usetheme';
+import { useEffect, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import { getProgramsCategories } from '../apis/academicProgramsApi';
 import { useGlobalLoading } from '../hooks/useGlobalLoading'; // Import the global loading hook
+import useTheme from '../hooks/usetheme';
+import Postgratuate from './Postgratuate';
+import SimadOlearn from './SimadOlearn';
+import Undergratuate from './Undergratuate';
 
 const Tab = createMaterialTopTabNavigator();
 
 function MyTabs({ componentKey = "programs", refreshTrigger = 0 }) {
-  
+
     const { colors } = useTheme();
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const styles = createStyle(colors);
 
     // Connect to global loading state
     useGlobalLoading(componentKey, loading);
@@ -25,7 +26,7 @@ function MyTabs({ componentKey = "programs", refreshTrigger = 0 }) {
             setLoading(true);
             setError(null);
             const result = await getProgramsCategories();
-            
+
             if (result?.success && result.data?.categories) {
                 setCategories(result.data.categories);
             } else {
@@ -74,15 +75,26 @@ function MyTabs({ componentKey = "programs", refreshTrigger = 0 }) {
     if (categories.length === 0) {
         return (
             <View style={[styles.container, styles.center]}>
-                <Text style={[styles.emptyText, { color: colors.text }]}>
-                    No program categories available
-                </Text>
+                {
+                    !loading && (
+                        <View>
+                            <Text style={styles.header}>Academic Programs</Text>
+
+                            <Text style={[styles.emptyText, { color: colors.text }]}>
+                                No program categories available
+                            </Text>
+                        </View>
+                    )
+                }
+
             </View>
         );
     }
 
     return (
         <View style={styles.container}>
+            <Text style={styles.header}>Academic Programs</Text>
+
             <Tab.Navigator
                 screenOptions={{
                     swipeEnabled: false,
@@ -90,14 +102,14 @@ function MyTabs({ componentKey = "programs", refreshTrigger = 0 }) {
                     tabBarInactiveTintColor: colors.textMuted,
                     elevation: 0,
                     shadowOpacity: 0,
-                    tabBarLabelStyle: { 
+                    tabBarLabelStyle: {
                         fontSize: 14,
                         fontWeight: 'bold'
                     },
-                    tabBarIndicatorStyle: { 
+                    tabBarIndicatorStyle: {
                         backgroundColor: colors.primary
                     },
-                    tabBarStyle: { 
+                    tabBarStyle: {
                         backgroundColor: colors.bg,
                         elevation: 0,
                         shadowOffset: 0,
@@ -106,7 +118,7 @@ function MyTabs({ componentKey = "programs", refreshTrigger = 0 }) {
                 }}
             >
                 {categories.map((category) => (
-                    <Tab.Screen 
+                    <Tab.Screen
                         key={category._id}
                         name={category.name}
                         component={getCategoryComponent(category.name)}
@@ -118,33 +130,44 @@ function MyTabs({ componentKey = "programs", refreshTrigger = 0 }) {
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1, 
-    },
-    center: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 20,
-    },
-    loadingText: {
-        marginTop: 10,
-        fontSize: 16,
-    },
-    errorText: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 10,
-        textAlign: 'center',
-    },
-    errorDetail: {
-        fontSize: 14,
-        textAlign: 'center',
-    },
-    emptyText: {
-        fontSize: 16,
-        textAlign: 'center',
-    },
-});
 
+
+const createStyle = (colors) => {
+    const styles = StyleSheet.create({
+        container: {
+            flex: 1,
+        },
+        header: {
+            fontSize: 18,
+            fontWeight: '500',
+            marginBottom: 10,
+            color: colors.text
+        },
+        center: {
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: 20,
+        },
+        loadingText: {
+            marginTop: 10,
+            fontSize: 16,
+        },
+        errorText: {
+            fontSize: 18,
+            fontWeight: 'bold',
+            marginBottom: 10,
+            textAlign: 'center',
+        },
+        errorDetail: {
+            fontSize: 14,
+            textAlign: 'center',
+        },
+        emptyText: {
+            fontSize: 16,
+            textAlign: 'center',
+        },
+    });
+
+    return styles;
+};
 export default MyTabs;

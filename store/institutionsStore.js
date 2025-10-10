@@ -1,11 +1,11 @@
 import { create } from 'zustand';
 
 const useInstitutionsStore = create((set) => ({
-    //variables
+  //variables
   selectedInstitutionTitle: null,
 
-    //functions
-  setSelectedInstitutionTitle: (item) => set({ selectedInstitutionTitle : item }),
+  //functions
+  setSelectedInstitutionTitle: (item) => set({ selectedInstitutionTitle: item }),
 }));
 
 export default useInstitutionsStore;

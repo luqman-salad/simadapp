@@ -1,10 +1,10 @@
 import { router } from 'expo-router';
-import { Image, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
-import { useState, useEffect } from 'react';
-import useTheme from '../hooks/usetheme';
-import { useBottomSheet } from '../context/BottomSheetContext';
+import { useEffect, useState } from 'react';
+import { Image, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { getPartners } from '../apis/partinershipsApi';
+import { useBottomSheet } from '../context/BottomSheetContext';
 import { useGlobalLoading } from '../hooks/useGlobalLoading'; // Import the global loading hook
+import useTheme from '../hooks/usetheme';
 
 const chunkArray = (array, size) => {
   const result = [];
@@ -31,7 +31,7 @@ export default function PartnersCard({ componentKey = "partners", refreshTrigger
       setLoading(true);
       setError(null);
       const result = await getPartners();
-      
+
       if (result?.success && Array.isArray(result.data)) {
         // Flatten all partners from all categories
         const allPartners = result.data.flatMap(category => category.partners);
@@ -91,7 +91,12 @@ export default function PartnersCard({ componentKey = "partners", refreshTrigger
           </TouchableOpacity>
         </View>
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No partners available</Text>
+          {
+            !loading && (
+              <Text style={styles.emptyText}>No partners available</Text>
+            )
+          }
+
         </View>
       </View>
     );

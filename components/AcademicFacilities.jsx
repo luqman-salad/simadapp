@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, ImageBackground, ActivityIndicator } from 'react-native';
-import useTheme from '../hooks/usetheme';
+import { useEffect, useState } from 'react';
+import { FlatList, ImageBackground, StyleSheet, Text, View } from 'react-native';
 import { getFacilities } from '../apis/facilitiesApi';
 import { useGlobalLoading } from '../hooks/useGlobalLoading'; // Import the global loading hook
+import useTheme from '../hooks/usetheme';
 
 // Fallback local images in case API images fail to load
 const fallbackImages = {
@@ -45,7 +45,7 @@ export default function TwoRowHorizontalList({ componentKey = "facilities", refr
       setLoading(true);
       setError(null);
       const response = await getFacilities();
-      
+
       if (response.success && response.data) {
         // Transform API data to match component structure
         const transformedFacilities = response.data.map(facility => ({
@@ -96,10 +96,16 @@ export default function TwoRowHorizontalList({ componentKey = "facilities", refr
   if (!facilities || facilities.length === 0) {
     return (
       <View style={styles.container}>
-        <Text style={styles.header}>Academic Facilities</Text>
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No facilities available</Text>
-        </View>
+        {!loading && (<View>
+          <Text style={styles.header}>Academic Facilities</Text>
+          <View style={styles.emptyContainer}>
+
+            <Text style={styles.emptyText}>No facilities available</Text>
+
+
+          </View>
+        </View>)}
+
       </View>
     );
   }

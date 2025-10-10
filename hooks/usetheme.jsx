@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 
 const lightColors = {
@@ -45,6 +45,9 @@ const darkColors = {
   border: "#334155",
   primary: "#60a5fa",
   success: "#34d399",
+  secondary: "#20a147",
+
+  tertiary: "#f7b519",
   warning: "#fbbf24",
   danger: "#f87171",
   textMistakes: "#AC1515",

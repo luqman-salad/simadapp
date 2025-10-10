@@ -1,10 +1,10 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useNavigation, useLocalSearchParams, useRouter } from 'expo-router';
-import { Image, Pressable, ScrollView, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
-import { useState, useEffect } from 'react';
+import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { getSchoolInfoById } from '../../apis/academicProgramsApi';
 import { Header } from '../../components/Headrer';
 import useTheme from '../../hooks/usetheme';
-import { getSchoolInfoById } from '../../apis/academicProgramsApi';
 
 const SectionHeader = ({ iconName, iconColor, title, subtitle }) => {
   const { colors } = useTheme();
@@ -43,12 +43,12 @@ const ProgramCard = ({ title, iconName, programId }) => {
   const router = useRouter();
 
   const handleProgramPress = () => {
-        // Pass the program ID to the ProgramsInfoScreen
-        router.push({
-            pathname: '/(screens)/ProgramsInfoScreen',
-            params: { programId: programId }
-        });
-    };
+    // Pass the program ID to the ProgramsInfoScreen
+    router.push({
+      pathname: '/(screens)/ProgramsInfoScreen',
+      params: { programId: programId }
+    });
+  };
 
   return (
     <Pressable style={styles.programCard}
@@ -56,7 +56,7 @@ const ProgramCard = ({ title, iconName, programId }) => {
     >
       <MaterialCommunityIcons name={iconName} size={28} color={colors.textSecondary} />
       <Text style={styles.programText}>{title}</Text>
-      <Ionicons name="link-outline" size={24} color={colors.textSecondary} style={{ marginLeft: 'auto' }} />
+      <Ionicons name="link-outline" size={24} color={colors.primary} style={{ marginLeft: 'auto' }} />
     </Pressable>
   );
 };
@@ -65,7 +65,7 @@ const SchoolInfoScreen = () => {
   const { colors } = useTheme();
   const styles = createStyle(colors);
   const navigation = useNavigation();
-  
+
   // Use useLocalSearchParams to get the parameters from the URL
   const params = useLocalSearchParams();
   const schoolId = params.schoolId;
@@ -75,9 +75,9 @@ const SchoolInfoScreen = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  console.log('SchoolInfoScreen received params:', params);
-  console.log('Extracted schoolId:', schoolId);
-  console.log('Extracted schoolName:', schoolName);
+  // console.log('SchoolInfoScreen received params:', params);
+  // console.log('Extracted schoolId:', schoolId);
+  // console.log('Extracted schoolName:', schoolName);
 
   const fetchSchoolData = async () => {
     if (!schoolId) {
@@ -85,15 +85,15 @@ const SchoolInfoScreen = () => {
       setLoading(false);
       return;
     }
-    
+
     try {
       setLoading(true);
       setError(null);
       console.log('Fetching school data for ID:', schoolId);
       const result = await getSchoolInfoById(schoolId);
-      
-      console.log('API Response:', result);
-      
+
+      // console.log('API Response:', result);
+
       if (result?.success && result.data?.school) {
         setSchoolData(result.data.school);
       } else {
@@ -211,17 +211,17 @@ const SchoolInfoScreen = () => {
         {/* Header Section */}
         <View style={styles.headerBackground}>
           {schoolData.coverImage ? (
-            <Image 
-              source={{ uri: schoolData.coverImage }} 
-              style={styles.headerImage} 
-              resizeMode="cover" 
+            <Image
+              source={{ uri: schoolData.coverImage }}
+              style={styles.headerImage}
+              resizeMode="cover"
               onError={() => console.log('Failed to load cover image')}
             />
           ) : (
-            <Image 
-              source={require('../../assets/images/computerlabs.jpeg')} 
-              style={styles.headerImage} 
-              resizeMode="cover" 
+            <Image
+              source={require('../../assets/images/computerlabs.jpeg')}
+              style={styles.headerImage}
+              resizeMode="cover"
             />
           )}
           <View style={styles.overlay}>
@@ -241,9 +241,9 @@ const SchoolInfoScreen = () => {
             />
             <View style={styles.programList}>
               {schoolData.programs.map((program, index) => (
-                <ProgramCard 
-                  key={program._id} 
-                  title={program.name} 
+                <ProgramCard
+                  key={program._id}
+                  title={program.name}
                   iconName={getIconName(program.icon)}
                   programId={program._id}
                 />
@@ -364,16 +364,16 @@ const SchoolInfoScreen = () => {
               subtitle={schoolData.contactSection?.subtitle || "Get in touch with us"}
             />
             {schoolData.contact.phone && (
-              <InfoCard iconName="phone-outline" title="Phone" value={schoolData.contact.phone} />
+              <InfoCard iconName="phone-outline" title="" value={schoolData.contact.phone} />
             )}
             {schoolData.contact.email && (
-              <InfoCard iconName="email-outline" title="Email" value={schoolData.contact.email} />
+              <InfoCard iconName="email-outline" title="" value={schoolData.contact.email} />
             )}
             {schoolData.contact.location && (
-              <InfoCard iconName="map-marker-outline" title="Location" value={schoolData.contact.location} />
+              <InfoCard iconName="map-marker-outline" title="" value={schoolData.contact.location} />
             )}
             {schoolData.contact.website && (
-              <InfoCard iconName="web" title="Website" value={schoolData.contact.website} />
+              <InfoCard iconName="web" title="" value={schoolData.contact.website} />
             )}
           </View>
         )}
@@ -614,7 +614,7 @@ const createStyle = (colors) => {
     },
     infoValue: {
       fontSize: 14,
-      color: colors.textSecondary,
+      color: colors.text,
     },
   });
 };

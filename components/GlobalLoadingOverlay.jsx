@@ -1,7 +1,7 @@
 // components/GlobalLoadingOverlay.js
-import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import LottieView from 'lottie-react-native';
+import React from 'react';
+import { Dimensions, StyleSheet, View } from 'react-native';
 import useTheme from '../hooks/usetheme';
 import useLoadingStore from '../store/loadingStore';
 
@@ -10,9 +10,9 @@ const { width, height } = Dimensions.get('window');
 const GlobalLoadingOverlay = () => {
   const { colors } = useTheme();
   const { isAppLoading } = useLoadingStore();
-  
+
   if (!isAppLoading) return null;
-  
+
   return (
     <View style={[styles.overlay, { backgroundColor: 'rgba(255, 255, 255, 0.85)' }]}>
       <View style={styles.loadingContainer}>
@@ -24,14 +24,14 @@ const GlobalLoadingOverlay = () => {
           style={styles.lottieAnimation}
           resizeMode="cover"
         />
-        
+
         {/* <Text style={[styles.loadingText, { color: colors.text }]}>
           Loading SIMAD University
         </Text> */}
         {/* <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
           Preparing your experience...
         </Text> */}
-        
+
         {/* Progress Dots */}
         <View style={styles.dotsContainer}>
           <View style={[styles.dot, { backgroundColor: colors.primary }]} />

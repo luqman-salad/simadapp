@@ -161,6 +161,12 @@ export default function RootLayout() {
               headerShown: false
             }}
           />
+          <Stack.Screen name="(screens)/aboutSimad"
+            options={{
+              // title: "Attendence"
+              headerShown: false
+            }}
+          />
 
         </Stack>
         

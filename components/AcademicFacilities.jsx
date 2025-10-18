@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, ImageBackground, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, StyleSheet, ImageBackground } from 'react-native';
 import useTheme from '../hooks/usetheme';
 import { getFacilities } from '../apis/facilitiesApi';
-import { useGlobalLoading } from '../hooks/useGlobalLoading'; // Import the global loading hook
+import { useGlobalLoading } from '../hooks/useGlobalLoading';
+import useLoadingStore from '../store/loadingStore'; // ✅ ADD THIS IMPORT
 
 // Fallback local images in case API images fail to load
 const fallbackImages = {
@@ -29,21 +30,22 @@ const chunkArray = (array, size) => {
 export default function TwoRowHorizontalList({ componentKey = "facilities", refreshTrigger = 0 }) {
   const [facilities, setFacilities] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const { colors } = useTheme();
   const styles = createStyle(colors);
+
+  // ✅ ADD THIS LINE - get setGlobalError from store
+  const { setGlobalError } = useLoadingStore();
 
   // Connect to global loading state
   useGlobalLoading(componentKey, loading);
 
   useEffect(() => {
     fetchFacilities();
-  }, [refreshTrigger]); // Add refreshTrigger to dependencies
+  }, [refreshTrigger]);
 
   const fetchFacilities = async () => {
     try {
       setLoading(true);
-      setError(null);
       const response = await getFacilities();
       
       if (response.success && response.data) {
@@ -55,10 +57,16 @@ export default function TwoRowHorizontalList({ componentKey = "facilities", refr
           description: facility.description
         }));
         setFacilities(transformedFacilities);
+      } else {
+        throw new Error('Invalid data structure from API');
       }
     } catch (error) {
       console.error('Error loading facilities:', error);
-      setError('Failed to load facilities');
+      // ✅ REPLACE local error handling with global error
+      setGlobalError(
+        'Failed to load facilities. Please check your connection.',
+        fetchFacilities // Pass the function to retry
+      );
     } finally {
       setLoading(false);
     }
@@ -74,24 +82,8 @@ export default function TwoRowHorizontalList({ componentKey = "facilities", refr
     return fallbackImages[facilityKey] || require('../assets/images/smartclasses.jpg');
   };
 
-  const handleRetry = () => {
-    fetchFacilities();
-  };
-
-  // Remove individual loading display - global overlay handles it
-  if (error) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.header}>Academic Facilities</Text>
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
-          <Text style={styles.retryText} onPress={handleRetry}>
-            Tap to retry
-          </Text>
-        </View>
-      </View>
-    );
-  }
+  // ✅ REMOVE the error return block - it's now handled globally
+  // if (error) { ... }
 
   if (!facilities || facilities.length === 0) {
     return (
@@ -176,32 +168,6 @@ const createStyle = (colors) => {
       fontSize: 14,
       fontWeight: "500",
       textAlign: 'center',
-    },
-    loadingContainer: {
-      height: 100,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    loadingText: {
-      marginTop: 8,
-      fontSize: 14,
-      color: colors.textSecondary,
-    },
-    errorContainer: {
-      height: 100,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    errorText: {
-      fontSize: 14,
-      color: colors.textSecondary,
-      textAlign: 'center',
-      marginBottom: 8,
-    },
-    retryText: {
-      fontSize: 14,
-      color: colors.primary,
-      fontWeight: '500',
     },
     emptyContainer: {
       height: 100,

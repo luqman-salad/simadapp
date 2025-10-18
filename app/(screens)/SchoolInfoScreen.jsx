@@ -1,10 +1,11 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation, useLocalSearchParams, useRouter } from 'expo-router';
-import { Image, Pressable, ScrollView, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useState, useEffect } from 'react';
 import { Header } from '../../components/Headrer';
 import useTheme from '../../hooks/usetheme';
 import { getSchoolInfoById } from '../../apis/academicProgramsApi';
+import { useGlobalLoading } from '../../hooks/useGlobalLoading';
 
 const SectionHeader = ({ iconName, iconColor, title, subtitle }) => {
   const { colors } = useTheme();
@@ -29,7 +30,7 @@ const InfoCard = ({ iconName, title, value }) => {
 
   return (
     <View style={styles.infoCard}>
-      <MaterialCommunityIcons name={iconName} size={22} color={colors.primary} />
+      <MaterialCommunityIcons name={iconName} size={22} color={colors.text} />
       <Text style={styles.infoTitle}>{title}</Text>
       <Text style={styles.infoValue}>{value}</Text>
     </View>
@@ -54,14 +55,14 @@ const ProgramCard = ({ title, iconName, programId }) => {
     <Pressable style={styles.programCard}
       onPress={handleProgramPress}
     >
-      <MaterialCommunityIcons name={iconName} size={28} color={colors.textSecondary} />
+      <MaterialCommunityIcons name={iconName} size={28} color={colors.text} />
       <Text style={styles.programText}>{title}</Text>
-      <Ionicons name="link-outline" size={24} color={colors.textSecondary} style={{ marginLeft: 'auto' }} />
+      <Ionicons name="link-outline" size={24} color={colors.text} style={{ marginLeft: 'auto' }} />
     </Pressable>
   );
 };
 
-const SchoolInfoScreen = () => {
+const SchoolInfoScreen = ({ componentKey = "school-info", refreshTrigger = 0 }) => {
   const { colors } = useTheme();
   const styles = createStyle(colors);
   const navigation = useNavigation();
@@ -75,9 +76,10 @@ const SchoolInfoScreen = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  console.log('SchoolInfoScreen received params:', params);
-  console.log('Extracted schoolId:', schoolId);
-  console.log('Extracted schoolName:', schoolName);
+  // Connect to global loading state
+  useGlobalLoading(componentKey, loading);
+
+  
 
   const fetchSchoolData = async () => {
     if (!schoolId) {
@@ -114,49 +116,9 @@ const SchoolInfoScreen = () => {
       setError('No school ID provided');
       setLoading(false);
     }
-  }, [schoolId]);
+  }, [schoolId, refreshTrigger]);
 
-  const handleRetry = () => {
-    fetchSchoolData();
-  };
-
-  // Helper function to map API icon names to MaterialCommunityIcons
-  const getIconName = (apiIconName) => {
-    const iconMap = {
-      'fa-laptop-code': 'laptop',
-      'fa-network-wired': 'lan',
-      'fa-photo-video': 'image',
-      'fa-user-tie': 'account-tie',
-      'fa-lightbulb': 'lightbulb-outline',
-      'fa-chart-bar': 'chart-bar',
-      'fa-comments': 'comment-multiple-outline',
-      'fa-book': 'book-open-variant',
-      'fa-envelope': 'email-outline',
-      'ri-computer-line': 'laptop',
-      'ri-video-line': 'video'
-    };
-    return iconMap[apiIconName] || 'help-circle-outline';
-  };
-
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        <Header
-          title={schoolName || "Loading..."}
-          showLeftIcon
-          leftIconName="chevron-back"
-          onLeftIconPress={() => navigation.goBack()}
-        />
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={[styles.loadingText, { color: colors.text }]}>
-            Loading school details...
-          </Text>
-        </View>
-      </View>
-    );
-  }
-
+  // Remove individual loading display - global overlay handles it
   if (error) {
     return (
       <View style={styles.container}>
@@ -166,22 +128,24 @@ const SchoolInfoScreen = () => {
           leftIconName="chevron-back"
           onLeftIconPress={() => navigation.goBack()}
         />
-        <View style={styles.center}>
-          <Text style={[styles.errorText, { color: colors.error }]}>
+        <View style={styles.centerContainer}>
+          <Text style={[styles.errorText, { color: colors.danger }]}>
             Failed to load school details
           </Text>
-          <Text style={[styles.errorDetail, { color: colors.text }]}>
+          <Text style={[styles.errorDetail, { color: colors.textSecondary }]}>
             {error}
           </Text>
-          <Pressable style={styles.retryButton} onPress={handleRetry}>
-            <Text style={styles.retryText}>Try Again</Text>
+          <Pressable style={styles.retryButton} onPress={fetchSchoolData}>
+            <Text style={[styles.retryText, { color: colors.primary }]}>
+              Tap to retry
+            </Text>
           </Pressable>
         </View>
       </View>
     );
   }
 
-  if (!schoolData) {
+  if (!schoolData && !loading) {
     return (
       <View style={styles.container}>
         <Header
@@ -190,8 +154,8 @@ const SchoolInfoScreen = () => {
           leftIconName="chevron-back"
           onLeftIconPress={() => navigation.goBack()}
         />
-        <View style={styles.center}>
-          <Text style={[styles.emptyText, { color: colors.text }]}>
+        <View style={styles.centerContainer}>
+          <Text style={[styles.noDataText, { color: colors.textSecondary }]}>
             School information not available
           </Text>
         </View>
@@ -202,7 +166,7 @@ const SchoolInfoScreen = () => {
   return (
     <View style={styles.container}>
       <Header
-        title={schoolData.name}
+        title={schoolData?.name || schoolName || "School Info"}
         showLeftIcon
         leftIconName="chevron-back"
         onLeftIconPress={() => navigation.goBack()}
@@ -210,7 +174,7 @@ const SchoolInfoScreen = () => {
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         {/* Header Section */}
         <View style={styles.headerBackground}>
-          {schoolData.coverImage ? (
+          {schoolData?.coverImage ? (
             <Image 
               source={{ uri: schoolData.coverImage }} 
               style={styles.headerImage} 
@@ -225,17 +189,17 @@ const SchoolInfoScreen = () => {
             />
           )}
           <View style={styles.overlay}>
-            <Text style={styles.schoolTitle}>{schoolData.name}</Text>
-            <Text style={styles.schoolDescription}>{schoolData.tagline || schoolData.shortDescription}</Text>
+            <Text style={styles.schoolTitle}>{schoolData?.name}</Text>
+            <Text style={styles.schoolDescription}>{schoolData?.tagline || schoolData?.shortDescription}</Text>
           </View>
         </View>
 
         {/* Programs Section */}
-        {schoolData.programs && schoolData.programs.length > 0 && (
+        {schoolData?.programs && schoolData.programs.length > 0 && (
           <View style={styles.cardSection}>
             <SectionHeader
               iconName={getIconName(schoolData.programsSection?.icon)}
-              iconColor={colors.primary}
+              iconColor={colors.text}
               title={schoolData.programsSection?.title || "Programs of the Faculty"}
               subtitle={schoolData.programsSection?.subtitle || "Explore undergraduate and graduate programs"}
             />
@@ -253,11 +217,11 @@ const SchoolInfoScreen = () => {
         )}
 
         {/* Vision & Mission Section */}
-        {(schoolData.vision || schoolData.mission) && (
+        {(schoolData?.vision || schoolData?.mission) && (
           <View style={styles.cardSection}>
             <SectionHeader
               iconName={getIconName(schoolData.visionAndMissionSection?.icon)}
-              iconColor={colors.tertiary}
+              iconColor={colors.text}
               title={schoolData.visionAndMissionSection?.title || "Vision & Mission"}
               subtitle={schoolData.visionAndMissionSection?.subtitle || "Our Commitment to Excellence"}
             />
@@ -277,11 +241,11 @@ const SchoolInfoScreen = () => {
         )}
 
         {/* Dean's Message Section */}
-        {schoolData.dean && (
+        {schoolData?.dean && (
           <View style={styles.cardSection}>
             <SectionHeader
               iconName={getIconName(schoolData.dean.section?.icon)}
-              iconColor={colors.secondary}
+              iconColor={colors.text}
               title={schoolData.dean.section?.title || "Dean's Message"}
               subtitle={schoolData.dean.section?.subtitle || "Leadership & Vision"}
             />
@@ -299,11 +263,11 @@ const SchoolInfoScreen = () => {
         )}
 
         {/* Facts & Figures Section */}
-        {schoolData.facts && (
+        {schoolData?.facts && (
           <View style={styles.cardSection}>
             <SectionHeader
               iconName={getIconName(schoolData.factsSection?.icon)}
-              iconColor={colors.primary}
+              iconColor={colors.text}
               title={schoolData.factsSection?.title || "Facts & Figures"}
               subtitle={schoolData.factsSection?.subtitle || "Our distinctive features"}
             />
@@ -337,11 +301,11 @@ const SchoolInfoScreen = () => {
         )}
 
         {/* Student Testimonials Section */}
-        {schoolData.testimonials && schoolData.testimonials.length > 0 && (
+        {schoolData?.testimonials && schoolData.testimonials.length > 0 && (
           <View style={styles.cardSection}>
             <SectionHeader
               iconName={getIconName(schoolData.testimonialsSection?.icon)}
-              iconColor={colors.secondary}
+              iconColor={colors.text}
               title={schoolData.testimonialsSection?.title || "Student Testimonials"}
               subtitle={schoolData.testimonialsSection?.subtitle || "Hear from our students"}
             />
@@ -355,25 +319,25 @@ const SchoolInfoScreen = () => {
         )}
 
         {/* Contact Info Section */}
-        {schoolData.contact && (
+        {schoolData?.contact && (
           <View style={styles.cardSection}>
             <SectionHeader
               iconName={getIconName(schoolData.contactSection?.icon)}
-              iconColor={colors.tertiary}
+              iconColor={colors.text}
               title={schoolData.contactSection?.title || "Contact Info"}
               subtitle={schoolData.contactSection?.subtitle || "Get in touch with us"}
             />
             {schoolData.contact.phone && (
-              <InfoCard iconName="phone-outline" title="Phone" value={schoolData.contact.phone} />
+              <InfoCard iconName="phone-outline" value={schoolData.contact.phone} />
             )}
             {schoolData.contact.email && (
-              <InfoCard iconName="email-outline" title="Email" value={schoolData.contact.email} />
+              <InfoCard iconName="email-outline" value={schoolData.contact.email} />
             )}
             {schoolData.contact.location && (
-              <InfoCard iconName="map-marker-outline" title="Location" value={schoolData.contact.location} />
+              <InfoCard iconName="map-marker-outline" value={schoolData.contact.location} />
             )}
             {schoolData.contact.website && (
-              <InfoCard iconName="web" title="Website" value={schoolData.contact.website} />
+              <InfoCard iconName="web" value={schoolData.contact.website} />
             )}
           </View>
         )}
@@ -382,22 +346,35 @@ const SchoolInfoScreen = () => {
   );
 };
 
+// Helper function to map API icon names to MaterialCommunityIcons
+const getIconName = (apiIconName) => {
+  const iconMap = {
+    'fa-laptop-code': 'laptop',
+    'fa-network-wired': 'lan',
+    'fa-photo-video': 'image',
+    'fa-user-tie': 'account-tie',
+    'fa-lightbulb': 'lightbulb-outline',
+    'fa-chart-bar': 'chart-bar',
+    'fa-comments': 'comment-multiple-outline',
+    'fa-book': 'book-open-variant',
+    'fa-envelope': 'email-outline',
+    'ri-computer-line': 'laptop',
+    'ri-video-line': 'video'
+  };
+  return iconMap[apiIconName] || 'help-circle-outline';
+};
+
 const createStyle = (colors) => {
   return StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: colors.bg,
     },
-    center: {
+    centerContainer: {
       flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
       padding: 20,
-    },
-    loadingText: {
-      marginTop: 10,
-      fontSize: 16,
-      textAlign: 'center',
     },
     errorText: {
       fontSize: 18,
@@ -411,21 +388,17 @@ const createStyle = (colors) => {
       marginBottom: 20,
       lineHeight: 20,
     },
-    emptyText: {
+    noDataText: {
       fontSize: 18,
       fontWeight: 'bold',
       textAlign: 'center',
     },
     retryButton: {
-      backgroundColor: colors.primary,
-      paddingHorizontal: 20,
-      paddingVertical: 12,
-      borderRadius: 8,
+      marginTop: 10,
     },
     retryText: {
-      color: colors.white,
       fontSize: 16,
-      fontWeight: '500',
+      fontWeight: '600',
     },
     headerBackground: {
       height: 220,
@@ -449,7 +422,7 @@ const createStyle = (colors) => {
     schoolTitle: {
       fontSize: 28,
       fontWeight: 'bold',
-      color: colors.white,
+      color: colors.text,
       textAlign: 'center',
       marginBottom: 5,
     },
@@ -520,7 +493,7 @@ const createStyle = (colors) => {
     infoBoxTitle: {
       fontSize: 16,
       fontWeight: 'bold',
-      color: colors.textPrimary,
+      color: colors.textMuted,
       marginBottom: 5,
     },
     infoBoxText: {
@@ -604,6 +577,8 @@ const createStyle = (colors) => {
       borderRadius: 10,
       padding: 15,
       marginBottom: 10,
+      borderWidth: 1,
+      borderColor: colors.border
     },
     infoTitle: {
       fontSize: 16,
@@ -614,7 +589,7 @@ const createStyle = (colors) => {
     },
     infoValue: {
       fontSize: 14,
-      color: colors.textSecondary,
+      color: colors.textMuted,
     },
   });
 };

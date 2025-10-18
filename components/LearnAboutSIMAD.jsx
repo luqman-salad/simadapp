@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Image,
   Pressable,
   ScrollView,
@@ -10,8 +9,9 @@ import {
 } from "react-native";
 import useTheme from "../hooks/usetheme";
 import { getWhySimadData } from "../apis/learnAboutSimadApi";
+import { useGlobalLoading } from "../hooks/useGlobalLoading"; // Import the global loading hook
 
-const LearnAboutSIMAD = () => {
+const LearnAboutSIMAD = ({ componentKey = "learn-about" }) => {
   const { colors } = useTheme();
   const styles = createStyle(colors);
 
@@ -19,9 +19,13 @@ const LearnAboutSIMAD = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Connect to global loading state
+  useGlobalLoading(componentKey, loading);
+
   const fetchData = async () => {
     try {
       setLoading(true);
+      setError(null);
       const result = await getWhySimadData();
       if (result?.success && Array.isArray(result.data.whySimadItems)) {
         setCards(result.data.whySimadItems);
@@ -37,39 +41,16 @@ const LearnAboutSIMAD = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, []); // No refreshTrigger needed for dedicated screen
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
-      {/* Top Banner Section
-      <View style={styles.bannerContainer}>
-        <Image
-          source={require("../assets/images/fablab.jpg")}
-          style={styles.bannerImage}
-        />
-        <View style={styles.overlay} />
-
-        <Pressable style={styles.learnMoreButton}>
-          <Text style={styles.buttonText}>
-            Learn About SIMAD UNIVERSITY in 5 min
-          </Text>
-        </Pressable>
-      </View> */}
-
       {/* Title */}
       <View style={styles.whySimadContainer}>
         <Text style={styles.whySimadTitle}>Why Simad ?</Text>
       </View>
 
-      {/* Loading / Error / Data */}
-      {loading && (
-        <ActivityIndicator
-          size="large"
-          color={colors.secondary}
-          style={{ marginTop: 20 }}
-        />
-      )}
-
+      {/* Error State - Global loading handles the loading state */}
       {error && (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Error: {error}</Text>
@@ -79,20 +60,19 @@ const LearnAboutSIMAD = () => {
         </View>
       )}
 
-      {!loading &&
-        !error &&
-        cards.map((card, index) => (
-          <View key={index} style={styles.card}>
-            <Text style={styles.cardTitle}>{card.title}</Text>
-            <Text style={styles.cardDescription}>
-              {card.description}{" "}
-              <Text style={styles.seeMore}>See More...</Text>
-            </Text>
-            {card.image && (
-              <Image source={{ uri: card.image }} style={styles.cardImage} />
-            )}
-          </View>
-        ))}
+      {/* Data - Only show when not loading and no error */}
+      {!loading && !error && cards.map((card, index) => (
+        <View key={index} style={styles.card}>
+          <Text style={styles.cardTitle}>{card.title}</Text>
+          <Text style={styles.cardDescription}>
+            {card.description}{" "}
+            <Text style={styles.seeMore}>See More...</Text>
+          </Text>
+          {card.image && (
+            <Image source={{ uri: card.image }} style={styles.cardImage} />
+          )}
+        </View>
+      ))}
     </ScrollView>
   );
 };
@@ -182,15 +162,18 @@ const createStyle = (colors) =>
     errorContainer: {
       alignItems: "center",
       marginTop: 20,
+      padding: 20,
     },
     errorText: {
       color: colors.danger,
       fontSize: 16,
       marginBottom: 10,
+      textAlign: 'center',
     },
     retryText: {
-      color: colors.text,
+      color: colors.primary,
       fontWeight: "bold",
+      fontSize: 16,
     },
   });
 

@@ -1,10 +1,14 @@
 import { useNavigation } from '@react-navigation/native';
 import { router } from 'expo-router';
-import { Image, Pressable, ScrollView, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View, Dimensions } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useState, useEffect } from 'react';
 import useTheme from '../hooks/usetheme';
 import { getProgramsByCategoryId } from '../apis/academicProgramsApi';
-import { useGlobalLoading } from '../hooks/useGlobalLoading'; // Import the global loading hook
+import { useGlobalLoading } from '../hooks/useGlobalLoading';
+
+const { width: screenWidth } = Dimensions.get('window');
+const CARD_WIDTH = (screenWidth - 60) / 2; // 2 cards with spacing
 
 const chunkArray = (array, size) => {
   const result = [];
@@ -24,7 +28,6 @@ export default function HorizontalTwoRowGrid({ route, componentKey = "institutio
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Connect to global loading state
   useGlobalLoading(componentKey, loading);
 
   const fetchSchoolsData = async () => {
@@ -52,12 +55,11 @@ export default function HorizontalTwoRowGrid({ route, componentKey = "institutio
     if (categoryId) {
       fetchSchoolsData();
     }
-  }, [categoryId, refreshTrigger]); // Add refreshTrigger to dependencies
+  }, [categoryId, refreshTrigger]);
 
   const handlePress = (schoolId, schoolName) => {
     console.log('School pressed:', schoolId, schoolName);
     
-    // Use Expo Router's router.push() instead of navigation.navigate()
     router.push({
       pathname: '/(screens)/SchoolInfoScreen',
       params: { 
@@ -71,16 +73,14 @@ export default function HorizontalTwoRowGrid({ route, componentKey = "institutio
     fetchSchoolsData();
   };
 
-  // Remove individual loading display - global overlay handles it
   if (error) {
     return (
-      <View style={[styles.errorContainer, { backgroundColor: colors.bg }]}>
-        <Text style={[styles.errorText, { color: colors.error }]}>
-          Failed to load schools
-        </Text>
-        <Text style={[styles.errorDetail, { color: colors.text }]}>
-          {error}
-        </Text>
+      <View style={styles.errorContainer}>
+        <View style={styles.errorIconContainer}>
+          <Text style={styles.errorIcon}>🏫</Text>
+        </View>
+        <Text style={styles.errorTitle}>Unable to Load</Text>
+        <Text style={styles.errorText}>{error}</Text>
         <Pressable style={styles.retryButton} onPress={handleRetry}>
           <Text style={styles.retryText}>Try Again</Text>
         </Pressable>
@@ -88,15 +88,14 @@ export default function HorizontalTwoRowGrid({ route, componentKey = "institutio
     );
   }
 
-  if (schools.length === 0) {
+  if (schools.length === 0 && !loading) {
     return (
-      <View style={[styles.emptyContainer, { backgroundColor: colors.bg }]}>
-        <Text style={[styles.emptyText, { color: colors.text }]}>
-          No undergraduate schools available
-        </Text>
-        <Text style={[styles.emptyDetail, { color: colors.text }]}>
-          Check back later for updates
-        </Text>
+      <View style={styles.emptyContainer}>
+        <View style={styles.emptyIconContainer}>
+          <Text style={styles.emptyIcon}>📚</Text>
+        </View>
+        <Text style={styles.emptyTitle}>No Schools Available</Text>
+        <Text style={styles.emptyText}>Check back later for updates</Text>
       </View>
     );
   }
@@ -109,30 +108,56 @@ export default function HorizontalTwoRowGrid({ route, componentKey = "institutio
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.scrollContainer}
     >
-      {chunkedSchools.map((column, index) => (
-        <View key={`col-${index}`} style={styles.column}>
-          {column.map((item) => (
+      {chunkedSchools.map((column, columnIndex) => (
+        <View key={`col-${columnIndex}`} style={styles.column}>
+          {column.map((item, itemIndex) => (
             <Pressable
               key={item._id}
               onPress={() => handlePress(item._id, item.name)}
               style={({ pressed }) => [
-                styles.card,
-                { opacity: pressed ? 0.7 : 1 },
+                styles.cardContainer,
+                { transform: [{ scale: pressed ? 0.98 : 1 }] }
               ]}
             >
-              {item.logoUrl ? (
-                <Image 
-                  source={{ uri: item.logoUrl }} 
-                  style={styles.icon} 
-                  resizeMode="contain"
-                />
-              ) : (
-                <Image 
-                  source={require('../assets/icons/desktop-computer.png')} 
-                  style={styles.icon} 
-                />
-              )}
-              <Text style={styles.title}>{item.name}</Text>
+              <LinearGradient
+                colors={[colors.surface, colors.surface + 'DD']}
+                style={styles.card}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                {/* Background Pattern */}
+                <View style={styles.pattern} />
+                
+                {/* Content */}
+                <View style={styles.cardContent}>
+                  {/* Icon Container with Gradient */}
+                  <LinearGradient
+                    colors={[colors.primary + '20', colors.primary + '40']}
+                    style={styles.iconContainer}
+                  >
+                    {item.logoUrl ? (
+                      <Image 
+                        source={{ uri: item.logoUrl }} 
+                        style={styles.icon} 
+                        resizeMode="contain"
+                      />
+                    ) : (
+                      <Text style={styles.fallbackIcon}>🏫</Text>
+                    )}
+                  </LinearGradient>
+
+                  {/* School Name */}
+                  <Text style={styles.title} numberOfLines={2}>
+                    {item.name}
+                  </Text>
+
+                  {/* Explore Text */}
+                  <View style={styles.exploreContainer}>
+                    <Text style={styles.exploreText}>Explore</Text>
+                    <Text style={styles.arrow}>→</Text>
+                  </View>
+                </View>
+              </LinearGradient>
             </Pressable>
           ))}
         </View>
@@ -144,101 +169,191 @@ export default function HorizontalTwoRowGrid({ route, componentKey = "institutio
 const createStyle = (colors) => {
   return StyleSheet.create({
     scrollContainer: {
-      paddingHorizontal: 10,
-      paddingVertical: 20,
+      paddingHorizontal: 20,
+      paddingVertical: 15,
+      paddingBottom: 25,
       backgroundColor: colors.bg,
-      paddingBottom: 20,
       width: "100%"
     },
     column: {
-      marginRight: 10,
-      justifyContent: 'space-between',
+      marginRight: 15,
+      gap: 12,
+    },
+    cardContainer: {
+      width: CARD_WIDTH,
+      borderRadius: 20,
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 8,
+      },
+      shadowOpacity: 0.15,
+      shadowRadius: 20,
+      elevation: 10,
     },
     card: {
-      backgroundColor: colors.surface,
-      width: 140,
-      height: 100,
-      borderRadius: 10,
-      padding: 10,
-      marginBottom: 10,
-      alignItems: 'center',
+      height: 160,
+      borderRadius: 20,
+      padding: 16,
+      overflow: 'hidden',
+      position: 'relative',
+    },
+    pattern: {
+      position: 'absolute',
+      top: -20,
+      right: -20,
+      width: 80,
+      height: 80,
+      backgroundColor: colors.primary + '15',
+      borderRadius: 40,
+      transform: [{ rotate: '45deg' }],
+    },
+    cardContent: {
+      flex: 1,
+      justifyContent: 'space-between',
+    },
+    iconContainer: {
+      width: 50,
+      height: 50,
+      borderRadius: 15,
       justifyContent: 'center',
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 3.84,
-      elevation: 3,
-      borderWidth: 1,
-      borderColor: colors.border,
+      alignItems: 'center',
+      alignSelf: 'flex-start',
+      marginBottom: 12,
     },
     icon: {
-      width: 40,
-      height: 40,
-      marginBottom: 8,
-      resizeMode: 'contain',
+      width: 28,
+      height: 28,
+    },
+    fallbackIcon: {
+      fontSize: 20,
     },
     title: {
-      fontSize: 13,
-      fontWeight: '500',
+      fontSize: 15,
+      fontWeight: '700',
       color: colors.text,
-      textAlign: 'center',
+      lineHeight: 20,
+      marginBottom: 8,
+      flexShrink: 1,
     },
-    loadingContainer: {
-      flex: 1,
-      justifyContent: 'center',
+    exploreContainer: {
+      flexDirection: 'row',
       alignItems: 'center',
-      padding: 20,
+      justifyContent: 'space-between',
     },
-    loadingText: {
-      marginTop: 10,
-      fontSize: 16,
-      textAlign: 'center',
+    exploreText: {
+      fontSize: 12,
+      fontWeight: '600',
+      color: colors.primary,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    arrow: {
+      fontSize: 14,
+      fontWeight: '700',
+      color: colors.primary,
     },
     errorContainer: {
-      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 40,
+      borderRadius: 20,
+      backgroundColor: colors.surface,
+      margin: 20,
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 4,
+      },
+      shadowOpacity: 0.1,
+      shadowRadius: 12,
+      elevation: 5,
+    },
+    errorIconContainer: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      backgroundColor: colors.error + '20',
       justifyContent: 'center',
       alignItems: 'center',
-      padding: 20,
+      marginBottom: 16,
     },
-    errorText: {
-      fontSize: 18,
-      fontWeight: 'bold',
-      marginBottom: 10,
+    errorIcon: {
+      fontSize: 32,
+    },
+    errorTitle: {
+      fontSize: 20,
+      fontWeight: '700',
+      color: colors.text,
+      marginBottom: 8,
       textAlign: 'center',
     },
-    errorDetail: {
+    errorText: {
       fontSize: 14,
+      color: colors.textSecondary,
       textAlign: 'center',
       marginBottom: 20,
       lineHeight: 20,
     },
     emptyContainer: {
-      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 40,
+      borderRadius: 20,
+      backgroundColor: colors.surface,
+      margin: 20,
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 4,
+      },
+      shadowOpacity: 0.1,
+      shadowRadius: 12,
+      elevation: 5,
+    },
+    emptyIconContainer: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      backgroundColor: colors.primary + '20',
       justifyContent: 'center',
       alignItems: 'center',
-      padding: 20,
+      marginBottom: 16,
     },
-    emptyText: {
-      fontSize: 18,
-      fontWeight: 'bold',
-      marginBottom: 10,
+    emptyIcon: {
+      fontSize: 32,
+    },
+    emptyTitle: {
+      fontSize: 20,
+      fontWeight: '700',
+      color: colors.text,
+      marginBottom: 8,
       textAlign: 'center',
     },
-    emptyDetail: {
+    emptyText: {
       fontSize: 14,
+      color: colors.textSecondary,
       textAlign: 'center',
       lineHeight: 20,
     },
     retryButton: {
       backgroundColor: colors.primary,
-      paddingHorizontal: 20,
+      paddingHorizontal: 24,
       paddingVertical: 12,
-      borderRadius: 8,
+      borderRadius: 12,
+      shadowColor: colors.primary,
+      shadowOffset: {
+        width: 0,
+        height: 4,
+      },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      elevation: 6,
     },
     retryText: {
       color: colors.white,
       fontSize: 16,
-      fontWeight: '500',
+      fontWeight: '600',
     },
   });
 };

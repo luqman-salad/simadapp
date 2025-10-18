@@ -1,7 +1,8 @@
-import { ScrollView, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, Pressable } from 'react-native';
 import useTheme from '../hooks/usetheme';
 import { useState, useEffect } from 'react';
 import { getVisionAndMission } from '../apis/visionMissionApi';
+import { useGlobalLoading } from '../hooks/useGlobalLoading';
 
 const SectionCard = ({ title, icon, contentText, listPoints }) => {
   const { colors } = useTheme();
@@ -32,17 +33,21 @@ const SectionCard = ({ title, icon, contentText, listPoints }) => {
   );
 };
 
-export default function VisionPurpose() {
+export default function VisionPurpose({ componentKey = "vision-purpose", refreshTrigger = 0 }) {
   const { colors } = useTheme();
   const styles = createStyle(colors);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Connect to global loading state
+  useGlobalLoading(componentKey, loading);
+
   const fetchData = async () => {
     try {
       setLoading(true);
-      const result = await getVisionAndMission();  // ✅ use API function
+      setError(null);
+      const result = await getVisionAndMission();
       if (result.success && result.data) {
         setData(result.data);
       } else {
@@ -57,57 +62,59 @@ export default function VisionPurpose() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [refreshTrigger]);
 
-  if (loading) {
+  // Remove individual loading display - global overlay handles it
+  if (error) {
     return (
-      <View style={[styles.container, styles.center]}>
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.loadingText}>Loading...</Text>
+      <View style={[styles.container, styles.centerContainer]}>
+        <Text style={[styles.errorText, { color: colors.danger }]}>
+          Error: {error}
+        </Text>
+        <Pressable onPress={fetchData} style={styles.retryButton}>
+          <Text style={[styles.retryText, { color: colors.primary }]}>
+            Tap to retry
+          </Text>
+        </Pressable>
       </View>
     );
   }
 
-  if (error) {
+  if (!data && !loading) {
     return (
-      <View style={[styles.container, styles.center]}>
-        <Text style={styles.errorText}>Error: {error}</Text>
-        <Text style={styles.retryText} onPress={fetchData}>
-          Tap to retry
+      <View style={[styles.container, styles.centerContainer]}>
+        <Text style={[styles.noDataText, { color: colors.textSecondary }]}>
+          No vision and mission data available
         </Text>
       </View>
     );
   }
 
-  if (!data) {
-    return (
-      <View style={[styles.container, styles.center]}>
-        <Text style={styles.errorText}>No data available</Text>
-      </View>
-    );
-  }
-
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView 
+      style={styles.container} 
+      contentContainerStyle={styles.contentContainer}
+      showsVerticalScrollIndicator={false}
+    >
       <View style={styles.content}>
-        <SectionCard title="Vision" icon="🎯" contentText={data.vision} />
+        <SectionCard title="Vision" icon="🎯" contentText={data?.vision} />
         <SectionCard
           title="Mission"
           icon="🚀"
-          contentText={data.mission.text}
-          listPoints={data.mission.points}
+          contentText={data?.mission?.text}
+          listPoints={data?.mission?.points}
         />
         <SectionCard
           title="Guiding Principles"
           icon="🧭"
-          contentText={data.guidingPrinciples.text}
-          listPoints={data.guidingPrinciples.points}
+          contentText={data?.guidingPrinciples?.text}
+          listPoints={data?.guidingPrinciples?.points}
         />
         <SectionCard
           title="Core Values"
           icon="💎"
-          contentText={data.coreValues.text}
-          listPoints={data.coreValues.points}
+          contentText={data?.coreValues?.text}
+          listPoints={data?.coreValues?.points}
         />
       </View>
     </ScrollView>
@@ -120,27 +127,32 @@ const createStyle = (colors) =>
       flex: 1,
       backgroundColor: colors.bg,
     },
+    contentContainer: {
+      paddingVertical: 20,
+    },
     content: {
+      paddingHorizontal: 20,
+    },
+    centerContainer: {
+      justifyContent: "center",
+      alignItems: "center",
       padding: 20,
     },
-    center: {
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    loadingText: {
-      marginTop: 10,
-      color: colors.text,
-    },
     errorText: {
-      color: colors.danger,
+      fontSize: 16,
+      marginBottom: 10,
+      textAlign: 'center',
+    },
+    noDataText: {
       fontSize: 16,
       textAlign: 'center',
-      marginBottom: 10,
+    },
+    retryButton: {
+      marginTop: 10,
     },
     retryText: {
-      color: colors.primary,
-      fontSize: 14,
-      textDecorationLine: 'underline',
+      fontSize: 16,
+      fontWeight: "bold",
     },
     sectionContainer: {
       marginBottom: 20,

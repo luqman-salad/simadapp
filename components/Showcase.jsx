@@ -1,37 +1,42 @@
-import { FlatList, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator, Dimensions } from 'react-native'
-import React, { useEffect, useRef, useState } from 'react'
 import { Image } from 'expo-image'
-import useTheme from '../hooks/usetheme'
+import { useEffect, useRef, useState } from 'react'
+import { Dimensions, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient';
 import { getUpcomingEvents } from '../apis/upcomingEvents'
-import { useGlobalLoading } from '../hooks/useGlobalLoading' // Import the global loading hook
+import { useGlobalLoading } from '../hooks/useGlobalLoading'
+import useTheme from '../hooks/usetheme'
+import useLoadingStore from '../store/loadingStore'
+import { useRouter } from 'expo-router';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const ITEM_WIDTH = 270;
-const ITEM_MARGIN = 10;
+const ITEM_WIDTH = SCREEN_WIDTH * 0.75;
 
 export default function ShowCase({ componentKey = "showcase", refreshTrigger = 0 }) {
     const listRef = useRef(null);
     const [index, setIndex] = useState(0);
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
     
     const {colors} = useTheme();
     const styles = createStyle(colors);
+    const router = useRouter();
+
+    // Get setGlobalError from store
+    const { setGlobalError } = useLoadingStore();
 
     // Connect to global loading state
     useGlobalLoading(componentKey, loading);
 
     useEffect(() => {
         fetchEvents();
-    }, [refreshTrigger]); // Add refreshTrigger to dependencies
+    }, [refreshTrigger]);
 
     useEffect(() => {
         let interval;
         if (events.length > 1) {
             interval = setInterval(() => {
                 setIndex((prevIndex) => {
-                    const nextIndex = (prevIndex + 1) % events.length; // Use modulo for infinite loop
+                    const nextIndex = (prevIndex + 1) % events.length;
                     listRef.current?.scrollToIndex({ 
                         index: nextIndex, 
                         animated: true 
@@ -48,7 +53,6 @@ export default function ShowCase({ componentKey = "showcase", refreshTrigger = 0
     const fetchEvents = async () => {
         try {
             setLoading(true);
-            setError(null);
             const response = await getUpcomingEvents();
             
             if (response.success && response.data) {
@@ -63,10 +67,16 @@ export default function ShowCase({ componentKey = "showcase", refreshTrigger = 0
                     description: event.description
                 }));
                 setEvents(transformedEvents);
+            } else {
+                throw new Error('Invalid data structure from API');
             }
         } catch (error) {
             console.error('Error loading events:', error);
-            setError('Failed to load events');
+            // Use global error handling
+            setGlobalError(
+                'Failed to load events. Please check your connection.',
+                fetchEvents // Pass the function to retry
+            );
         } finally {
             setLoading(false);
         }
@@ -76,20 +86,21 @@ export default function ShowCase({ componentKey = "showcase", refreshTrigger = 0
         if (event.source && event.source.startsWith('http')) {
             return { uri: event.source };
         }
-        return require('../assets/images/simadlead.jpg'); // Fallback image
-    };
-
-    const handleRetry = () => {
-        fetchEvents();
+        return require('../assets/images/simadlead.jpg');
     };
 
     const handleEventPress = (event) => {
         console.log('Event pressed:', event.title);
+        // You can add navigation to event details screen here
+        // router.push({
+        //     pathname: '/(screens)/EventDetails',
+        //     params: { eventId: event.id }
+        // });
     };
 
     const handleScroll = (event) => {
         const contentOffsetX = event.nativeEvent.contentOffset.x;
-        const newIndex = Math.round(contentOffsetX / (ITEM_WIDTH + ITEM_MARGIN));
+        const newIndex = Math.round(contentOffsetX / (ITEM_WIDTH + 15));
         
         if (newIndex >= 0 && newIndex < events.length) {
             setIndex(newIndex);
@@ -97,29 +108,23 @@ export default function ShowCase({ componentKey = "showcase", refreshTrigger = 0
     };
 
     const getItemLayout = (data, index) => ({
-        length: ITEM_WIDTH + ITEM_MARGIN,
-        offset: (ITEM_WIDTH + ITEM_MARGIN) * index,
+        length: ITEM_WIDTH + 15,
+        offset: (ITEM_WIDTH + 15) * index,
         index,
     });
 
-    // Remove the individual loading state since we're using global loading
-    // The global loading overlay will handle the loading state
-    if (error) {
-        return (
-            <View style={styles.showCaseContainer}>
-                <View style={styles.errorContainer}>
-                    <Text style={styles.errorText}>{error}</Text>
-                    <TouchableOpacity onPress={handleRetry} style={styles.retryButton}>
-                        <Text style={styles.retryButtonText}>Try Again</Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
-        );
-    }
+    const handleSeeAllPress = () => {
+        // Navigation to full events screen
+        router.push('/(drawer)/events');
+    };
 
+    // Only show empty state, errors are handled globally
     if (!events || events.length === 0) {
         return (
-            <View style={styles.showCaseContainer}>
+            <View style={styles.container}>
+                <View style={styles.headerRow}>
+                    <Text style={styles.sectionTitle}>Upcoming Events</Text>
+                </View>
                 <View style={styles.emptyContainer}>
                     <Text style={styles.emptyText}>No upcoming events</Text>
                 </View>
@@ -128,7 +133,15 @@ export default function ShowCase({ componentKey = "showcase", refreshTrigger = 0
     }
 
     return (
-        <View style={styles.showCaseContainer}>
+        <View style={styles.container}>
+            {/* Header with title
+            <View style={styles.headerRow}>
+                <Text style={styles.sectionTitle}>Upcoming Events</Text>
+                <TouchableOpacity onPress={handleSeeAllPress}>
+                    <Text style={styles.seeAllText}>See All</Text>
+                </TouchableOpacity>
+            </View> */}
+
             <FlatList
                 ref={listRef}
                 style={styles.listContainer}
@@ -138,7 +151,7 @@ export default function ShowCase({ componentKey = "showcase", refreshTrigger = 0
                 showsHorizontalScrollIndicator={false}
                 keyExtractor={(item) => item.id}
                 initialScrollIndex={0}
-                snapToInterval={ITEM_WIDTH + ITEM_MARGIN}
+                snapToInterval={ITEM_WIDTH + 15}
                 snapToAlignment="start"
                 decelerationRate="fast"
                 onMomentumScrollEnd={handleScroll}
@@ -146,32 +159,35 @@ export default function ShowCase({ componentKey = "showcase", refreshTrigger = 0
                 scrollEventThrottle={16}
                 getItemLayout={getItemLayout}
                 renderItem={({item, index: itemIndex}) => (
-                    <TouchableOpacity 
-                        style={styles.showCaseItem}
+                    <TouchableOpacity
+                        key={item.id}
                         onPress={() => handleEventPress(item)}
+                        style={styles.cardContainer}
                     >
-                        <Image 
-                            source={getImageSource(item, itemIndex)} 
-                            style={styles.showcaseImg}
-                            contentFit="cover"
-                            transition={300}
-                            onError={() => console.log(`Failed to load image for: ${item.title}`)}
-                        />
-                        {/* Event Info Overlay */}
-                        <View style={styles.eventInfoOverlay}>
-                            <Text style={styles.eventTitle} numberOfLines={1}>
-                                {item.title}
-                            </Text>
-                            <Text style={styles.eventDate} numberOfLines={1}>
-                                {new Date(item.date).toLocaleDateString()} • {item.startTime}
-                            </Text>
-                            <Text style={styles.eventLocation} numberOfLines={1}>
-                                {item.location}
-                            </Text>
+                        <View style={styles.imageContainer}>
+                            <Image
+                                source={getImageSource(item, itemIndex)} 
+                                style={styles.cardImage}
+                                contentFit="cover"
+                                transition={300}
+                                onError={() => console.log(`Failed to load image for: ${item.title}`)}
+                            />
+                            <LinearGradient
+                                colors={['transparent', 'rgba(0,0,0,0.8)']}
+                                style={styles.gradient}
+                            >
+                                <View style={styles.content}>
+                                    <Text style={styles.title}>{item.title}</Text>
+                                    <Text style={styles.subtitle} numberOfLines={2}>
+                                        {new Date(item.date).toLocaleDateString()} • {item.location}
+                                    </Text>
+                                </View>
+                            </LinearGradient>
                         </View>
                     </TouchableOpacity>
                 )}
             />
+            
             {/* Dots Indicator */}
             {events.length > 1 && (
                 <View style={styles.dotsContainer}>
@@ -194,65 +210,93 @@ export default function ShowCase({ componentKey = "showcase", refreshTrigger = 0
 
 const createStyle = (colors) => {
     const styles = StyleSheet.create({
-        showCaseContainer: {
-            paddingHorizontal: 7,
-            marginVertical: 10,
+        container: {
+            marginBottom: 25,
+            backgroundColor: colors.bg,
+            paddingLeft: 10
         },
-        title: {
-            marginLeft: 15,
-            fontSize: 18,
-            fontWeight: '500',
+        headerRow: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 15,
+            paddingHorizontal: 5,
+        },
+        sectionTitle: {
+            fontSize: 20,
+            fontWeight: '700',
             color: colors.text,
-            marginBottom: 10,
+            letterSpacing: -0.5,
+        },
+        seeAllText: {
+            fontSize: 14,
+            fontWeight: '600',
+            color: colors.primary,
         },
         listContainer: {
             flexGrow: 0,
         },
-        showCaseItem: {
+        cardContainer: {
             width: ITEM_WIDTH,
-            marginRight: ITEM_MARGIN,
-            marginTop: 7,
+            marginRight: 15,
+            borderRadius: 20,
+            shadowColor: '#000',
+            shadowOffset: {
+                width: 0,
+                height: 4,
+            },
+            shadowOpacity: 0.25,
+            shadowRadius: 8,
+            elevation: 8,
+            overflow: 'hidden', // Important for borderRadius to work
+        },
+        imageContainer: {
+            width: '100%',
+            height: 180,
             position: 'relative',
+            borderRadius: 20,
+            overflow: 'hidden',
         },
-        showcaseImg: {
-            width: ITEM_WIDTH,
-            height: 170,
-            borderRadius: 15,
-            borderWidth: 1,
-            borderColor: colors.border,
+        cardImage: {
+            width: '100%',
+            height: '100%',
+            borderRadius: 20,
         },
-        eventInfoOverlay: {
+        gradient: {
             position: 'absolute',
             bottom: 0,
             left: 0,
             right: 0,
-            backgroundColor: 'rgba(0,0,0,0.7)',
-            padding: 12,
-            borderBottomLeftRadius: 15,
-            borderBottomRightRadius: 15,
+            height: '60%',
+            justifyContent: 'flex-end',
+            padding: 20,
+            borderRadius: 20,
         },
-        eventTitle: {
-            color: colors.white,
-            fontSize: 16,
-            fontWeight: '600',
-            marginBottom: 2,
+        content: {
+            // Content styles remain the same
         },
-        eventDate: {
+        title: {
+            fontSize: 18,
+            fontWeight: '700',
             color: colors.white,
-            fontSize: 12,
-            opacity: 0.9,
-            marginBottom: 2,
+            marginBottom: 5,
+            textShadowColor: 'rgba(0, 0, 0, 0.75)',
+            textShadowOffset: { width: 1, height: 1 },
+            textShadowRadius: 3,
         },
-        eventLocation: {
-            color: colors.white,
-            fontSize: 12,
-            opacity: 0.8,
+        subtitle: {
+            fontSize: 13,
+            color: 'rgba(255, 255, 255, 0.9)',
+            lineHeight: 16,
+            textShadowColor: 'rgba(0, 0, 0, 0.75)',
+            textShadowOffset: { width: 1, height: 1 },
+            textShadowRadius: 3,
         },
         dotsContainer: {
             flexDirection: 'row',
             justifyContent: 'center',
             alignItems: 'center',
-            marginTop: 10,
+            marginTop: 15,
         },
         dot: {
             width: 8,
@@ -260,49 +304,50 @@ const createStyle = (colors) => {
             borderRadius: 4,
             marginHorizontal: 4,
         },
-        loadingContainer: {
-            height: 170,
+        emptyContainer: {
+            height: 150,
             justifyContent: 'center',
             alignItems: 'center',
-            marginHorizontal: 7,
+            borderRadius: 12,
+            backgroundColor: colors.surface,
+            marginHorizontal: 5,
         },
-        loadingText: {
-            marginTop: 12,
+        emptyText: {
             fontSize: 14,
             color: colors.textSecondary,
         },
         errorContainer: {
-            height: 170,
+            height: 150,
             justifyContent: 'center',
             alignItems: 'center',
-            marginHorizontal: 7,
+            borderRadius: 12,
+            backgroundColor: colors.surface,
+            marginHorizontal: 5,
         },
         errorText: {
             fontSize: 14,
-            color: colors.textSecondary,
-            textAlign: 'center',
+            color: colors.error,
             marginBottom: 12,
+            textAlign: 'center',
         },
         retryButton: {
             backgroundColor: colors.primary,
             paddingHorizontal: 20,
             paddingVertical: 10,
             borderRadius: 8,
+            shadowColor: '#000',
+            shadowOffset: {
+                width: 0,
+                height: 2,
+            },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+            elevation: 3,
         },
-        retryButtonText: {
+        retryText: {
             color: colors.white,
             fontSize: 14,
-            fontWeight: '500',
-        },
-        emptyContainer: {
-            height: 170,
-            justifyContent: 'center',
-            alignItems: 'center',
-            marginHorizontal: 7,
-        },
-        emptyText: {
-            fontSize: 14,
-            color: colors.textSecondary,
+            fontWeight: '600',
         },
     });
     return styles;

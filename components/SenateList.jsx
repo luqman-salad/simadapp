@@ -1,10 +1,19 @@
 // components/SenateList.jsx
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { 
+  Image, 
+  Pressable, 
+  ScrollView, 
+  StyleSheet, 
+  Text, 
+  TouchableOpacity, 
+  View 
+} from 'react-native';
 import useTheme from '../hooks/usetheme';
 import { getSenateList } from '../apis/senateApis';
+import { useGlobalLoading } from '../hooks/useGlobalLoading';
 
-const SenateList = () => {
+const SenateList = ({ componentKey = "senate", refreshTrigger = 0 }) => {
   const { colors } = useTheme();
   const styles = createStyle(colors);
 
@@ -12,120 +21,94 @@ const SenateList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchSenate = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const result = await getSenateList();
-        
-        if (result?.success && Array.isArray(result.data?.senateList)) {
-          setSenate(result.data.senateList);
-        } else {
-          throw new Error('Invalid data structure from API');
-        }
-      } catch (error) {
-        console.error('Error fetching Senate list:', error);
-        setError(error.message);
-      } finally {
-        setLoading(false);
+  // Connect to global loading state
+  useGlobalLoading(componentKey, loading);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await getSenateList();
+      
+      if (result?.success && Array.isArray(result.data?.senateList)) {
+        setSenate(result.data.senateList);
+      } else {
+        throw new Error('Invalid data structure from API');
       }
-    };
-
-    fetchSenate();
-  }, []);
-
-  const handleRetry = () => {
-    // Retry logic if needed
-    useEffect(() => {
-      const fetchSenate = async () => {
-        try {
-          setLoading(true);
-          setError(null);
-          const result = await getSenateList();
-          
-          if (result?.success && Array.isArray(result.data?.senateList)) {
-            setSenate(result.data.senateList);
-          } else {
-            throw new Error('Invalid data structure from API');
-          }
-        } catch (error) {
-          console.error('Error fetching Senate list:', error);
-          setError(error.message);
-        } finally {
-          setLoading(false);
-        }
-      };
-  
-      fetchSenate();
-    }, []);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (loading) {
+  useEffect(() => {
+    fetchData();
+  }, [refreshTrigger]);
+
+  // Remove individual loading display - global overlay handles it
+  if (error) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.listTitle}>The Senate List Profiles</Text>
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={colors.secondary} />
-          <Text style={styles.loadingText}>Loading senate members...</Text>
-        </View>
+      <View style={[styles.container, styles.centerContainer]}>
+        <Text style={[styles.errorText, { color: colors.danger }]}>
+          Error: {error}
+        </Text>
+        <Pressable onPress={fetchData} style={styles.retryButton}>
+          <Text style={[styles.retryText, { color: colors.primary }]}>
+            Tap to retry
+          </Text>
+        </Pressable>
       </View>
     );
   }
 
-  if (error) {
+  if (!senate.length && !loading) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.listTitle}>The Senate List Profiles</Text>
-        <View style={styles.center}>
-          <Text style={styles.errorText}>Error: {error}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
-            <Text style={styles.retryText}>Try Again</Text>
-          </TouchableOpacity>
-        </View>
+      <View style={[styles.container, styles.centerContainer]}>
+        <Text style={[styles.noDataText, { color: colors.textSecondary }]}>
+          No senate members found
+        </Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView 
+      style={styles.container} 
+      contentContainerStyle={styles.contentContainer}
+      showsVerticalScrollIndicator={false}
+    >
       <Text style={styles.listTitle}>The Senate List Profiles</Text>
 
-      {senate.length === 0 ? (
-        <View style={styles.center}>
-          <Text style={styles.emptyText}>No senate members found</Text>
-        </View>
-      ) : (
-        <ScrollView style={styles.senateContainer}>
-          {senate.map((member, index) => (
-            <TouchableOpacity key={member.id || index} style={styles.card}>
-              {/* Colored vertical bar */}
-              <View
-                style={[
-                  styles.colorBar,
-                  { backgroundColor: index === 0 ? '#ffc107' : '#28a745' }, // Rector gold, others green
-                ]}
+      <View style={styles.senateContainer}>
+        {senate.map((member, index) => (
+          <TouchableOpacity key={member.id || index} style={styles.card}>
+            {/* Colored vertical bar */}
+            <View
+              style={[
+                styles.colorBar,
+                { backgroundColor: index === 0 ? '#ffc107' : '#28a745' }, // Rector gold, others green
+              ]}
+            />
+
+            {/* Text */}
+            <View style={styles.textContainer}>
+              <Text style={styles.name}>{member.name}</Text>
+              <Text style={styles.title}>{member.position}</Text>
+            </View>
+
+            {/* Profile Image */}
+            <Pressable style={styles.profileImageContainer}>
+              <Image 
+                source={{ uri: member.image }} 
+                style={styles.profileImage}
+                onError={() => console.log('Failed to load image')}
               />
-
-              {/* Text */}
-              <View style={styles.textContainer}>
-                <Text style={styles.name}>{member.name}</Text>
-                <Text style={styles.title}>{member.position}</Text>
-              </View>
-
-              {/* Profile Image */}
-              <Pressable style={styles.profileImageContainer}>
-                <Image 
-                  source={{ uri: member.image }} 
-                  style={styles.profileImage}
-                  onError={() => console.log('Failed to load image')}
-                />
-              </Pressable>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      )}
-    </View>
+            </Pressable>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </ScrollView>
   );
 };
 
@@ -135,10 +118,12 @@ const createStyle = (colors) =>
       flex: 1,
       backgroundColor: colors.bg,
     },
-    center: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
+    contentContainer: {
+      paddingVertical: 20,
+    },
+    centerContainer: {
+      justifyContent: "center",
+      alignItems: "center",
       padding: 20,
     },
     listTitle: {
@@ -147,6 +132,7 @@ const createStyle = (colors) =>
       color: colors.text,
       paddingHorizontal: 15,
       paddingVertical: 10,
+      marginBottom: 10,
     },
     senateContainer: {
       paddingHorizontal: 15,
@@ -195,38 +181,28 @@ const createStyle = (colors) =>
       marginLeft: 10,
       justifyContent: 'center',
       alignItems: 'center',
+      backgroundColor: colors.backgroundSecondary || '#f5f5f5',
     },
     profileImage: {
       width: '100%',
       height: '100%',
       resizeMode: 'cover',
     },
-    loadingText: {
-      marginTop: 10,
-      color: colors.text,
-      fontSize: 14,
-    },
     errorText: {
-      color: colors.error || '#ff0000',
       fontSize: 16,
+      marginBottom: 10,
       textAlign: 'center',
-      marginBottom: 15,
     },
-    emptyText: {
-      color: colors.textSecondary || '#666',
+    noDataText: {
       fontSize: 16,
       textAlign: 'center',
     },
     retryButton: {
-      backgroundColor: colors.primary,
-      paddingHorizontal: 20,
-      paddingVertical: 10,
-      borderRadius: 5,
+      marginTop: 10,
     },
     retryText: {
-      color: colors.white || '#ffffff',
-      fontSize: 14,
-      fontWeight: '500',
+      fontSize: 16,
+      fontWeight: "bold",
     },
   });
 

@@ -1,73 +1,30 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Animated, Dimensions, ActivityIndicator, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import useTheme from '../hooks/usetheme';
 import { getUniversityStats } from '../apis/simadInNumbersApi';
-import { useGlobalLoading } from '../hooks/useGlobalLoading'; // Import the global loading hook
+import { useGlobalLoading } from '../hooks/useGlobalLoading';
 
-const { width } = Dimensions.get('window');
+// Import your icons - REPLACE THESE WITH ACTUAL IMAGE PATHS
+import graduatesIcon from '../assets/images/icon.png';
+import studentsIcon from '../assets/images/icon.png';
+import schoolsIcon from '../assets/images/icon.png';
+import campusesIcon from '../assets/images/icon.png';
+import programsIcon from '../assets/images/icon.png';
+import labsIcon from '../assets/images/icon.png';
+import relationsIcon from '../assets/images/icon.png';
 
-const StatCard = ({ item, index, animation }) => {
-  const { colors } = useTheme();
-  const styles = createStyle(colors);
-  
-  const translateY = animation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [50, 0],
-  });
-
-  const opacity = animation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 1],
-  });
-
-  return (
-    <Animated.View 
-      style={[
-        styles.statCard,
-        {
-          transform: [{ translateY }],
-          opacity,
-        }
-      ]}
-    >
-      <View style={[styles.cardGradient, { backgroundColor: colors.surface }]}>
-        <View style={styles.cardContent}>
-          <View style={styles.iconContainer}>
-            <Ionicons name={item.icon} size={32} color={colors.secondary} />
-          </View>
-          <View style={styles.textContainer}>
-            <Text style={styles.statNumber}>{item.number}</Text>
-            <Text style={styles.statLabel}>{item.description}</Text>
-          </View>
-          <View style={styles.decorationCircle} />
-        </View>
+const TimelineCard = ({ item, styles, isLeft }) => (
+  <View style={isLeft ? styles.cardContainerLeft : styles.cardContainerRight}>
+    <View style={styles.card}>
+      {isLeft && <Image source={item.icon} style={styles.cardIcon} />}
+      <View style={[styles.textColumn, isLeft && styles.textColumnLeft]}>
+        <Text style={styles.cardNumber}>{item.number}</Text>
+        <Text style={styles.cardDescription}>{item.description}</Text>
       </View>
-    </Animated.View>
-  );
-};
-
-const AnimatedCounter = ({ value, duration = 2000 }) => {
-  const [animatedValue] = useState(new Animated.Value(0));
-  const { colors } = useTheme();
-  const styles = createStyle(colors);
-
-  useEffect(() => {
-    const numericValue = parseFloat(value) || 0;
-    Animated.timing(animatedValue, {
-      toValue: numericValue,
-      duration,
-      useNativeDriver: true,
-    }).start();
-  }, [value]);
-
-  return (
-    <Text style={styles.heroNumber}>
-      {value}
-    </Text>
-  );
-};
+      {!isLeft && <Image source={item.icon} style={styles.cardIcon} />}
+    </View>
+  </View>
+);
 
 export default function UniversityStats({ componentKey = "numbers", refreshTrigger = 0 }) {
   const { colors } = useTheme();
@@ -75,29 +32,13 @@ export default function UniversityStats({ componentKey = "numbers", refreshTrigg
   const [statsData, setStatsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [animations] = useState(() => 
-    Array(7).fill(0).map(() => new Animated.Value(0))
-  );
 
   // Connect to global loading state
   useGlobalLoading(componentKey, loading);
 
   useEffect(() => {
     fetchStats();
-  }, [refreshTrigger]); // Add refreshTrigger to dependencies
-
-  useEffect(() => {
-    if (statsData.length > 0) {
-      Animated.stagger(100, animations.map(anim => 
-        Animated.spring(anim, {
-          toValue: 1,
-          tension: 50,
-          friction: 7,
-          useNativeDriver: true,
-        })
-      )).start();
-    }
-  }, [statsData]);
+  }, [refreshTrigger]);
 
   const fetchStats = async () => {
     try {
@@ -109,45 +50,52 @@ export default function UniversityStats({ componentKey = "numbers", refreshTrigg
         const transformedData = [
           {
             id: '1',
-            number: response.data.totalAlumniStudents,
+            number: response.data.totalAlumniStudents?.toString() || '0',
             description: 'Graduates',
-            icon: 'school-outline',
+            icon: graduatesIcon,
+            position: 'left',
           },
           {
             id: '2',
-            number: response.data.totalCurrentStudents,
+            number: response.data.totalCurrentStudents?.toString() || '0',
             description: 'Students',
-            icon: 'people-outline',
+            icon: studentsIcon,
+            position: 'right',
           },
           {
             id: '3',
-            number: response.data.schoolsNumber,
+            number: response.data.schoolsNumber?.toString() || '0',
             description: 'Schools',
-            icon: 'business-outline',
+            icon: schoolsIcon,
+            position: 'left',
           },
           {
             id: '4',
-            number: response.data.totalCampuses,
+            number: response.data.totalCampuses?.toString() || '0',
             description: 'Campuses',
-            icon: 'location-outline',
+            icon: campusesIcon,
+            position: 'right',
           },
           {
             id: '5',
-            number: response.data.programsNumber,
+            number: response.data.programsNumber?.toString() || '0',
             description: 'Programs',
-            icon: 'library-outline',
+            icon: programsIcon,
+            position: 'left',
           },
           {
             id: '6',
-            number: response.data.totalLabs,
+            number: response.data.totalLabs?.toString() || '0',
             description: 'Labs',
-            icon: 'flask-outline',
+            icon: labsIcon,
+            position: 'right',
           },
           {
             id: '7',
-            number: response.data.partnersNumber,
-            description: 'Partners',
-            icon: 'hand-left-outline',
+            number: response.data.partnersNumber?.toString() || '0',
+            description: 'Inter-Relations',
+            icon: relationsIcon,
+            position: 'left',
           },
         ];
         setStatsData(transformedData);
@@ -156,7 +104,7 @@ export default function UniversityStats({ componentKey = "numbers", refreshTrigg
       }
     } catch (err) {
       console.error('Error fetching stats:', err);
-      setError(err.message);
+      setError(err.message || 'An error occurred while loading data');
     } finally {
       setLoading(false);
     }
@@ -166,28 +114,15 @@ export default function UniversityStats({ componentKey = "numbers", refreshTrigg
     fetchStats();
   };
 
-  // Remove individual loading display - global overlay handles it
-  // But keep the hero section visible during loading
   if (error) {
     return (
       <View style={styles.container}>
-        {/* Safe hero section */}
-        {colors.primary && colors.secondary ? (
-          <LinearGradient
-            colors={[colors.primary, colors.secondary]}
-            style={styles.heroSection}
-          >
-            <Text style={styles.heroTitle}>University Stats</Text>
-            <Text style={styles.heroSubtitle}>Something went wrong</Text>
-          </LinearGradient>
-        ) : (
-          <View style={[styles.heroSection, { backgroundColor: colors.primary }]}>
-            <Text style={styles.heroTitle}>University Stats</Text>
-            <Text style={styles.heroSubtitle}>Something went wrong</Text>
-          </View>
-        )}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>SIMAD in Numbers</Text>
+          <Text style={styles.headerSubtitle}>Something went wrong</Text>
+        </View>
         <View style={styles.errorContainer}>
-          <Ionicons name="alert-circle-outline" size={64} color={colors.danger} />
+          <Text style={styles.errorIcon}>⚠️</Text>
           <Text style={styles.errorText}>Unable to load data</Text>
           <Text style={styles.errorDetail}>{error}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
@@ -200,72 +135,65 @@ export default function UniversityStats({ componentKey = "numbers", refreshTrigg
 
   return (
     <View style={styles.container}>
-      {/* Safe hero section - Always show this even during loading */}
-      {colors.primary && colors.secondary ? (
-        <LinearGradient
-          colors={[colors.primary, colors.secondary]}
-          style={styles.heroSection}
-        >
-          <Text style={styles.heroTitle}>SIMAD in Numbers</Text>
-          <Text style={styles.heroSubtitle}>
-            {loading ? 'Loading amazing numbers...' : 'Our impact and achievements'}
-          </Text>
-          {!loading && statsData.length > 0 && (
-            <View style={styles.heroStats}>
-              <View style={styles.heroStat}>
-                <Text style={styles.heroNumber}>{statsData[0]?.number}</Text>
-                <Text style={styles.heroLabel}>Graduates</Text>
-              </View>
-              <View style={styles.heroDivider} />
-              <View style={styles.heroStat}>
-                <Text style={styles.heroNumber}>{statsData[1]?.number}</Text>
-                <Text style={styles.heroLabel}>Active Students</Text>
-              </View>
+      {/* Header Section */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>SIMAD in Numbers</Text>
+        <Text style={styles.headerSubtitle}>
+          {loading ? 'Loading amazing numbers...' : 'Our impact and achievements'}
+        </Text>
+        
+        {/* Show hero stats during loading with placeholder */}
+        {(loading || statsData.length > 0) && (
+          <View style={styles.heroStats}>
+            <View style={styles.heroStat}>
+              <Text style={styles.heroNumber}>
+                {loading ? '...' : statsData[0]?.number}
+              </Text>
+              <Text style={styles.heroLabel}>Graduates</Text>
             </View>
-          )}
-        </LinearGradient>
-      ) : (
-        <View style={[styles.heroSection, { backgroundColor: colors.primary }]}>
-          <Text style={styles.heroTitle}>SIMAD in Numbers</Text>
-          <Text style={styles.heroSubtitle}>
-            {loading ? 'Loading amazing numbers...' : 'Our impact and achievements'}
-          </Text>
-          {!loading && statsData.length > 0 && (
-            <View style={styles.heroStats}>
-              <View style={styles.heroStat}>
-                <Text style={styles.heroNumber}>{statsData[0]?.number}</Text>
-                <Text style={styles.heroLabel}>Graduates</Text>
-              </View>
-              <View style={styles.heroDivider} />
-              <View style={styles.heroStat}>
-                <Text style={styles.heroNumber}>{statsData[1]?.number}</Text>
-                <Text style={styles.heroLabel}>Active Students</Text>
-              </View>
+            <View style={styles.heroDivider} />
+            <View style={styles.heroStat}>
+              <Text style={styles.heroNumber}>
+                {loading ? '...' : statsData[1]?.number}
+              </Text>
+              <Text style={styles.heroLabel}>Active Students</Text>
             </View>
-          )}
+          </View>
+        )}
+      </View>
+
+      {/* Loading State */}
+      {loading && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.loadingText}>Loading university statistics...</Text>
         </View>
       )}
 
-      {/* Only show content when not loading */}
+      {/* Timeline Content */}
       {!loading && statsData.length > 0 && (
         <ScrollView 
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.statsGrid}>
+          <View style={styles.timelineWrapper}>
+            <View style={styles.timelineLine} />
             {statsData.map((item, index) => (
-              <StatCard 
-                key={item.id} 
-                item={item} 
-                index={index}
-                animation={animations[index]}
-              />
+              <View key={item.id} style={styles.timelineItem}>
+                <TimelineCard 
+                  item={item} 
+                  styles={styles} 
+                  isLeft={item.position === 'left'} 
+                />
+                <View style={styles.timelineDot} />
+              </View>
             ))}
           </View>
 
+          {/* Footer Section */}
           <View style={styles.footer}>
-            <Ionicons name="trophy-outline" size={48} color={colors.primary} />
+            <Text style={styles.footerIcon}>🏆</Text>
             <Text style={styles.footerTitle}>Excellence in Education</Text>
             <Text style={styles.footerText}>
               These numbers represent our commitment to providing quality education 
@@ -273,6 +201,13 @@ export default function UniversityStats({ componentKey = "numbers", refreshTrigg
             </Text>
           </View>
         </ScrollView>
+      )}
+
+      {/* Empty State */}
+      {!loading && statsData.length === 0 && !error && (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>No data available</Text>
+        </View>
       )}
     </View>
   );
@@ -284,21 +219,22 @@ const createStyle = (colors) => {
       flex: 1,
       backgroundColor: colors.bg,
     },
-    heroSection: {
+    header: {
+      backgroundColor: colors.primary,
       paddingTop: 60,
       paddingBottom: 30,
       paddingHorizontal: 20,
       borderBottomLeftRadius: 30,
       borderBottomRightRadius: 30,
     },
-    heroTitle: {
-      fontSize: 32,
+    headerTitle: {
+      fontSize: 28, // Slightly smaller for better fit
       fontWeight: 'bold',
       color: colors.white,
       textAlign: 'center',
       marginBottom: 8,
     },
-    heroSubtitle: {
+    headerSubtitle: {
       fontSize: 16,
       color: colors.white,
       opacity: 0.9,
@@ -315,7 +251,7 @@ const createStyle = (colors) => {
       flex: 1,
     },
     heroNumber: {
-      fontSize: 36,
+      fontSize: 32, // Slightly smaller
       fontWeight: 'bold',
       color: colors.white,
       marginBottom: 4,
@@ -327,100 +263,126 @@ const createStyle = (colors) => {
       fontWeight: '500',
     },
     heroDivider: {
-      width: 2,
-      height: 40,
+      width: 1,
+      height: 30, // Smaller
       backgroundColor: colors.white,
       opacity: 0.3,
-      marginHorizontal: 20,
+      marginHorizontal: 15, // Less margin
     },
     scrollView: {
       flex: 1,
     },
     scrollContent: {
-      padding: 15,
       paddingBottom: 40,
     },
-    statsGrid: {
+    timelineWrapper: {
+      position: 'relative',
+      paddingHorizontal: 10, // Less padding
+      marginTop: 20,
+      paddingBottom: 20,
+    },
+    timelineLine: {
+      position: 'absolute',
+      left: '50%',
+      width: 3, // Thinner line
+      backgroundColor: colors.primary,
+      top: 0,
+      bottom: 0,
+      borderRadius: 2,
+      marginLeft: -1.5, // Center the line
+    },
+    timelineItem: {
       flexDirection: 'row',
-      columnGap: 5,
-      flexWrap: 'wrap',
-      justifyContent: 'space-between',
-    },
-    statCard: {
-      width: (width - 60) / 2,
-      height: 140,
-      marginBottom: 20,
-      borderRadius: 20,
-      overflow: 'hidden',
-    },
-    cardGradient: {
-      flex: 1,
-      borderRadius: 20,
-      shadowColor: colors.shadow,
-      shadowOffset: { width: 0, height: 10 },
-      shadowOpacity: 0.1,
-      shadowRadius: 20,
-      elevation: 5,
-    },
-    cardContent: {
-      flex: 1,
-      padding: 16,
-      justifyContent: 'space-between',
-      marginRight: 5
-    },
-    iconContainer: {
-      width: 50,
-      height: 50,
-      borderRadius: 25,
-      backgroundColor: colors.white,
-      justifyContent: 'center',
       alignItems: 'center',
+      marginBottom: 10, // Add some margin between items
+      minHeight: 80, // Smaller min height
+    },
+    timelineDot: {
+      width: 14,
+      height: 14,
+      borderRadius: 7,
+      backgroundColor: colors.primary,
+      position: 'absolute',
+      left: '50%',
+      marginLeft: -16.5, // Center the dot
+      zIndex: 1,
+      borderWidth: 2,
+      borderColor: colors.white,
+    },
+    cardContainerLeft: {
+      flex: 1,
+      paddingRight: 10, // Reduced padding
+      alignItems: 'flex-end',
+    },
+    cardContainerRight: {
+      flex: 1,
+      paddingLeft: 10, // Fixed: positive padding instead of negative
+      alignItems: 'flex-start',
+    },
+    card: {
+      flexDirection: 'row',
+      backgroundColor: colors.surface,
+      borderRadius: 12,
+      paddingVertical: 12,
+      paddingHorizontal: 12,
+      width: 140, // Slightly smaller
+      alignItems: 'center',
+      justifyContent: 'space-between',
       shadowColor: colors.shadow,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.3,
-      shadowRadius: 8,
-      elevation: 5,
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.1,
+      shadowRadius: 3.84,
+      elevation: 3, // Lower elevation
     },
-    textContainer: {
-      marginTop: 8,
+    textColumn: {
+      flex: 1,
+      marginLeft: 8,
     },
-    statNumber: {
-      fontSize: 20,
-      fontWeight: 'bold',
+    textColumnLeft: {
+      marginRight: 8,
+      marginLeft: 0,
+      alignItems: 'flex-end',
+    },
+    cardNumber: {
+      fontSize: 16,
+      fontWeight: '700',
       color: colors.text,
       marginBottom: 2,
     },
-    statLabel: {
+    cardDescription: {
       fontSize: 12,
       color: colors.text,
       fontWeight: '500',
     },
-    decorationCircle: {
-      position: 'absolute',
-      width: 80,
-      height: 80,
-      borderRadius: 40,
-      backgroundColor: colors.secondary + '15',
-      top: -20,
-      right: -20,
+    cardIcon: {
+      width: 40,
+      height: 40,
+      resizeMode: 'contain',
     },
     footer: {
       alignItems: 'center',
-      padding: 30,
+      padding: 25,
       backgroundColor: colors.surface,
       borderRadius: 20,
-      marginTop: 10,
+      marginTop: 20,
+      marginHorizontal: 15,
       shadowColor: colors.shadow,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 8,
       elevation: 3,
     },
+    footerIcon: {
+      fontSize: 40,
+      marginBottom: 8,
+    },
     footerTitle: {
-      fontSize: 20,
+      fontSize: 18,
       fontWeight: 'bold',
       color: colors.text,
-      marginTop: 16,
       marginBottom: 8,
     },
     footerText: {
@@ -439,6 +401,7 @@ const createStyle = (colors) => {
       marginTop: 16,
       fontSize: 16,
       color: colors.text,
+      textAlign: 'center',
     },
     errorContainer: {
       flex: 1,
@@ -446,18 +409,23 @@ const createStyle = (colors) => {
       alignItems: 'center',
       padding: 40,
     },
+    errorIcon: {
+      fontSize: 48,
+      marginBottom: 16,
+    },
     errorText: {
       fontSize: 20,
       fontWeight: 'bold',
       color: colors.danger,
-      marginTop: 16,
       marginBottom: 8,
+      textAlign: 'center',
     },
     errorDetail: {
       fontSize: 14,
       color: colors.text,
       textAlign: 'center',
       marginBottom: 24,
+      lineHeight: 20,
     },
     retryButton: {
       backgroundColor: colors.primary,
@@ -469,6 +437,17 @@ const createStyle = (colors) => {
       color: colors.white,
       fontSize: 16,
       fontWeight: '600',
+    },
+    emptyContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 40,
+    },
+    emptyText: {
+      fontSize: 18,
+      color: colors.text,
+      textAlign: 'center',
     },
   });
 };

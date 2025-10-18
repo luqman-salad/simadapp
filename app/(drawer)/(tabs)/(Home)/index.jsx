@@ -5,11 +5,12 @@ import AcademicFacilities from '../../../../components/AcademicFacilities';
 import AcademicInstitutions from '../../../../components/AcademicInstitutions';
 import AcademicPrograms from '../../../../components/AcademicPrograms';
 import { Header } from '../../../../components/Headrer';
-import InternationalPartners from '../../../../components/InternationalPartners';
+import Partners from "../../../../components/Partners"
 import ShowCase from '../../../../components/Showcase';
 import SimadInNumbers from '../../../../components/SimadInNumbers';
 import useTheme from '../../../../hooks/usetheme';
 import { useRouter } from 'expo-router';
+import useLoadingStore from '../../../../store/loadingStore'; // Import the loading store
 
 const Home = () => {
     const { colors } = useTheme();
@@ -17,7 +18,10 @@ const Home = () => {
     const navigation = useNavigation();
     const router = useRouter();
     const [refreshing, setRefreshing] = useState(false);
-    const [refreshKey, setRefreshKey] = useState(0);
+    const [refreshTrigger, setRefreshTrigger] = useState(0); // Renamed for clarity
+    
+    // Get the clear function from loading store
+    const { clearAllLoadingStates } = useLoadingStore();
 
     const handlePress = () => {
         router.push("(screens)/notifications")
@@ -26,14 +30,17 @@ const Home = () => {
     const onRefresh = useCallback(() => {
         setRefreshing(true);
         
-        // Increment the refresh key to force all child components to re-render and refetch data
-        setRefreshKey(prevKey => prevKey + 1);
+        // Clear all loading states before refresh
+        clearAllLoadingStates();
         
-        // Simulate refresh delay
+        // Increment refresh trigger to force all child components to refetch data
+        setRefreshTrigger(prev => prev + 1);
+        
+        // Set timeout to stop refresh indicator
         setTimeout(() => {
             setRefreshing(false);
-        }, 2000); // 2 second delay to show the refresh indicator
-    }, []);
+        }, 3000); // 3 seconds to allow components to reload
+    }, [clearAllLoadingStates]);
 
     return (
         <>
@@ -41,10 +48,7 @@ const Home = () => {
                 title="SIMAD"
                 showLeftIcon
                 leftIconName="menu"
-                // showNotifiction
-                // NotificationItemCount={6}
                 onLeftIconPress={() => navigation.openDrawer()}
-                // onNotificationPress={() => handlePress()}
             />
             <ScrollView 
                 showsVerticalScrollIndicator={false} 
@@ -53,35 +57,35 @@ const Home = () => {
                     <RefreshControl
                         refreshing={refreshing}
                         onRefresh={onRefresh}
-                        colors={[colors.primary]} // Android
-                        tintColor={colors.primary} // iOS
+                        colors={[colors.primary]}
+                        tintColor={colors.primary}
                         title="Pull to refresh"
                         titleColor={colors.text}
                         progressBackgroundColor={colors.bg}
                     />
                 }
             >
-                <ShowCase key={`showcase-${refreshKey}`} />
-                <AcademicFacilities key={`facilities-${refreshKey}`} />
+                {/* Pass componentKey and refreshTrigger to all components */}
+                <ShowCase componentKey="showcase" refreshTrigger={refreshTrigger} />
+                <AcademicFacilities componentKey="facilities" refreshTrigger={refreshTrigger} />
 
                 <View style={[styles.sectionContainer, styles.topBarContainer]}>
                     <Text style={styles.sectionTitle}>Academic Programs</Text>
-                    <AcademicPrograms key={`programs-${refreshKey}`} />
+                    <AcademicPrograms componentKey="programs" refreshTrigger={refreshTrigger} />
                 </View>
 
                 <View style={styles.sectionContainer}>
-                    <Text style={styles.sectionTitle}>Academic Institutions</Text>
-                    <AcademicInstitutions key={`institutions-${refreshKey}`} />
+                    {/* <Text style={styles.sectionTitle}>Academic Institutions</Text> */}
+                    <AcademicInstitutions componentKey="institutions" refreshTrigger={refreshTrigger} />
                 </View>
 
                 <View style={styles.sectionContainer}>
-                    {/* <Text style={styles.sectionTitle}>International Partners</Text> */}
-                    <InternationalPartners key={`partners-${refreshKey}`} />
+                    <Partners componentKey="partners" refreshTrigger={refreshTrigger} />
                 </View>
 
                 <View style={styles.sectionContainer}>
                     <Text style={styles.sectionTitle}>SIMAD In Numbers</Text>
-                    <SimadInNumbers key={`numbers-${refreshKey}`} />
+                    <SimadInNumbers componentKey="numbers" refreshTrigger={refreshTrigger} />
                 </View>
             </ScrollView>
         </>
@@ -118,7 +122,7 @@ const createStyle = (colors) => {
             color: colors.text,
         },
         topBarContainer: {
-            minHeight: 340
+            minHeight: 480
         }
     });
 };

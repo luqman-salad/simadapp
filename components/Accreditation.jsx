@@ -1,8 +1,9 @@
 // components/Accreditation.jsx
-import { Image, ScrollView, StyleSheet, Text, View, ActivityIndicator, Pressable } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, View, Pressable } from 'react-native';
 import useTheme from '../hooks/usetheme';
 import { useState, useEffect } from 'react';
 import { getAccreditationsData } from '../apis/accreditationApi';
+import { useGlobalLoading } from '../hooks/useGlobalLoading';
 
 const AccreditationCard = ({ title, description, logo, message }) => {
     const { colors } = useTheme();
@@ -25,12 +26,15 @@ const AccreditationCard = ({ title, description, logo, message }) => {
     );
 };
 
-export default function Accreditation() {
+export default function Accreditation({ componentKey = "accreditation", refreshTrigger = 0 }) {
     const { colors } = useTheme();
     const styles = createStyle(colors);
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    // Connect to global loading state
+    useGlobalLoading(componentKey, loading);
 
     const fetchData = async () => {
         try {
@@ -53,45 +57,45 @@ export default function Accreditation() {
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [refreshTrigger]);
 
-    const handleRetry = () => {
-        fetchData();
-    };
-
-    if (loading) {
-        return (
-            <View style={[styles.container, styles.center]}>
-                <ActivityIndicator size="large" color={colors.primary} />
-                <Text style={styles.loadingText}>Loading Accreditations...</Text>
-            </View>
-        );
-    }
-
+    // Remove individual loading display - global overlay handles it
     if (error) {
         return (
-            <View style={[styles.container, styles.center]}>
-                <Text style={styles.errorText}>Error: {error}</Text>
-                <Pressable onPress={handleRetry}>
-                    <Text style={styles.retryText}>Tap to retry</Text>
+            <View style={[styles.container, styles.centerContainer]}>
+                <Text style={[styles.errorText, { color: colors.danger }]}>
+                    Error: {error}
+                </Text>
+                <Pressable onPress={fetchData} style={styles.retryButton}>
+                    <Text style={[styles.retryText, { color: colors.primary }]}>
+                        Tap to retry
+                    </Text>
                 </Pressable>
             </View>
         );
     }
 
-    if (!data || data.length === 0) {
+    if (!data || (data.length === 0 && !loading)) {
         return (
-            <View style={[styles.container, styles.center]}>
-                <Text style={styles.errorText}>No accreditation data available</Text>
-                <Pressable onPress={handleRetry}>
-                    <Text style={styles.retryText}>Tap to retry</Text>
+            <View style={[styles.container, styles.centerContainer]}>
+                <Text style={[styles.noDataText, { color: colors.textSecondary }]}>
+                    No accreditation data available
+                </Text>
+                <Pressable onPress={fetchData} style={styles.retryButton}>
+                    <Text style={[styles.retryText, { color: colors.primary }]}>
+                        Tap to retry
+                    </Text>
                 </Pressable>
             </View>
         );
     }
 
     return (
-        <ScrollView style={styles.container}>
+        <ScrollView 
+            style={styles.container}
+            contentContainerStyle={styles.contentContainer}
+            showsVerticalScrollIndicator={false}
+        >
             <View style={styles.content}>
                 <Text style={styles.pageTitle}>Accreditation, Ranking, and Memberships</Text>
 
@@ -114,29 +118,33 @@ const createStyle = (colors) => {
             flex: 1,
             backgroundColor: colors.bg,
         },
-        center: {
-            justifyContent: 'center',
-            alignItems: 'center',
-            flex: 1,
+        contentContainer: {
+            paddingVertical: 20,
         },
-        loadingText: {
-            marginTop: 10,
-            color: colors.text,
-            fontSize: 16,
+        centerContainer: {
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 20,
         },
         errorText: {
-            color: colors.error,
+            fontSize: 16,
+            marginBottom: 10,
+            textAlign: 'center',
+        },
+        noDataText: {
             fontSize: 16,
             textAlign: 'center',
             marginBottom: 10,
         },
+        retryButton: {
+            marginTop: 10,
+        },
         retryText: {
-            color: colors.primary,
-            fontSize: 14,
-            textDecorationLine: 'underline',
+            fontSize: 16,
+            fontWeight: "bold",
         },
         content: {
-            padding: 20,
+            paddingHorizontal: 20,
         },
         pageTitle: {
             fontSize: 18,

@@ -100,12 +100,12 @@ const Setting = ({ navigation }) => {
               })}
               colors={colors}
             /> */}
-            <SettingsItem
+            {/* <SettingsItem
               icon="notifications-outline"
               title="Notification"
               // onPress={}
               colors={colors}
-            />
+            /> */}
           </View>
 
           <Text style={createStyles(colors).sectionHeader}>About</Text>
@@ -114,7 +114,7 @@ const Setting = ({ navigation }) => {
             <SettingsItem
               icon="information-circle-outline"
               title="About SIMAD University"
-              // onPress={() => handleNavigation('AboutSIMAD')}
+              onPress={() => router.push("(screens)/aboutSimad")}
               colors={colors}
             />
             <SettingsItem

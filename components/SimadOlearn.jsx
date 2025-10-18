@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, Image, ActivityIndicator, Dimensions, Pressable } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Image, Dimensions, Pressable } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 import useTheme from '../hooks/usetheme';
 import { getProgramsByCategoryId } from '../apis/academicProgramsApi'; 
-import { useGlobalLoading } from '../hooks/useGlobalLoading'; // Import the global loading hook
+import { useGlobalLoading } from '../hooks/useGlobalLoading';
 
-// Constants
-const CARD_MARGIN = 10;
-const CARD_WIDTH = 150; // Use a fixed width for stable horizontal layout
+const { width: screenWidth } = Dimensions.get('window');
+const CARD_WIDTH = (screenWidth - 60) / 2; // 2 cards with spacing
 
-// Utility function to split array into chunks (columns)
 const chunkArray = (array, size) => {
     const result = [];
     for (let i = 0; i < array.length; i += size) {
@@ -17,45 +17,66 @@ const chunkArray = (array, size) => {
     return result;
 };
 
-// Component for a single card in the grid
-const GridCard = ({ item, styles }) => (
+const GridCard = ({ item, styles, onPress, index }) => (
     <Pressable 
+        onPress={onPress}
         style={({ pressed }) => [
-            styles.card, 
-            { width: CARD_WIDTH, opacity: pressed ? 0.8 : 1 } 
+            styles.cardContainer,
+            { transform: [{ scale: pressed ? 0.98 : 1 }] }
         ]}
-        onPress={() => console.log('Card Pressed:', item.name)} 
     >
-        {/* Using URI for dynamic image and Pressable for interaction */}
-        <Image 
-            source={{ uri: item.logoUrl }} 
-            style={styles.icon} 
-            resizeMode="contain"
-            // Use local icon if logoUrl is missing or fails to load 
-            defaultSource={require('../assets/icons/desktop-computer.png')} 
-        />
-        <Text style={styles.title} numberOfLines={2}>
-            {item.name}
-        </Text>
+        <LinearGradient
+            colors={[styles.colors.surface, styles.colors.surface + 'DD']}
+            style={styles.card}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+        >
+            {/* Background Pattern */}
+            <View style={styles.pattern} />
+            
+            {/* Content */}
+            <View style={styles.cardContent}>
+                {/* Icon Container with Gradient */}
+                <LinearGradient
+                    colors={[styles.colors.primary + '20', styles.colors.primary + '40']}
+                    style={styles.iconContainer}
+                >
+                    {item.logoUrl ? (
+                        <Image 
+                            source={{ uri: item.logoUrl }} 
+                            style={styles.icon} 
+                            resizeMode="contain"
+                        />
+                    ) : (
+                        <Text style={styles.fallbackIcon}>🏫</Text>
+                    )}
+                </LinearGradient>
+
+                {/* School Name */}
+                <Text style={styles.title} numberOfLines={2}>
+                    {item.name}
+                </Text>
+
+                {/* Explore Text */}
+                <View style={styles.exploreContainer}>
+                    <Text style={styles.exploreText}>Explore</Text>
+                    <Text style={styles.arrow}>→</Text>
+                </View>
+            </View>
+        </LinearGradient>
     </Pressable>
 );
 
-// ⭐ Component now accepts props, where the categoryId will be found ⭐
 export default function HorizontalTwoRowGrid({ route, componentKey = "institutions", refreshTrigger = 0 }) {
-    // The categoryId is passed via the tab navigator's initialParams, 
-    // and is accessible either directly via props or via route.params.
-    // Assuming the tab component is passed directly:
-    const categoryId = route?.params?.categoryId; // Safely access the passed ID
-
+    const categoryId = route?.params?.categoryId;
     const { colors } = useTheme();
     const styles = createStyle(colors);
+    const router = useRouter(); // ✅ ADDED ROUTER HOOK
     
-    // State to manage data, loading, and errors
     const [schools, setSchools] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Connect to global loading state
     useGlobalLoading(componentKey, loading);
 
     const fetchSchools = async (id) => {
@@ -69,14 +90,13 @@ export default function HorizontalTwoRowGrid({ route, componentKey = "institutio
             setLoading(true);
             setError(null);
             
-            // ⭐ USE THE PASSED CATEGORY ID HERE ⭐
             const result = await getProgramsByCategoryId(id);
             
             if (result.success && result.data && result.data.schools) {
                 const transformedData = result.data.schools.map(school => ({
                     id: school._id,
                     name: school.name,
-                    logoUrl: school.logoUrl || 'https://placeholder.com/40x40', 
+                    logoUrl: school.logoUrl,
                 }));
                 setSchools(transformedData);
             } else {
@@ -91,63 +111,68 @@ export default function HorizontalTwoRowGrid({ route, componentKey = "institutio
     };
 
     useEffect(() => {
-        fetchSchools(categoryId); // Pass the retrieved categoryId to the fetch function
-    }, [categoryId, refreshTrigger]); // Add refreshTrigger to dependencies
+        fetchSchools(categoryId);
+    }, [categoryId, refreshTrigger]);
 
-    // A utility style to ensure these states are centered vertically in the available space
-    const centerStyle = { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bg, height: 250 };
+    // ✅ UPDATED: Navigation function same as undergraduate
+    const handlePress = (schoolId, schoolName) => {
+        console.log('School pressed:', schoolId, schoolName);
+        
+        router.push({
+            pathname: '/(screens)/SchoolInfoScreen',
+            params: { 
+                schoolId: schoolId, 
+                schoolName: schoolName 
+            }
+        });
+    };
 
-    // Remove individual loading display - global overlay handles it
     if (error) {
         return (
-            <View style={centerStyle}>
-                <Text style={styles.errorText}>Error: {error}</Text>
-                <Text style={styles.retryText} onPress={() => fetchSchools(categoryId)}>
-                    Tap to retry
-                </Text>
+            <View style={styles.errorContainer}>
+                <View style={styles.errorIconContainer}>
+                    <Text style={styles.errorIcon}>🏫</Text>
+                </View>
+                <Text style={styles.errorTitle}>Unable to Load</Text>
+                <Text style={styles.errorText}>{error}</Text>
+                <Pressable style={styles.retryButton} onPress={() => fetchSchools(categoryId)}>
+                    <Text style={styles.retryText}>Try Again</Text>
+                </Pressable>
             </View>
         );
     }
     
     if (!schools || schools.length === 0) {
         return (
-            <View style={centerStyle}>
-                <Text style={styles.errorText}>No programs found.</Text>
+            <View style={styles.emptyContainer}>
+                <View style={styles.emptyIconContainer}>
+                    <Text style={styles.emptyIcon}>📚</Text>
+                </View>
+                <Text style={styles.emptyTitle}>No Schools Available</Text>
+                <Text style={styles.emptyText}>Check back later for updates</Text>
             </View>
         );
     }
 
-    // --- Render Grid ---
-    const chunkedSchools = chunkArray(schools, 2); 
-    
-    // To maintain the original visual style and centering, we use Dimensions check
-    const screenWidth = Dimensions.get('window').width;
-    const totalContentWidth = chunkedSchools.length * (CARD_WIDTH + CARD_MARGIN) + CARD_MARGIN;
-    const isScrollable = totalContentWidth > screenWidth;
+    const chunkedSchools = chunkArray(schools, 2);
+    let globalIndex = 0;
 
     return (
         <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={[
-                styles.scrollContainer,
-                !isScrollable && { justifyContent: 'center', minWidth: '100%' }, 
-                isScrollable && { paddingHorizontal: CARD_MARGIN }
-            ]}
+            contentContainerStyle={styles.scrollContainer}
         >
-            {chunkedSchools.map((column, index) => (
-                <View 
-                    key={`col-${index}`} 
-                    style={[
-                        styles.column, 
-                        { marginRight: CARD_MARGIN } 
-                    ]}
-                >
+            {chunkedSchools.map((column, columnIndex) => (
+                <View key={`col-${columnIndex}`} style={styles.column}>
                     {column.map((item) => (
                         <GridCard 
                             key={item.id} 
                             item={item} 
-                            styles={styles} 
+                            styles={{...styles, colors}} 
+                            // ✅ UPDATED: Using the handlePress function
+                            onPress={() => handlePress(item.id, item.name)}
+                            index={globalIndex++}
                         />
                     ))}
                 </View>
@@ -159,59 +184,191 @@ export default function HorizontalTwoRowGrid({ route, componentKey = "institutio
 const createStyle = (colors) => {
     return StyleSheet.create({
         scrollContainer: {
-            paddingVertical: 20,
+            paddingHorizontal: 20,
+            paddingVertical: 15,
+            paddingBottom: 25,
             backgroundColor: colors.bg,
-            paddingBottom: 20,
-            alignItems: "center",
+            width: "100%"
         },
         column: {
-            marginRight: 10,
-            justifyContent: 'space-between',
+            marginRight: 15,
+            gap: 12,
+        },
+        cardContainer: {
+            width: CARD_WIDTH,
+            borderRadius: 20,
+            shadowColor: '#000',
+            shadowOffset: {
+                width: 0,
+                height: 8,
+            },
+            shadowOpacity: 0.15,
+            shadowRadius: 20,
+            elevation: 10,
         },
         card: {
-            backgroundColor: colors.surface,
-            // width: "100%", // Fixed to CARD_WIDTH in component
-            height: 110,
-            borderRadius: 10,
-            padding: 10,
-            marginBottom: 10,
-            alignItems: 'center',
+            height: 160,
+            borderRadius: 20,
+            padding: 16,
+            overflow: 'hidden',
+            position: 'relative',
+        },
+        pattern: {
+            position: 'absolute',
+            top: -20,
+            right: -20,
+            width: 80,
+            height: 80,
+            backgroundColor: colors.primary + '15',
+            borderRadius: 40,
+            transform: [{ rotate: '45deg' }],
+        },
+        cardContent: {
+            flex: 1,
+            justifyContent: 'space-between',
+        },
+        iconContainer: {
+            width: 50,
+            height: 50,
+            borderRadius: 15,
             justifyContent: 'center',
-            shadowColor: '#000', 
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 3.84,
-            elevation: 3, 
-            borderWidth: 1,
-            borderColor: colors.border,
+            alignItems: 'center',
+            alignSelf: 'flex-start',
+            marginBottom: 12,
         },
         icon: {
-            width: 40,
-            height: 40,
-            marginBottom: 8,
-            resizeMode: 'contain',
+            width: 28,
+            height: 28,
+        },
+        fallbackIcon: {
+            fontSize: 20,
         },
         title: {
-            fontSize: 13,
-            fontWeight: '500',
+            fontSize: 15,
+            fontWeight: '700',
             color: colors.text,
-            textAlign: 'center',
+            lineHeight: 20,
+            marginBottom: 8,
+            flexShrink: 1,
         },
-        // Additional styles for the loading/error states
-        loadingText: {
-            marginTop: 10,
+        exploreContainer: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+        },
+        exploreText: {
+            fontSize: 12,
+            fontWeight: '600',
+            color: colors.primary,
+            textTransform: 'uppercase',
+            letterSpacing: 0.5,
+        },
+        arrow: {
+            fontSize: 14,
+            fontWeight: '700',
+            color: colors.primary,
+        },
+        errorContainer: {
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 40,
+            borderRadius: 20,
+            backgroundColor: colors.surface,
+            margin: 20,
+            shadowColor: '#000',
+            shadowOffset: {
+                width: 0,
+                height: 4,
+            },
+            shadowOpacity: 0.1,
+            shadowRadius: 12,
+            elevation: 5,
+        },
+        errorIconContainer: {
+            width: 80,
+            height: 80,
+            borderRadius: 40,
+            backgroundColor: colors.error + '20',
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginBottom: 16,
+        },
+        errorIcon: {
+            fontSize: 32,
+        },
+        errorTitle: {
+            fontSize: 20,
+            fontWeight: '700',
             color: colors.text,
+            marginBottom: 8,
+            textAlign: 'center',
         },
         errorText: {
-            color: colors.error || 'red', 
             fontSize: 14,
+            color: colors.textSecondary,
+            textAlign: 'center',
+            marginBottom: 20,
+            lineHeight: 20,
+        },
+        emptyContainer: {
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 40,
+            borderRadius: 20,
+            backgroundColor: colors.surface,
+            margin: 20,
+            shadowColor: '#000',
+            shadowOffset: {
+                width: 0,
+                height: 4,
+            },
+            shadowOpacity: 0.1,
+            shadowRadius: 12,
+            elevation: 5,
+        },
+        emptyIconContainer: {
+            width: 80,
+            height: 80,
+            borderRadius: 40,
+            backgroundColor: colors.primary + '20',
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginBottom: 16,
+        },
+        emptyIcon: {
+            fontSize: 32,
+        },
+        emptyTitle: {
+            fontSize: 20,
+            fontWeight: '700',
+            color: colors.text,
+            marginBottom: 8,
             textAlign: 'center',
         },
-        retryText: {
-            color: colors.primary || 'blue', 
+        emptyText: {
             fontSize: 14,
-            textDecorationLine: 'underline',
-            marginTop: 5,
+            color: colors.textSecondary,
+            textAlign: 'center',
+            lineHeight: 20,
+        },
+        retryButton: {
+            backgroundColor: colors.primary,
+            paddingHorizontal: 24,
+            paddingVertical: 12,
+            borderRadius: 12,
+            shadowColor: colors.primary,
+            shadowOffset: {
+                width: 0,
+                height: 4,
+            },
+            shadowOpacity: 0.3,
+            shadowRadius: 8,
+            elevation: 6,
+        },
+        retryText: {
+            color: colors.white,
+            fontSize: 16,
+            fontWeight: '600',
         },
     });
 };

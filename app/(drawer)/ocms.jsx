@@ -5,8 +5,9 @@ import { Header } from '../../components/Headrer';
 import useTheme from '../../hooks/usetheme';
 import { useNavigation } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useGlobalLoading } from '../../hooks/useGlobalLoading';
 
-export default function Ocms() {
+export default function Ocms({ componentKey = "ocms-webview", refreshTrigger = 0 }) {
   const { colors } = useTheme();
   const styles = createStyle(colors);
   const navigationTab = useNavigation();
@@ -15,6 +16,9 @@ export default function Ocms() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [progress, setProgress] = useState(0);
+
+  // Connect to global loading state
+  useGlobalLoading(componentKey, loading);
 
   const handleLoadStart = () => {
     setLoading(true);
@@ -42,42 +46,33 @@ export default function Ocms() {
     webViewRef.current?.reload();
   };
 
-  const renderLoading = () => (
-    <View style={styles.loadingContainer}>
-      <View style={styles.loadingContent}>
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.loadingText}>Loading Student Portal...</Text>
-        <View style={styles.progressBarContainer}>
-          <View 
-            style={[
-              styles.progressBar,
-              { 
-                width: `${progress * 100}%`,
-                backgroundColor: colors.primary
-              }
-            ]} 
-          />
+  // Remove individual loading display - global overlay handles it
+  // But keep error state display
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <Header
+          title="Student Portal"
+          showLeftIcon
+          leftIconName="menu"
+          onLeftIconPress={() => navigationTab.openDrawer()}
+        />
+        <View style={styles.errorContainer}>
+          <View style={styles.errorContent}>
+            <Ionicons name="cloud-offline-outline" size={64} color={colors.textSecondary} />
+            <Text style={styles.errorTitle}>Connection Error</Text>
+            <Text style={styles.errorMessage}>
+              Unable to load the student portal. Please check your internet connection and try again.
+            </Text>
+            <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
+              <Ionicons name="reload-outline" size={20} color={colors.white} />
+              <Text style={styles.retryButtonText}>Retry</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-        <Text style={styles.progressText}>{Math.round(progress * 100)}%</Text>
       </View>
-    </View>
-  );
-
-  const renderError = () => (
-    <View style={styles.errorContainer}>
-      <View style={styles.errorContent}>
-        <Ionicons name="cloud-offline-outline" size={64} color={colors.textSecondary} />
-        <Text style={styles.errorTitle}>Connection Error</Text>
-        <Text style={styles.errorMessage}>
-          Unable to load the student portal. Please check your internet connection and try again.
-        </Text>
-        <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
-          <Ionicons name="reload-outline" size={20} color={colors.white} />
-          <Text style={styles.retryButtonText}>Retry</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -97,19 +92,27 @@ export default function Ocms() {
         onLoadEnd={handleLoadEnd}
         onError={handleError}
         startInLoadingState={true}
-        renderLoading={renderLoading}
         javaScriptEnabled={true}
         domStorageEnabled={true}
         sharedCookiesEnabled={true}
         thirdPartyCookiesEnabled={true}
       />
       
-      {error && renderError()}
-      
-      {/* Custom loading overlay that shows during initial load */}
-      {loading && !error && (
-        <View style={styles.initialLoadingOverlay}>
-          {renderLoading()}
+      {/* Progress indicator that shows during loading (optional, if you want visual feedback) */}
+      {loading && progress > 0 && progress < 1 && (
+        <View style={styles.progressIndicator}>
+          <View style={styles.progressBarContainer}>
+            <View 
+              style={[
+                styles.progressBar,
+                { 
+                  width: `${progress * 100}%`,
+                  backgroundColor: colors.primary
+                }
+              ]} 
+            />
+          </View>
+          <Text style={styles.progressText}>{Math.round(progress * 100)}%</Text>
         </View>
       )}
     </View>
@@ -125,63 +128,11 @@ const createStyle = (colors) => {
     webview: {
       flex: 1,
     },
-    loadingContainer: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: colors.bg,
-      justifyContent: 'center',
-      alignItems: 'center',
-      zIndex: 1000,
-    },
-    initialLoadingOverlay: {
-      position: 'absolute',
-      top: 60, // Below header
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: colors.bg,
-      zIndex: 999,
-    },
-    loadingContent: {
-      alignItems: 'center',
-      padding: 30,
-    },
-    loadingText: {
-      marginTop: 20,
-      fontSize: 16,
-      color: colors.text,
-      fontWeight: '500',
-    },
-    progressBarContainer: {
-      width: 200,
-      height: 4,
-      backgroundColor: colors.border,
-      borderRadius: 2,
-      marginTop: 20,
-      overflow: 'hidden',
-    },
-    progressBar: {
-      height: '100%',
-      borderRadius: 2,
-    },
-    progressText: {
-      marginTop: 8,
-      fontSize: 12,
-      color: colors.textSecondary,
-    },
     errorContainer: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: colors.bg,
+      flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      zIndex: 1000,
+      backgroundColor: colors.bg,
     },
     errorContent: {
       alignItems: 'center',
@@ -215,6 +166,37 @@ const createStyle = (colors) => {
       color: colors.white,
       fontSize: 16,
       fontWeight: '600',
+    },
+    progressIndicator: {
+      position: 'absolute',
+      top: 60, // Below header
+      left: 0,
+      right: 0,
+      backgroundColor: colors.surface,
+      paddingVertical: 10,
+      alignItems: 'center',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 3,
+      elevation: 3,
+    },
+    progressBarContainer: {
+      width: 200,
+      height: 4,
+      backgroundColor: colors.border,
+      borderRadius: 2,
+      overflow: 'hidden',
+    },
+    progressBar: {
+      height: '100%',
+      borderRadius: 2,
+    },
+    progressText: {
+      marginTop: 8,
+      fontSize: 12,
+      color: colors.textSecondary,
+      fontWeight: '500',
     },
   });
 };

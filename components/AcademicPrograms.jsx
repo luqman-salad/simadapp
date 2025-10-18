@@ -6,7 +6,7 @@ import Postgratuate from './Postgratuate';
 import SimadOlearn from './SimadOlearn';
 import useTheme from '../hooks/usetheme';
 import { getProgramsCategories } from '../apis/academicProgramsApi';
-import { useGlobalLoading } from '../hooks/useGlobalLoading'; // Import the global loading hook
+import { useGlobalLoading } from '../hooks/useGlobalLoading'; 
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -91,7 +91,7 @@ function MyTabs({ componentKey = "programs", refreshTrigger = 0 }) {
                     elevation: 0,
                     shadowOpacity: 0,
                     tabBarLabelStyle: { 
-                        fontSize: 14,
+                        fontSize: 13,
                         fontWeight: 'bold'
                     },
                     tabBarIndicatorStyle: { 

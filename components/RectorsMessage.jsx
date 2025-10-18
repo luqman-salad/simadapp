@@ -6,13 +6,13 @@ import {
   StyleSheet,
   Text,
   View,
-  ActivityIndicator,
 } from "react-native";
 import { useEffect, useState } from "react";
 import useTheme from "../hooks/usetheme";
 import { getRectorsMessage } from "../apis/rectorsOfficeApi";
+import { useGlobalLoading } from "../hooks/useGlobalLoading"; // Import the global loading hook
 
-export default function RectorsOffice() {
+export default function RectorsOffice({ componentKey = "rectors-office" }) {
   const { colors } = useTheme();
   const styles = createStyle(colors);
 
@@ -20,9 +20,13 @@ export default function RectorsOffice() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Connect to global loading state
+  useGlobalLoading(componentKey, loading);
+
   const fetchData = async () => {
     try {
       setLoading(true);
+      setError(null);
       const result = await getRectorsMessage();
       if (result?.success && result.data?.RectorMessage) {
         setRector(result.data.RectorMessage); // directly set the object
@@ -46,18 +50,28 @@ export default function RectorsOffice() {
     }
   };
 
-  if (loading) {
+  // Remove individual loading display - global overlay handles it
+  if (error) {
     return (
-      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
-        <ActivityIndicator size="large" color={colors.primary} />
+      <View style={[styles.container, styles.centerContainer]}>
+        <Text style={[styles.errorText, { color: colors.danger }]}>
+          Error: {error}
+        </Text>
+        <Pressable onPress={fetchData} style={styles.retryButton}>
+          <Text style={[styles.retryText, { color: colors.primary }]}>
+            Tap to retry
+          </Text>
+        </Pressable>
       </View>
     );
   }
 
-  if (!rector) {
+  if (!rector && !loading) {
     return (
-      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
-        <Text style={{ color: colors.secondary }}>No Rector data available</Text>
+      <View style={[styles.container, styles.centerContainer]}>
+        <Text style={[styles.noDataText, { color: colors.textSecondary }]}>
+          No Rector data available
+        </Text>
       </View>
     );
   }
@@ -67,11 +81,11 @@ export default function RectorsOffice() {
       {/* Top Section */}
       <View style={styles.topSection}>
         <Image
-          source={{ uri: rector.image || "https://via.placeholder.com/150" }}
+          source={{ uri: rector?.image || "https://via.placeholder.com/150" }}
           style={styles.rectorImage}
         />
         <View style={styles.titleContainer}>
-          <Text style={styles.rectorName}>{rector.name}</Text>
+          <Text style={styles.rectorName}>{rector?.name || "Rector"}</Text>
         </View>
       </View>
 
@@ -81,7 +95,7 @@ export default function RectorsOffice() {
           <Text style={styles.cardHeaderIcon}>✉️</Text>
           <Text style={styles.cardTitle}>Message from the Rector</Text>
         </View>
-        <Text style={styles.cardText}>{rector.message}</Text>
+        <Text style={styles.cardText}>{rector?.message || "No message available"}</Text>
       </View>
 
       {/* Biography */}
@@ -90,17 +104,19 @@ export default function RectorsOffice() {
           <Text style={styles.cardHeaderIcon}>📄</Text>
           <Text style={styles.cardTitle}>Biography of the Rector</Text>
         </View>
-        <Text style={styles.cardSubtitle}>{rector.name}</Text>
-        <Text style={styles.cardText}>{rector.title || "Rector, SIMAD University"}</Text>
+        <Text style={styles.cardSubtitle}>{rector?.name || "Rector"}</Text>
+        <Text style={styles.cardText}>{rector?.title || "Rector, SIMAD University"}</Text>
         <Text style={styles.cardText}>Mogadishu, Somalia</Text>
         <Text style={styles.cardText} selectable={true}>
-          {rector.bio}
+          {rector?.bio || "Biography not available"}
         </Text>
-        <Pressable onPress={() => handleEmailPress(rector.email)}>
-          <Text style={styles.emailText}>
-            {rector.email ? `email: ${rector.email}` : "Visit the office"}
-          </Text>
-        </Pressable>
+        {rector?.email && (
+          <Pressable onPress={() => handleEmailPress(rector.email)}>
+            <Text style={styles.emailText}>
+              email: {rector.email}
+            </Text>
+          </Pressable>
+        )}
       </View>
     </ScrollView>
   );
@@ -114,6 +130,11 @@ const createStyle = (colors) =>
     },
     contentContainer: {
       paddingVertical: 20,
+    },
+    centerContainer: {
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 20,
     },
     topSection: {
       alignItems: "center",
@@ -178,7 +199,24 @@ const createStyle = (colors) =>
       textAlign: "justify",
     },
     emailText: {
-      color: colors.text,
+      color: colors.primary,
       textDecorationLine: "underline",
+      marginTop: 10,
+    },
+    errorText: {
+      fontSize: 16,
+      marginBottom: 10,
+      textAlign: 'center',
+    },
+    noDataText: {
+      fontSize: 16,
+      textAlign: 'center',
+    },
+    retryButton: {
+      marginTop: 10,
+    },
+    retryText: {
+      fontSize: 16,
+      fontWeight: "bold",
     },
   });

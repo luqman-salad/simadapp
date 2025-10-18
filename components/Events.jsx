@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from 'react-native';
 import useTheme from '../hooks/usetheme';
 import simadLogo from '../assets/images/react-logo.png';
 import { Ionicons } from '@expo/vector-icons';
 import { getUpcomingEvents } from '../apis/upcomingEvents';
+import { useGlobalLoading } from '../hooks/useGlobalLoading';
 
 // Helper function to format date from API
 const formatDate = (dateString) => {
@@ -43,13 +44,16 @@ const renderEventCard = ({ item, styles }) => (
   </TouchableOpacity>
 );
 
-export default function EventCardList() {
+export default function EventCardList({ componentKey = "events", refreshTrigger = 0 }) {
   const { colors } = useTheme();
   const styles = createStyle(colors);
 
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Connect to global loading state
+  useGlobalLoading(componentKey, loading);
 
   const fetchEvents = async () => {
     try {
@@ -72,40 +76,38 @@ export default function EventCardList() {
 
   useEffect(() => {
     fetchEvents();
-  }, []);
+  }, [refreshTrigger]);
 
-  const handleRetry = () => {
-    fetchEvents();
-  };
-
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.loadingText}>Loading events...</Text>
-      </View>
-    );
-  }
-
+  // Remove individual loading display - global overlay handles it
   if (error) {
     return (
-      <View style={styles.errorContainer}>
-        <Ionicons name="alert-circle-outline" size={48} color={colors.error} />
-        <Text style={styles.errorText}>Failed to load events</Text>
-        <Text style={styles.errorDetail}>{error}</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
-          <Text style={styles.retryText}>Try Again</Text>
+      <View style={[styles.container, styles.centerContainer]}>
+        <Ionicons name="alert-circle-outline" size={48} color={colors.danger} />
+        <Text style={[styles.errorText, { color: colors.danger }]}>
+          Failed to load events
+        </Text>
+        <Text style={[styles.errorDetail, { color: colors.textSecondary }]}>
+          {error}
+        </Text>
+        <TouchableOpacity style={styles.retryButton} onPress={fetchEvents}>
+          <Text style={[styles.retryText, { color: colors.primary }]}>
+            Tap to retry
+          </Text>
         </TouchableOpacity>
       </View>
     );
   }
 
-  if (events.length === 0) {
+  if (!events.length && !loading) {
     return (
-      <View style={styles.emptyContainer}>
+      <View style={[styles.container, styles.centerContainer]}>
         <Ionicons name="calendar-outline" size={48} color={colors.textSecondary} />
-        <Text style={styles.emptyText}>No upcoming events</Text>
-        <Text style={styles.emptyDetail}>Check back later for new events</Text>
+        <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+          No upcoming events
+        </Text>
+        <Text style={[styles.emptyDetail, { color: colors.textSecondary }]}>
+          Check back later for new events
+        </Text>
       </View>
     );
   }
@@ -123,6 +125,15 @@ export default function EventCardList() {
 
 const createStyle = (colors) => {
   return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.bg,
+    },
+    centerContainer: {
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 20,
+    },
     listContainer: {
       flexGrow: 1,
       backgroundColor: colors.bg,
@@ -169,78 +180,43 @@ const createStyle = (colors) => {
       marginBottom: 5,
     },
     detailIcon: {
-      // width: 20,
-      // height: 20,
       fontSize: 16,
       marginRight: 5,
-      resizeMode: 'contain',
       color: colors.primary
     },
     detailText: {
       fontSize: 14,
       color: colors.text,
     },
-    loadingContainer: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: colors.bg,
-      padding: 20,
-    },
-    loadingText: {
-      marginTop: 10,
-      color: colors.text,
-      fontSize: 16,
-    },
-    errorContainer: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: colors.bg,
-      padding: 20,
-    },
     errorText: {
-      color: colors.error,
       fontSize: 18,
       fontWeight: 'bold',
       marginTop: 10,
       marginBottom: 5,
+      textAlign: 'center',
     },
     errorDetail: {
-      color: colors.textSecondary,
       fontSize: 14,
       textAlign: 'center',
       marginBottom: 20,
     },
-    emptyContainer: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: colors.bg,
-      padding: 20,
-    },
     emptyText: {
-      color: colors.textSecondary,
       fontSize: 18,
       fontWeight: 'bold',
       marginTop: 10,
       marginBottom: 5,
+      textAlign: 'center',
     },
     emptyDetail: {
-      color: colors.textSecondary,
       fontSize: 14,
       textAlign: 'center',
     },
     retryButton: {
-      backgroundColor: colors.primary,
-      paddingHorizontal: 20,
-      paddingVertical: 10,
-      borderRadius: 8,
+      marginTop: 10,
     },
     retryText: {
-      color: colors.white,
       fontSize: 16,
-      fontWeight: '500',
+      fontWeight: "bold",
     },
   });
 };

@@ -1,14 +1,15 @@
 // school.jsx
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { Pressable, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Header } from '../../components/Headrer';
 import { useBottomSheet } from '../../context/BottomSheetContext';
 import useTheme from '../../hooks/usetheme';
 import { getAvailableProgramsInfo } from '../../apis/academicProgramsApi';
 import { useEffect, useState } from 'react';
+import { useGlobalLoading } from '../../hooks/useGlobalLoading';
 
-const AcademicProgramsScreen = () => {
+const AcademicProgramsScreen = ({ componentKey = "academic-programs", refreshTrigger = 0 }) => {
   const { colors } = useTheme();
   const styles = createStyle(colors);
   const navigationTab = useNavigation();
@@ -17,9 +18,12 @@ const AcademicProgramsScreen = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Connect to global loading state
+  useGlobalLoading(componentKey, loading);
+
   useEffect(() => {
     fetchPrograms();
-  }, []);
+  }, [refreshTrigger]);
 
   const fetchPrograms = async () => {
     try {
@@ -38,6 +42,8 @@ const AcademicProgramsScreen = () => {
           };
         });
         setProgramsData(programsObject);
+      } else {
+        throw new Error('Invalid data structure from API');
       }
     } catch (error) {
       console.error('Error loading programs:', error);
@@ -47,27 +53,7 @@ const AcademicProgramsScreen = () => {
     }
   };
 
-  const handleRetry = () => {
-    fetchPrograms();
-  };
-
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        <Header
-          title="Academic Programs"
-          showLeftIcon
-          leftIconName="menu"
-          onLeftIconPress={() => navigationTab.openDrawer()}
-        />
-        <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.loadingText}>Loading programs...</Text>
-        </View>
-      </View>
-    );
-  }
-
+  // Remove individual loading display - global overlay handles it
   if (error) {
     return (
       <View style={styles.container}>
@@ -78,11 +64,33 @@ const AcademicProgramsScreen = () => {
           onLeftIconPress={() => navigationTab.openDrawer()}
         />
         <View style={styles.centerContainer}>
-          <Ionicons name="alert-circle-outline" size={64} color={colors.textSecondary} />
-          <Text style={styles.errorText}>{error}</Text>
-          <Pressable style={styles.retryButton} onPress={handleRetry}>
-            <Text style={styles.retryButtonText}>Try Again</Text>
+          <Ionicons name="alert-circle-outline" size={64} color={colors.danger} />
+          <Text style={[styles.errorText, { color: colors.danger }]}>
+            {error}
+          </Text>
+          <Pressable style={styles.retryButton} onPress={fetchPrograms}>
+            <Text style={[styles.retryButtonText, { color: colors.primary }]}>
+              Tap to retry
+            </Text>
           </Pressable>
+        </View>
+      </View>
+    );
+  }
+
+  if (Object.keys(programsData).length === 0 && !loading) {
+    return (
+      <View style={styles.container}>
+        <Header
+          title="Academic Programs"
+          showLeftIcon
+          leftIconName="menu"
+          onLeftIconPress={() => navigationTab.openDrawer()}
+        />
+        <View style={styles.centerContainer}>
+          <Text style={[styles.noDataText, { color: colors.textSecondary }]}>
+            No programs available
+          </Text>
         </View>
       </View>
     );
@@ -97,30 +105,24 @@ const AcademicProgramsScreen = () => {
         onLeftIconPress={() => navigationTab.openDrawer()}
       />
       <View style={styles.content}>
-        {Object.keys(programsData).length > 0 ? (
-          Object.keys(programsData).map((key) => {
-            const program = programsData[key];
-            return (
-              <Pressable
-                key={key}
-                style={styles.card}
-                onPress={() => openSheet("programs", program)}
-              >
-                <View style={styles.cardContent}>
-                  <Text style={styles.cardTitle}>{program.title.replace(' Programs', '')}</Text>
-                  <Text style={styles.cardDescription}>
-                    {`Explore our ${program.title.replace(' Programs', '')} programs.`}
-                  </Text>
-                </View>
-                <Ionicons name="arrow-forward" size={24} color={colors.text} />
-              </Pressable>
-            );
-          })
-        ) : (
-          <View style={styles.centerContainer}>
-            <Text style={styles.noDataText}>No programs available</Text>
-          </View>
-        )}
+        {Object.keys(programsData).map((key) => {
+          const program = programsData[key];
+          return (
+            <Pressable
+              key={key}
+              style={styles.card}
+              onPress={() => openSheet("programs", program)}
+            >
+              <View style={styles.cardContent}>
+                <Text style={styles.cardTitle}>{program.title.replace(' Programs', '')}</Text>
+                <Text style={styles.cardDescription}>
+                  {`Explore our ${program.title.replace(' Programs', '')} programs.`}
+                </Text>
+              </View>
+              <Ionicons name="arrow-forward" size={24} color={colors.text} />
+            </Pressable>
+          );
+        })}
       </View>
     </View>
   );
@@ -168,31 +170,20 @@ const createStyle = (colors) => {
       fontSize: 14,
       color: colors.text,
     },
-    loadingText: {
-      fontSize: 16,
-      color: colors.text,
-      marginTop: 12,
-    },
     errorText: {
       fontSize: 16,
-      color: colors.danger,
       textAlign: 'center',
       marginTop: 12,
       marginBottom: 20,
     },
     noDataText: {
       fontSize: 16,
-      color: colors.text,
       textAlign: 'center',
     },
     retryButton: {
-      backgroundColor: colors.primary,
-      paddingHorizontal: 24,
-      paddingVertical: 12,
-      borderRadius: 8,
+      marginTop: 10,
     },
     retryButtonText: {
-      color: colors.text,
       fontSize: 16,
       fontWeight: '600',
     },

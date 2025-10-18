@@ -1,15 +1,19 @@
 // components/HistoryAwards.jsx
 import React, { useState, useEffect } from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import useTheme from '../hooks/usetheme';
 import { getHistoryAwardData } from '../apis/historyAwardsApi';
+import { useGlobalLoading } from '../hooks/useGlobalLoading';
 
-export default function HistoryAwards() {
+export default function HistoryAwards({ componentKey = "history-awards", refreshTrigger = 0 }) {
     const { colors } = useTheme();
     const styles = createStyle(colors);
     const [timelineData, setTimelineData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    // Connect to global loading state
+    useGlobalLoading(componentKey, loading);
 
     const fetchData = async () => {
         try {
@@ -38,45 +42,45 @@ export default function HistoryAwards() {
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [refreshTrigger]);
 
-    const handleRetry = () => {
-        fetchData();
-    };
-
-    if (loading) {
-        return (
-            <View style={[styles.container, styles.center]}>
-                <ActivityIndicator size="large" color={colors.primary} />
-                <Text style={styles.loadingText}>Loading History & Awards...</Text>
-            </View>
-        );
-    }
-
+    // Remove individual loading display - global overlay handles it
     if (error) {
         return (
-            <View style={[styles.container, styles.center]}>
-                <Text style={styles.errorText}>Error: {error}</Text>
-                <Pressable onPress={handleRetry}>
-                    <Text style={styles.retryText}>Tap to retry</Text>
+            <View style={[styles.container, styles.centerContainer]}>
+                <Text style={[styles.errorText, { color: colors.danger }]}>
+                    Error: {error}
+                </Text>
+                <Pressable onPress={fetchData} style={styles.retryButton}>
+                    <Text style={[styles.retryText, { color: colors.primary }]}>
+                        Tap to retry
+                    </Text>
                 </Pressable>
             </View>
         );
     }
 
-    if (!timelineData || timelineData.length === 0) {
+    if (!timelineData || (timelineData.length === 0 && !loading)) {
         return (
-            <View style={[styles.container, styles.center]}>
-                <Text style={styles.errorText}>No historical data available</Text>
-                <Pressable onPress={handleRetry}>
-                    <Text style={styles.retryText}>Tap to retry</Text>
+            <View style={[styles.container, styles.centerContainer]}>
+                <Text style={[styles.noDataText, { color: colors.textSecondary }]}>
+                    No historical data available
+                </Text>
+                <Pressable onPress={fetchData} style={styles.retryButton}>
+                    <Text style={[styles.retryText, { color: colors.primary }]}>
+                        Tap to retry
+                    </Text>
                 </Pressable>
             </View>
         );
     }
 
     return (
-        <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        <ScrollView 
+            style={styles.container} 
+            contentContainerStyle={styles.contentContainer}
+            showsVerticalScrollIndicator={false}
+        >
             {/* <View style={styles.bannerContainer}>
                 <Image
                     source={require('../assets/images/fablab.jpg')}
@@ -129,26 +133,30 @@ const createStyle = (colors) => {
             flex: 1,
             backgroundColor: colors.bg,
         },
-        center: {
-            justifyContent: 'center',
-            alignItems: 'center',
-            flex: 1,
+        contentContainer: {
+            paddingVertical: 20,
         },
-        loadingText: {
-            marginTop: 10,
-            color: colors.text,
-            fontSize: 16,
+        centerContainer: {
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 20,
         },
         errorText: {
-            color: colors.danger,
+            fontSize: 16,
+            marginBottom: 10,
+            textAlign: 'center',
+        },
+        noDataText: {
             fontSize: 16,
             textAlign: 'center',
             marginBottom: 10,
         },
+        retryButton: {
+            marginTop: 10,
+        },
         retryText: {
-            color: colors.primary,
-            fontSize: 14,
-            textDecorationLine: 'underline',
+            fontSize: 16,
+            fontWeight: "bold",
         },
         bannerContainer: {
             height: 200,
@@ -182,7 +190,6 @@ const createStyle = (colors) => {
         },
         content: {
             paddingHorizontal: 20,
-            paddingVertical: 20,
         },
         title: {
             fontSize: 24,

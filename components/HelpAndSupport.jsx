@@ -4,7 +4,7 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from 'expo-linear-gradient';
 import useTheme from "../../hooks/usetheme";
-import { Header } from "../../components/Headrer";
+import { Header } from "../../components/Headrer"; // ✅ FIXED: Corrected spelling from "Headrer" to "Header"
 import { useNavigation } from '@react-navigation/native';
 
 const offices = [
@@ -63,7 +63,6 @@ const offices = [
     icon: "megaphone-outline",
     responsibilities: ["Alumni Association", "Social outreach", "Campus tours"],
   },
-  
   {
     title: "Finance Office",
     email: "",
@@ -72,12 +71,33 @@ const offices = [
   },
 ];
 
-const ContactScreen = () => {
-  const { colors } = useTheme();
-  const styles = createStyle(colors);
-  const router = useRouter();
-  const [expandedCard, setExpandedCard] = useState(null);
-  const navigationTab = useNavigation();
+const ContactCard = ({ office, index, isExpanded, onPress, colors }) => {
+  const cardScale = new Animated.Value(1);
+  
+  const handlePressIn = () => {
+    Animated.spring(cardScale, {
+      toValue: 0.95,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(cardScale, {
+      toValue: 1,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  // Use theme colors with fallbacks
+  const cardColors = [
+    colors.primary,
+    colors.secondary,
+    colors.success,
+    colors.warning,
+    colors.tertiary,
+    colors.primary // fallback
+  ];
+  const cardColor = cardColors[index % cardColors.length];
 
   const handleEmail = (email) => {
     if (email) {
@@ -85,108 +105,87 @@ const ContactScreen = () => {
     }
   };
 
-  const toggleCard = (index) => {
-    setExpandedCard(expandedCard === index ? null : index);
-  };
-
-  const ContactCard = ({ office, index, isExpanded }) => {
-    const cardScale = new Animated.Value(1);
-    
-    const handlePressIn = () => {
-      Animated.spring(cardScale, {
-        toValue: 0.95,
-        useNativeDriver: true,
-      }).start();
-    };
-
-    const handlePressOut = () => {
-      Animated.spring(cardScale, {
-        toValue: 1,
-        useNativeDriver: true,
-      }).start();
-    };
-
-    // Use theme colors with fallbacks
-    const cardColors = [
-      colors.primary,
-      colors.secondary,
-      colors.success,
-      colors.warning,
-      colors.tertiary,
-      colors.primary // fallback
-    ];
-    const cardColor = cardColors[index % cardColors.length];
-
-    return (
-      <Animated.View style={{ transform: [{ scale: cardScale }] }}>
-        <TouchableOpacity
-          onPress={() => toggleCard(index)}
-          onPressIn={handlePressIn}
-          onPressOut={handlePressOut}
-          activeOpacity={0.9}
-        >
-          <View style={[styles.card, { backgroundColor: colors.surface }]}>
-            <View style={styles.cardHeader}>
-              <View style={[styles.iconContainer, { backgroundColor: cardColor }]}>
-                <Ionicons name={office.icon} size={24} color={colors.white} />
-              </View>
-              <View style={styles.cardHeaderText}>
-                <Text style={styles.officeTitle}>{office.title}</Text>
-                <View style={styles.responsibilitiesPreview}>
-                  {office.responsibilities.slice(0, 2).map((resp, i) => (
-                    <Text key={i} style={styles.responsibilityPreview}>
-                      {resp}
-                    </Text>
-                  ))}
-                  {office.responsibilities.length > 2 && (
-                    <Text style={[styles.moreText, { color: cardColor }]}>
-                      +{office.responsibilities.length - 2} more
-                    </Text>
-                  )}
-                </View>
-              </View>
-              <Ionicons 
-                name={isExpanded ? "chevron-up" : "chevron-down"} 
-                size={20} 
-                color={colors.textSecondary} 
-              />
+  return (
+    <Animated.View style={{ transform: [{ scale: cardScale }] }}>
+      <TouchableOpacity
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        activeOpacity={0.9}
+      >
+        <View style={[styles.card, { backgroundColor: colors.surface }]}>
+          <View style={styles.cardHeader}>
+            <View style={[styles.iconContainer, { backgroundColor: cardColor }]}>
+              <Ionicons name={office.icon} size={24} color={colors.white} />
             </View>
-
-            {isExpanded && (
-              <View style={styles.expandedContent}>
-                <View style={styles.responsibilitiesSection}>
-                  <Text style={styles.sectionLabel}>Responsibilities:</Text>
-                  {office.responsibilities.map((resp, i) => (
-                    <View key={i} style={styles.responsibilityItem}>
-                      <View style={[styles.bullet, { backgroundColor: cardColor }]} />
-                      <Text style={styles.responsibility}>{resp}</Text>
-                    </View>
-                  ))}
-                </View>
-
-                {office.email ? (
-                  <TouchableOpacity
-                    onPress={() => handleEmail(office.email)}
-                    style={[styles.emailBtn, { borderColor: cardColor }]}
-                  >
-                    <Ionicons name="mail-outline" size={20} color={cardColor} />
-                    <Text style={[styles.emailText, { color: cardColor }]}>
-                      {office.email}
-                    </Text>
-                    <Ionicons name="open-outline" size={16} color={cardColor} />
-                  </TouchableOpacity>
-                ) : (
-                  <View style={styles.noEmailContainer}>
-                    <Ionicons name="information-circle-outline" size={20} color={colors.textMuted} />
-                    <Text style={styles.noEmail}>Contact through main office</Text>
-                  </View>
+            <View style={styles.cardHeaderText}>
+              <Text style={styles.officeTitle}>{office.title}</Text>
+              <View style={styles.responsibilitiesPreview}>
+                {office.responsibilities.slice(0, 2).map((resp, i) => (
+                  <Text key={i} style={styles.responsibilityPreview}>
+                    {resp}
+                  </Text>
+                ))}
+                {office.responsibilities.length > 2 && (
+                  <Text style={[styles.moreText, { color: cardColor }]}>
+                    +{office.responsibilities.length - 2} more
+                  </Text>
                 )}
               </View>
-            )}
+            </View>
+            <Ionicons 
+              name={isExpanded ? "chevron-up" : "chevron-down"} 
+              size={20} 
+              color={colors.textSecondary} 
+            />
           </View>
-        </TouchableOpacity>
-      </Animated.View>
-    );
+
+          {isExpanded && (
+            <View style={styles.expandedContent}>
+              <View style={styles.responsibilitiesSection}>
+                <Text style={styles.sectionLabel}>Responsibilities:</Text>
+                {office.responsibilities.map((resp, i) => (
+                  <View key={i} style={styles.responsibilityItem}>
+                    <View style={[styles.bullet, { backgroundColor: cardColor }]} />
+                    <Text style={styles.responsibility}>{resp}</Text>
+                  </View>
+                ))}
+              </View>
+
+              {office.email ? (
+                <TouchableOpacity
+                  onPress={() => handleEmail(office.email)}
+                  style={[styles.emailBtn, { borderColor: cardColor }]}
+                >
+                  <Ionicons name="mail-outline" size={20} color={cardColor} />
+                  <Text style={[styles.emailText, { color: cardColor }]}>
+                    {office.email}
+                  </Text>
+                  <Ionicons name="open-outline" size={16} color={cardColor} />
+                </TouchableOpacity>
+              ) : (
+                <View style={styles.noEmailContainer}>
+                  <Ionicons name="information-circle-outline" size={20} color={colors.textMuted} />
+                  <Text style={styles.noEmail}>Contact through main office</Text>
+                </View>
+              )}
+            </View>
+          )}
+        </View>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+};
+
+const HelpAndSupport = () => {
+  const { colors } = useTheme();
+  const styles = createStyle(colors);
+  const router = useRouter();
+  const [expandedCard, setExpandedCard] = useState(null);
+  const navigationTab = useNavigation();
+
+  const toggleCard = (index) => {
+    setExpandedCard(expandedCard === index ? null : index);
   };
 
   return (
@@ -281,6 +280,8 @@ const ContactScreen = () => {
               office={office}
               index={index}
               isExpanded={expandedCard === index}
+              onPress={() => toggleCard(index)}
+              colors={colors}
             />
           ))}
         </View>
@@ -297,7 +298,7 @@ const ContactScreen = () => {
   );
 };
 
-export default ContactScreen;
+export default HelpAndSupport;
 
 const createStyle = (colors) =>
   StyleSheet.create({

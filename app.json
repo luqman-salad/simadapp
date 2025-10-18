@@ -42,8 +42,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "2290d92c-e50c-4a37-a2ca-9e41ba201973"
+        "projectId": "1c90b9b9-3377-495c-9966-168538e15346"
       }
-    }
+    },
+    "owner": "luqman01"
   }
 }

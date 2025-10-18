@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Linking, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Linking } from 'react-native';
 import useTheme from '../hooks/usetheme';
 import computerlabsImage from '../assets/images/computerlabs.jpeg';
 import { getActiveNews } from '../apis/newsApi';
+import { useGlobalLoading } from '../hooks/useGlobalLoading';
 
 const renderItem = ({ item, styles, handleReadMore, colors }) => (
   <TouchableOpacity
@@ -26,13 +27,16 @@ const renderItem = ({ item, styles, handleReadMore, colors }) => (
   </TouchableOpacity>
 );
 
-export default function AnnouncementList() {
+export default function AnnouncementList({ componentKey = "announcements", refreshTrigger = 0 }) {
   const { colors } = useTheme();
   const styles = createStyle(colors);
 
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Connect to global loading state
+  useGlobalLoading(componentKey, loading);
 
   const fetchNews = async () => {
     try {
@@ -55,42 +59,40 @@ export default function AnnouncementList() {
 
   useEffect(() => {
     fetchNews();
-  }, []);
+  }, [refreshTrigger]);
 
   const handleReadMore = (url) => {
     Linking.openURL(url).catch(err => console.error("Couldn't load page", err));
   };
 
-  const handleRetry = () => {
-    fetchNews();
-  };
-
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.loadingText}>Loading announcements...</Text>
-      </View>
-    );
-  }
-
+  // Remove individual loading display - global overlay handles it
   if (error) {
     return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Failed to load announcements</Text>
-        <Text style={styles.errorDetail}>{error}</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
-          <Text style={styles.retryText}>Try Again</Text>
+      <View style={[styles.container, styles.centerContainer]}>
+        <Text style={[styles.errorText, { color: colors.danger }]}>
+          Failed to load announcements
+        </Text>
+        <Text style={[styles.errorDetail, { color: colors.textSecondary }]}>
+          {error}
+        </Text>
+        <TouchableOpacity style={styles.retryButton} onPress={fetchNews}>
+          <Text style={[styles.retryText, { color: colors.primary }]}>
+            Tap to retry
+          </Text>
         </TouchableOpacity>
       </View>
     );
   }
 
-  if (news.length === 0) {
+  if (!news.length && !loading) {
     return (
-      <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>No announcements available</Text>
-        <Text style={styles.emptyDetail}>Check back later for new updates</Text>
+      <View style={[styles.container, styles.centerContainer]}>
+        <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+          No announcements available
+        </Text>
+        <Text style={[styles.emptyDetail, { color: colors.textSecondary }]}>
+          Check back later for new updates
+        </Text>
       </View>
     );
   }
@@ -100,7 +102,7 @@ export default function AnnouncementList() {
       data={news}
       renderItem={({ item }) => renderItem({ item, styles, handleReadMore, colors })}
       keyExtractor={item => item._id}
-      contentContainerStyle={styles.container}
+      contentContainerStyle={styles.listContainer}
       showsVerticalScrollIndicator={false}
     />
   );
@@ -109,6 +111,15 @@ export default function AnnouncementList() {
 const createStyle = (colors) => {
   return StyleSheet.create({
     container: {
+      flex: 1,
+      backgroundColor: colors.bg,
+    },
+    centerContainer: {
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 20,
+    },
+    listContainer: {
       flexGrow: 1,
       backgroundColor: colors.bg,
       padding: 10,
@@ -157,65 +168,33 @@ const createStyle = (colors) => {
       color: colors.primary,
       fontWeight: '600',
     },
-    loadingContainer: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: colors.bg,
-      padding: 20,
-    },
-    loadingText: {
-      marginTop: 10,
-      color: colors.text,
-      fontSize: 16,
-    },
-    errorContainer: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: colors.bg,
-      padding: 20,
-    },
     errorText: {
-      color: colors.error,
       fontSize: 18,
       fontWeight: 'bold',
       marginBottom: 10,
+      textAlign: 'center',
     },
     errorDetail: {
-      color: colors.textSecondary,
       fontSize: 14,
       textAlign: 'center',
       marginBottom: 20,
     },
-    emptyContainer: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: colors.bg,
-      padding: 20,
-    },
     emptyText: {
-      color: colors.textSecondary,
       fontSize: 18,
       fontWeight: 'bold',
       marginBottom: 10,
+      textAlign: 'center',
     },
     emptyDetail: {
-      color: colors.textSecondary,
       fontSize: 14,
       textAlign: 'center',
     },
     retryButton: {
-      backgroundColor: colors.primary,
-      paddingHorizontal: 20,
-      paddingVertical: 10,
-      borderRadius: 8,
+      marginTop: 10,
     },
     retryText: {
-      color: colors.white,
       fontSize: 16,
-      fontWeight: '500',
+      fontWeight: "bold",
     },
   });
 };

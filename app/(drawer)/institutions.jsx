@@ -1,79 +1,50 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons'; // For the institution icon
+import React, { useState, useEffect } from 'react';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View, RefreshControl, TouchableOpacity } from 'react-native';
 import { Header } from '../../components/Headrer';
-import useTheme from '../../hooks/usetheme'; // Assuming you have this hook for theme colors
+import useTheme from '../../hooks/usetheme';
 import useInstitutionsStore from '../../store/institutionsStore';
-
-const institutionsData = [
-  {
-    id: '1',
-    title: 'Center for Graduate Studies',
-    description: 'Specializing in advanced research and education.',
-    image: require('../../assets/images/fablab.jpg'), // Placeholder image 1
-    // You might want to add a 'tourLink' or 'detailsScreen' property here
-  },
-  {
-    id: '2',
-    title: 'Center for Research & Development',
-    description: 'Driving innovation through cutting-edge research.',
-    image: require('../../assets/images/fablab.jpg'), // Placeholder image 1
-
-  },
-  {
-    id: '3',
-    title: 'SIMAD Innovation Lab',
-    description: 'A hub for technology and entrepreneurial ventures.',
-    image: require('../../assets/images/fablab.jpg'), // Placeholder image 1
-
-  },
-  {
-    id: '4',
-    title: 'Institute of Climate & Environment',
-    description: 'Focus on sustainable solutions for a greener future.',
-    image: require('../../assets/images/fablab.jpg'), // Placeholder image 1
-
-  },
-  {
-    id: '5',
-    title: 'SIMAD Innovation Lab',
-    description: 'A hub for technology and entrepreneurial ventures.',
-    image: require('../../assets/images/fablab.jpg'), // Placeholder image 1
-
-  },
-  {
-    id: '6',
-    title: 'Institute of Climate & Environment',
-    description: 'Focus on sustainable solutions for a greener future.',
-    image: require('../../assets/images/fablab.jpg'), // Placeholder image 1
-
-  },
-  // Add more institutions as needed
-];
+import { getInstitutions } from '../../apis/institutionsApi';
+import { useGlobalLoading } from '../../hooks/useGlobalLoading';
 
 const InstitutionCard = ({ item, colors, styles }) => {
   const router = useRouter();
-  const {setSelectedInstitutionTitle} = useInstitutionsStore();
+  const { setSelectedInstitutionTitle } = useInstitutionsStore();
 
-  const handlePress = (item) => {
-    setSelectedInstitutionTitle(item);
-    router.push('/(screens)/institutionsInfo');
-  }
+  const handlePress = () => {
+    setSelectedInstitutionTitle(item.name);
+    console.log('Navigating with ID:', item.id); // ✅ Use item.id instead of item._id
+    
+    // ✅ PASS THE CORRECT ID FIELD
+    router.push({
+      pathname: '/(screens)/institutionsInfo',
+      params: { 
+        institutionId: item.id, // ✅ Use item.id
+        institutionName: item.name 
+      }
+    });
+  };
 
   return (
     <View style={styles.card}>
-      <Image source={item.image} style={styles.cardImage} />
+      <Image 
+        source={{ uri: item.image }} 
+        style={styles.cardImage}
+        resizeMode="cover"
+      />
       <View style={styles.cardContent}>
-        <Text style={styles.cardTitle}>{item.title}</Text>
-        <Text style={styles.cardDescription}>{item.description}</Text>
+        <Text style={styles.cardTitle}>{item.name}</Text>
+        <Text style={styles.cardDescription}>
+          {item.description || 'Specializing in advanced research and education.'}
+        </Text>
         <Pressable
           style={({ pressed }) => [
             styles.takeATourButton,
             { opacity: pressed ? 0.7 : 1 }
           ]}
-          onPress={() => handlePress(item.title)}
-
+          onPress={handlePress}
         >
           <Text style={styles.takeATourButtonText}>Take a Tour</Text>
         </Pressable>
@@ -86,7 +57,75 @@ const Institutions = ({ navigation }) => {
   const { colors } = useTheme();
   const styles = createStyle(colors);
   const navigationTab = useNavigation();
+  const [institutions, setInstitutions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
 
+  useGlobalLoading("institutions-screen", loading);
+
+  const fetchInstitutionsData = async (isRefresh = false) => {
+    try {
+      if (!isRefresh) setLoading(true);
+      setError(null);
+      
+      const result = await getInstitutions();
+      
+      console.log('Full API Response:', JSON.stringify(result, null, 2)); // ✅ Better debug log
+      
+      if (result?.success && Array.isArray(result.data?.institutions)) {
+        setInstitutions(result.data.institutions);
+        
+        // ✅ Check what fields exist in the first institution
+        if (result.data.institutions[0]) {
+          console.log('First institution fields:', Object.keys(result.data.institutions[0]));
+          console.log('First institution ID:', result.data.institutions[0].id);
+          console.log('First institution _id:', result.data.institutions[0]._id);
+        }
+      } else {
+        throw new Error('Invalid data structure from API');
+      }
+    } catch (err) {
+      setError(err.message);
+      console.error('Error fetching institutions:', err);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchInstitutionsData();
+  }, []);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchInstitutionsData(true);
+  };
+
+  const handleRetry = () => {
+    fetchInstitutionsData();
+  };
+
+  if (error && !refreshing) {
+    return (
+      <View style={styles.container}>
+        <Header
+          title="Institutions"
+          showLeftIcon
+          leftIconName="menu"
+          onLeftIconPress={() => navigationTab.openDrawer()}
+        />
+        <View style={styles.errorContainer}>
+          <MaterialCommunityIcons name="alert-circle-outline" size={50} color={colors.error} />
+          <Text style={styles.errorText}>Failed to load institutions</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
+            <Text style={styles.retryText}>Try Again</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -97,20 +136,40 @@ const Institutions = ({ navigation }) => {
         onLeftIconPress={() => navigationTab.openDrawer()}
       />
 
-      <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        <View style={styles.sectionHeader}>
+      <ScrollView 
+        contentContainerStyle={styles.scrollViewContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
+          />
+        }
+      >
+        <View key="section-header" style={styles.sectionHeader}>
           <MaterialCommunityIcons name="domain" size={24} color={colors.primary} style={styles.sectionIcon} />
           <Text style={styles.sectionTitle}>Explore our institutions</Text>
         </View>
 
-        {institutionsData.map((institution) => (
-          <InstitutionCard
-            key={institution.id}
-            item={institution}
-            colors={colors}
-            styles={styles}
-          />
-        ))}
+        {institutions.length === 0 && !loading ? (
+          <View key="empty-state" style={styles.emptyContainer}>
+            <MaterialCommunityIcons name="domain-off" size={50} color={colors.textSecondary} />
+            <Text style={styles.emptyText}>No institutions available</Text>
+            <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
+              <Text style={styles.retryText}>Refresh</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          institutions.map((institution, index) => (
+            <InstitutionCard
+              key={institution.id || `institution-${index}`} // ✅ Use id instead of _id
+              item={institution}
+              colors={colors}
+              styles={styles}
+            />
+          ))
+        )}
       </ScrollView>
     </View>
   );
@@ -130,42 +189,40 @@ const createStyle = (colors) => {
     sectionHeader: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingHorizontal: 15,
-      paddingVertical: 20,
+      paddingHorizontal: 20,
+      paddingVertical: 25,
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
       marginBottom: 10,
+      backgroundColor: colors.surface,
     },
     sectionIcon: {
-      marginRight: 10,
-      color: colors.primary, // Using primary color for the icon
+      marginRight: 12,
     },
     sectionTitle: {
       fontSize: 20,
-      fontWeight: 'bold',
+      fontWeight: '700',
       color: colors.text,
     },
     card: {
       flexDirection: 'row',
       backgroundColor: colors.surface,
-      borderRadius: 10,
-      marginHorizontal: 15,
+      borderRadius: 12,
+      marginHorizontal: 20,
       marginVertical: 8,
-      padding: 15,
+      padding: 16,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
-      shadowRadius: 4,
+      shadowRadius: 6,
       elevation: 3,
     },
     cardImage: {
       width: 100,
       height: 100,
       borderRadius: 8,
-      marginRight: 15,
-      backgroundColor: colors.textMuted, // Placeholder background
-      justifyContent: 'center',
-      alignItems: 'center',
+      marginRight: 16,
+      backgroundColor: colors.border,
     },
     cardContent: {
       flex: 1,
@@ -173,26 +230,63 @@ const createStyle = (colors) => {
     },
     cardTitle: {
       fontSize: 16,
-      fontWeight: 'bold',
+      fontWeight: '700',
       color: colors.text,
-      marginBottom: 5,
+      marginBottom: 6,
     },
     cardDescription: {
-      fontSize: 13,
-      color: colors.text,
-      marginBottom: 10,
+      fontSize: 14,
+      color: colors.textSecondary,
+      marginBottom: 12,
+      lineHeight: 18,
     },
     takeATourButton: {
       backgroundColor: colors.primary,
       paddingVertical: 8,
-      paddingHorizontal: 15,
+      paddingHorizontal: 16,
       borderRadius: 20,
-      alignSelf: 'flex-start', // Align button to the start
+      alignSelf: 'flex-start',
     },
     takeATourButtonText: {
       color: colors.white,
       fontSize: 14,
-      fontWeight: 'bold',
+      fontWeight: '600',
+    },
+    errorContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: 40,
+    },
+    errorText: {
+      fontSize: 16,
+      color: colors.error,
+      marginTop: 12,
+      marginBottom: 16,
+      textAlign: 'center',
+    },
+    retryButton: {
+      backgroundColor: colors.primary,
+      paddingHorizontal: 20,
+      paddingVertical: 10,
+      borderRadius: 8,
+    },
+    retryText: {
+      color: colors.white,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    emptyContainer: {
+      alignItems: 'center',
+      paddingVertical: 40,
+      paddingHorizontal: 20,
+    },
+    emptyText: {
+      fontSize: 16,
+      color: colors.textSecondary,
+      marginTop: 12,
+      marginBottom: 16,
+      textAlign: 'center',
     },
   });
 };

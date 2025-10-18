@@ -1,12 +1,13 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Pressable, ScrollView, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Header } from '../../components/Headrer';
 import useTheme from '../../hooks/usetheme';
 import { getProgramInfoById } from '../../apis/academicProgramsApi';
 import { useEffect, useState } from 'react';
 import { useLocalSearchParams } from 'expo-router';
+import { useGlobalLoading } from '../../hooks/useGlobalLoading';
 
 const SectionHeader = ({ iconName, iconColor, title, subtitle }) => {
     const { colors } = useTheme();
@@ -40,7 +41,7 @@ const CurriculumCard = ({ iconName, title, subtitle }) => {
     );
 };
 
-const DepartmentDetails = () => {
+const DepartmentDetails = ({ componentKey = "program-details", refreshTrigger = 0 }) => {
     const { colors } = useTheme();
     const styles = createStyle(colors);
     const navigation = useNavigation();
@@ -49,6 +50,9 @@ const DepartmentDetails = () => {
     const [programData, setProgramData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    // Connect to global loading state
+    useGlobalLoading(componentKey, loading);
 
     // Map FontAwesome icons to MaterialCommunityIcons
     const getMaterialIconName = (faIcon) => {
@@ -70,8 +74,11 @@ const DepartmentDetails = () => {
     useEffect(() => {
         if (programId) {
             fetchProgramData();
+        } else {
+            setError('No program ID provided');
+            setLoading(false);
         }
-    }, [programId]);
+    }, [programId, refreshTrigger]);
 
     const fetchProgramData = async () => {
         try {
@@ -92,27 +99,7 @@ const DepartmentDetails = () => {
         }
     };
 
-    const handleRetry = () => {
-        fetchProgramData();
-    };
-
-    if (loading) {
-        return (
-            <View style={styles.container}>
-                <Header
-                    title="Program Details"
-                    showLeftIcon
-                    leftIconName="chevron-back"
-                    onLeftIconPress={() => navigation.goBack()}
-                />
-                <View style={styles.center}>
-                    <ActivityIndicator size="large" color={colors.primary} />
-                    <Text style={styles.loadingText}>Loading program details...</Text>
-                </View>
-            </View>
-        );
-    }
-
+    // Remove individual loading display - global overlay handles it
     if (error) {
         return (
             <View style={styles.container}>
@@ -122,19 +109,25 @@ const DepartmentDetails = () => {
                     leftIconName="chevron-back"
                     onLeftIconPress={() => navigation.goBack()}
                 />
-                <View style={styles.center}>
-                    <MaterialCommunityIcons name="alert-circle-outline" size={64} color={colors.error} />
-                    <Text style={styles.errorText}>Unable to Load Program</Text>
-                    <Text style={styles.errorDetail}>{error}</Text>
-                    <Pressable style={styles.retryButton} onPress={handleRetry}>
-                        <Text style={styles.retryText}>Try Again</Text>
+                <View style={styles.centerContainer}>
+                    <MaterialCommunityIcons name="alert-circle-outline" size={64} color={colors.danger} />
+                    <Text style={[styles.errorText, { color: colors.danger }]}>
+                        Unable to Load Program
+                    </Text>
+                    <Text style={[styles.errorDetail, { color: colors.textSecondary }]}>
+                        {error}
+                    </Text>
+                    <Pressable style={styles.retryButton} onPress={fetchProgramData}>
+                        <Text style={[styles.retryText, { color: colors.primary }]}>
+                            Tap to retry
+                        </Text>
                     </Pressable>
                 </View>
             </View>
         );
     }
 
-    if (!programData) {
+    if (!programData && !loading) {
         return (
             <View style={styles.container}>
                 <Header
@@ -143,14 +136,18 @@ const DepartmentDetails = () => {
                     leftIconName="chevron-back"
                     onLeftIconPress={() => navigation.goBack()}
                 />
-                <View style={styles.center}>
+                <View style={styles.centerContainer}>
                     <MaterialCommunityIcons name="school-outline" size={64} color={colors.textSecondary} />
-                    <Text style={styles.emptyText}>Program Not Found</Text>
-                    <Text style={styles.emptyDetail}>
+                    <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+                        Program Not Found
+                    </Text>
+                    <Text style={[styles.emptyDetail, { color: colors.textSecondary }]}>
                         The program you're looking for is not available.
                     </Text>
                     <Pressable style={styles.retryButton} onPress={() => navigation.goBack()}>
-                        <Text style={styles.retryText}>Go Back</Text>
+                        <Text style={[styles.retryText, { color: colors.primary }]}>
+                            Go Back
+                        </Text>
                     </Pressable>
                 </View>
             </View>
@@ -160,7 +157,7 @@ const DepartmentDetails = () => {
     return (
         <View style={styles.container}>
             <Header
-                title={programData.title || "Program Details"}
+                title={programData?.title || "Program Details"}
                 showLeftIcon
                 leftIconName="chevron-back"
                 onLeftIconPress={() => navigation.goBack()}
@@ -173,18 +170,18 @@ const DepartmentDetails = () => {
                         colors={[colors.primary, colors.secondary]}
                         style={styles.departmentHeader}
                     >
-                        <Text style={styles.departmentTitle}>{programData.title}</Text>
-                        <Text style={styles.departmentSubtitle}>{programData.subtitle}</Text>
+                        <Text style={styles.departmentTitle}>{programData?.title}</Text>
+                        <Text style={styles.departmentSubtitle}>{programData?.subtitle}</Text>
                     </LinearGradient>
                 ) : (
                     <View style={[styles.departmentHeader, { backgroundColor: colors.primary || '#0066cc' }]}>
-                        <Text style={styles.departmentTitle}>{programData.title}</Text>
-                        <Text style={styles.departmentSubtitle}>{programData.subtitle}</Text>
+                        <Text style={styles.departmentTitle}>{programData?.title}</Text>
+                        <Text style={styles.departmentSubtitle}>{programData?.subtitle}</Text>
                     </View>
                 )}
 
                 {/* About Section */}
-                {programData.about && (
+                {programData?.about && (
                     <View style={styles.cardSection}>
                         <SectionHeader
                             iconName="book-open-variant"
@@ -211,7 +208,7 @@ const DepartmentDetails = () => {
                 )}
 
                 {/* Curriculum Section */}
-                {programData.curriculum && programData.curriculum.list && (
+                {programData?.curriculum && programData.curriculum.list && (
                     <View style={styles.cardSection}>
                         <SectionHeader
                             iconName="format-list-checks"
@@ -231,7 +228,7 @@ const DepartmentDetails = () => {
                 )}
 
                 {/* Admissions Section */}
-                {programData.admissions && (
+                {programData?.admissions && (
                     <View style={styles.cardSection}>
                         <SectionHeader
                             iconName="clipboard-list-outline"
@@ -251,7 +248,7 @@ const DepartmentDetails = () => {
                 )}
 
                 {/* Careers Section */}
-                {programData.careers && programData.careers.list && (
+                {programData?.careers && programData.careers.list && (
                     <View style={styles.cardSection}>
                         <SectionHeader
                             iconName="briefcase-outline"
@@ -302,12 +299,11 @@ const createStyle = (colors) => {
             flex: 1,
             backgroundColor: colors.bg,
         },
-        customHeader: {
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            zIndex: 10,
+        centerContainer: {
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 20,
         },
         scrollViewContent: {
             paddingBottom: 20,
@@ -471,20 +467,8 @@ const createStyle = (colors) => {
             fontSize: 16,
             fontWeight: 'bold',
         },
-        // Loading and Error States
-        center: {
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: 20,
-        },
-        loadingText: {
-            marginTop: 10,
-            color: colors.text,
-            fontSize: 16,
-        },
+        // Error States
         errorText: {
-            color: colors.error,
             fontSize: 20,
             fontWeight: 'bold',
             textAlign: 'center',
@@ -492,14 +476,12 @@ const createStyle = (colors) => {
             marginTop: 10,
         },
         errorDetail: {
-            color: colors.text,
             fontSize: 14,
             textAlign: 'center',
             marginBottom: 20,
             lineHeight: 20,
         },
         emptyText: {
-            color: colors.text,
             fontSize: 20,
             fontWeight: 'bold',
             textAlign: 'center',
@@ -507,23 +489,17 @@ const createStyle = (colors) => {
             marginTop: 10,
         },
         emptyDetail: {
-            color: colors.text,
             fontSize: 14,
             textAlign: 'center',
             marginBottom: 20,
             lineHeight: 20,
         },
         retryButton: {
-            backgroundColor: colors.primary,
-            paddingHorizontal: 24,
-            paddingVertical: 12,
-            borderRadius: 8,
             marginTop: 10,
         },
         retryText: {
-            color: colors.white,
             fontSize: 16,
-            fontWeight: '500',
+            fontWeight: '600',
         },
     });
 };

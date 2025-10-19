@@ -236,7 +236,7 @@ const createStyle = (colors) => {
     },
     cardDescription: {
       fontSize: 14,
-      color: colors.textSecondary,
+      color: colors.textMuted,
       marginBottom: 12,
       lineHeight: 18,
     },

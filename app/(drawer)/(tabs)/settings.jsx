@@ -7,11 +7,11 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import useTheme from '../../../../hooks/usetheme';
+import useTheme from '../../../hooks/usetheme';
 
 // Import the new, separate bottom sheet components
-import { Header } from '../../../../components/Headrer';
-import { useBottomSheet } from '../../../../context/BottomSheetContext';
+import { Header } from '../../../components/Headrer';
+import { useBottomSheet } from '../../../context/BottomSheetContext';
 import { useRouter } from 'expo-router';
 
 

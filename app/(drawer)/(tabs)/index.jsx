@@ -1,16 +1,16 @@
 import { useNavigation } from '@react-navigation/native';
 import { ScrollView, StyleSheet, Text, View, RefreshControl } from 'react-native';
 import { useState, useCallback } from 'react';
-import AcademicFacilities from '../../../../components/AcademicFacilities';
-import AcademicInstitutions from '../../../../components/AcademicInstitutions';
-import AcademicPrograms from '../../../../components/AcademicPrograms';
-import { Header } from '../../../../components/Headrer';
-import Partners from "../../../../components/Partners"
-import ShowCase from '../../../../components/Showcase';
-import SimadInNumbers from '../../../../components/SimadInNumbers';
-import useTheme from '../../../../hooks/usetheme';
+import AcademicFacilities from '../../../components/AcademicFacilities';
+import AcademicInstitutions from '../../../components/AcademicInstitutions';
+import AcademicPrograms from '../../../components/AcademicPrograms';
+import { Header } from '../../../components/Headrer';
+import Partners from "../../../components/Partners"
+import ShowCase from '../../../components/Showcase';
+import SimadInNumbers from '../../../components/SimadInNumbers';
+import useTheme from '../../../hooks/usetheme';
 import { useRouter } from 'expo-router';
-import useLoadingStore from '../../../../store/loadingStore'; // Import the loading store
+import useLoadingStore from '../../../store/loadingStore'; // Import the loading store
 
 const Home = () => {
     const { colors } = useTheme();

@@ -1,8 +1,8 @@
 import { useRouter } from 'expo-router';
 import { Dimensions, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View, Animated } from 'react-native';
-import useTheme from '../../../../hooks/usetheme';
-import useAboutStore from '../../../../store/aboutStore';
-import { Header } from '../../../../components/Headrer';
+import useTheme from '../../../hooks/usetheme';
+import useAboutStore from '../../../store/aboutStore';
+import { Header } from '../../../components/Headrer';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import { useEffect, useRef } from 'react';
@@ -13,7 +13,7 @@ const cardData = [
   {
     id: '1',
     title: 'Learn About SIMAD University in 5 min',
-    image: require('../../../../assets/images/simadMainCampus.png'),
+    image: require('../../../assets/images/simadMainCampus.png'),
     icon: 'play-circle',
     color: '#20a147',
     description: 'Quick overview'
@@ -21,7 +21,7 @@ const cardData = [
   {
     id: '2',
     title: 'The Rector\'s Office',
-    image: require('../../../../assets/images/simadMeeting.png'),
+    image: require('../../../assets/images/simadMeeting.png'),
     icon: 'person',
     color: '#4791ce',
     description: 'Leadership & Message'
@@ -29,7 +29,7 @@ const cardData = [
   {
     id: '3',
     title: 'The Senate',
-    image: require('../../../../assets/images/simadMeeting2.png'),
+    image: require('../../../assets/images/simadMeeting2.png'),
     icon: 'groups',
     color: '#f7b519',
     description: 'Governance & Structure'
@@ -37,7 +37,7 @@ const cardData = [
   {
     id: '4',
     title: 'Vision and Purpose',
-    image: require('../../../../assets/images/missionvisinvalue.png'),
+    image: require('../../../assets/images/missionvisinvalue.png'),
     icon: 'visibility',
     color: '#20a147',
     description: 'Mission & Values'
@@ -45,7 +45,7 @@ const cardData = [
   {
     id: '5',
     title: 'History & Awards',
-    image: require('../../../../assets/images/simadAwards.png'),
+    image: require('../../../assets/images/simadAwards.png'),
     icon: 'history-edu',
     color: '#4791ce',
     description: 'Legacy & Achievements'
@@ -53,7 +53,7 @@ const cardData = [
   {
     id: '6',
     title: 'Accreditation, Ranking, & Memberships',
-    image: require('../../../../assets/images/simadAccreditation.png'),
+    image: require('../../../assets/images/simadAccreditation.png'),
     icon: 'verified',
     color: '#f7b519',
     description: 'Quality & Recognition'

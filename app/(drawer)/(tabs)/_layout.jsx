@@ -9,7 +9,7 @@ export default function AuthLayout() {
     const { colors } = useTheme();
     return (
         <Tabs
-            initialRouteName="(Home)"
+            initialRouteName="index"
             screenOptions={{
                 tabBarActiveTintColor: colors.secondary,
                 tabBarInactiveTintColor: colors.success,
@@ -29,7 +29,7 @@ export default function AuthLayout() {
             }}
         >
             <Tabs.Screen
-                name="(Home)"
+                name="index"
                 options={{
                     headerShown: false,
                     tabBarLabel: ({ focused }) => (
@@ -48,7 +48,7 @@ export default function AuthLayout() {
                 }}
             />
             <Tabs.Screen
-                name="(About)"
+                name="about"
                 options={{
                     headerShown: false,
                     tabBarLabel: ({ focused }) => (
@@ -66,7 +66,7 @@ export default function AuthLayout() {
                 }}
             />
             <Tabs.Screen
-                name="(Updates)"
+                name="updates"
                 options={{
                     headerShown: false,
                     tabBarLabel: ({ focused }) => (
@@ -84,7 +84,7 @@ export default function AuthLayout() {
                 }}
             />
             <Tabs.Screen
-                name="(Settings)"
+                name="settings"
                 options={{
                     headerShown: false,
                     tabBarLabel: ({ focused }) => (

@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import Events from '../../../../components/Events';
-import News from '../../../../components/News';
-import useTheme from '../../../../hooks/usetheme';
-import { Header } from '../../../../components/Headrer';
+import Events from '../../../components/Events';
+import News from '../../../components/News';
+import useTheme from '../../../hooks/usetheme';
+import { Header } from '../../../components/Headrer';
 import { useNavigation } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 

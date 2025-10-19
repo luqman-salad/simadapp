@@ -212,7 +212,7 @@ export default function AboutUniversity({ componentKey = "about-university", ref
                         <View style={styles.contactInfo}>
                             {/* Address */}
                             <View style={styles.contactItem}>
-                                <MaterialCommunityIcons name="map-marker" size={20} color={colors.textSecondary} />
+                                <MaterialCommunityIcons name="map-marker" size={20} color={colors.text} />
                                 <View style={styles.contactDetails}>
                                     <Text style={styles.contactLabel}>Address</Text>
                                     <Text style={styles.contactValue}>
@@ -230,7 +230,7 @@ export default function AboutUniversity({ componentKey = "about-university", ref
                                     style={styles.contactItem}
                                     onPress={() => handleContactPress('phone', aboutData.contact.phone)}
                                 >
-                                    <MaterialCommunityIcons name="phone" size={20} color={colors.textSecondary} />
+                                    <MaterialCommunityIcons name="phone" size={20} color={colors.text} />
                                     <View style={styles.contactDetails}>
                                         <Text style={styles.contactLabel}>Phone</Text>
                                         <Text style={[styles.contactValue, styles.clickable]}>
@@ -246,7 +246,7 @@ export default function AboutUniversity({ componentKey = "about-university", ref
                                     style={styles.contactItem}
                                     onPress={() => handleContactPress('email', aboutData.contact.email)}
                                 >
-                                    <MaterialCommunityIcons name="email" size={20} color={colors.textSecondary} />
+                                    <MaterialCommunityIcons name="email" size={20} color={colors.text} />
                                     <View style={styles.contactDetails}>
                                         <Text style={styles.contactLabel}>Email</Text>
                                         <Text style={[styles.contactValue, styles.clickable]}>
@@ -262,7 +262,7 @@ export default function AboutUniversity({ componentKey = "about-university", ref
                                     style={styles.contactItem}
                                     onPress={() => handleContactPress('website', aboutData.contact.website)}
                                 >
-                                    <MaterialCommunityIcons name="web" size={20} color={colors.textSecondary} />
+                                    <MaterialCommunityIcons name="web" size={20} color={colors.text} />
                                     <View style={styles.contactDetails}>
                                         <Text style={styles.contactLabel}>Website</Text>
                                         <Text style={[styles.contactValue, styles.clickable]}>
@@ -442,7 +442,7 @@ const createStyle = (colors) => {
         },
         factLabel: {
             fontSize: 12,
-            color: colors.textSecondary,
+            color: colors.text,
             textAlign: 'center',
         },
         contactInfo: {
@@ -461,13 +461,13 @@ const createStyle = (colors) => {
         },
         contactLabel: {
             fontSize: 12,
-            color: colors.textSecondary,
+            color: colors.text,
             marginBottom: 2,
             fontWeight: '500',
         },
         contactValue: {
             fontSize: 14,
-            color: colors.text,
+            color: colors.textMuted,
             lineHeight: 20,
         },
         clickable: {

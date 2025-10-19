@@ -316,7 +316,7 @@ const createStyle = (colors) => {
     },
     cardContainerRight: {
       flex: 1,
-      paddingLeft: 10, // Fixed: positive padding instead of negative
+      paddingLeft: -100, // Fixed: positive padding instead of negative
       alignItems: 'flex-start',
     },
     card: {
@@ -325,7 +325,7 @@ const createStyle = (colors) => {
       borderRadius: 12,
       paddingVertical: 12,
       paddingHorizontal: 12,
-      width: 140, // Slightly smaller
+      width: 160, // Slightly smaller
       alignItems: 'center',
       justifyContent: 'space-between',
       shadowColor: colors.shadow,
@@ -347,13 +347,13 @@ const createStyle = (colors) => {
       alignItems: 'flex-end',
     },
     cardNumber: {
-      fontSize: 16,
+      fontSize: 22,
       fontWeight: '700',
       color: colors.text,
       marginBottom: 2,
     },
     cardDescription: {
-      fontSize: 12,
+      fontSize: 15,
       color: colors.text,
       fontWeight: '500',
     },

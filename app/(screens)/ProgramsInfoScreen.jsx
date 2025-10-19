@@ -32,7 +32,7 @@ const CurriculumCard = ({ iconName, title, subtitle }) => {
 
     return (
         <View style={styles.curriculumCard}>
-            <MaterialCommunityIcons name={iconName} size={24} color={colors.textSecondary} />
+            <MaterialCommunityIcons name={iconName} size={24} color={colors.text} />
             <View style={styles.curriculumTextContainer}>
                 <Text style={styles.curriculumTitle}>{title}</Text>
                 <Text style={styles.curriculumSubtitle}>{subtitle}</Text>
@@ -309,18 +309,24 @@ const createStyle = (colors) => {
             paddingBottom: 20,
         },
         departmentHeader: {
-            padding: 20,
+            paddingVertical: 20,
+            paddingHorizontal: 10,
+            margin: 18,
             marginBottom: 20,
+            borderRadius: 10,
+            justifyContent: "center",
+            alignItems: "center"
         },
         departmentTitle: {
-            fontSize: 24,
+            fontSize: 28,
             fontWeight: 'bold',
-            color: colors.text,
+            color: colors.white,
             marginBottom: 5,
         },
         departmentSubtitle: {
             fontSize: 16,
-            color: colors.text,
+            color: colors.white,
+            textAlign: "center"
         },
         cardSection: {
             backgroundColor: colors.surface,

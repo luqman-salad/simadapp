@@ -422,7 +422,7 @@ const createStyle = (colors) => {
     schoolTitle: {
       fontSize: 28,
       fontWeight: 'bold',
-      color: colors.text,
+      color: colors.white,
       textAlign: 'center',
       marginBottom: 5,
     },

@@ -1,27 +1,35 @@
 // components/Accreditation.jsx
-import { Image, ScrollView, StyleSheet, Text, View, Pressable } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, View, Pressable, Dimensions } from 'react-native';
 import useTheme from '../hooks/usetheme';
 import { useState, useEffect } from 'react';
 import { getAccreditationsData } from '../apis/accreditationApi';
 import { useGlobalLoading } from '../hooks/useGlobalLoading';
 
-const AccreditationCard = ({ title, description, logo, message }) => {
+const { width: screenWidth } = Dimensions.get('window');
+
+const AccreditationCard = ({ title, logo, index }) => {
     const { colors } = useTheme();
     const styles = createStyle(colors);
 
     return (
         <View style={styles.card}>
-            <View style={styles.cardHeader}>
-                <View style={styles.cardTitleContainer}>
-                    <Text style={styles.cardTitle}>{title}</Text>
-                    <Text style={styles.cardText}>{message || description}</Text>
-                </View>
+            {/* Logo Container with subtle shadow */}
+            <View style={styles.logoContainer}>
                 <Image
                     source={{ uri: logo }}
-                    style={styles.cardLogo}
+                    style={styles.logo}
+                    resizeMode="contain"
                     onError={(e) => console.log('Image failed to load', e.nativeEvent.error)}
                 />
             </View>
+            
+            {/* Title */}
+            <Text style={styles.cardTitle} numberOfLines={2}>
+                {title}
+            </Text>
+            
+            {/* Subtle accent line */}
+            <View style={[styles.accentLine, { backgroundColor: colors.primary }]} />
         </View>
     );
 };
@@ -59,16 +67,24 @@ export default function Accreditation({ componentKey = "accreditation", refreshT
         fetchData();
     }, [refreshTrigger]);
 
-    // Remove individual loading display - global overlay handles it
     if (error) {
         return (
             <View style={[styles.container, styles.centerContainer]}>
+                <View style={styles.errorIcon}>
+                    <Text style={{ fontSize: 48, color: colors.danger }}>⚠️</Text>
+                </View>
                 <Text style={[styles.errorText, { color: colors.danger }]}>
-                    Error: {error}
+                    Failed to load accreditations
                 </Text>
-                <Pressable onPress={fetchData} style={styles.retryButton}>
-                    <Text style={[styles.retryText, { color: colors.primary }]}>
-                        Tap to retry
+                <Text style={[styles.errorSubtext, { color: colors.textSecondary }]}>
+                    {error}
+                </Text>
+                <Pressable 
+                    onPress={fetchData} 
+                    style={[styles.retryButton, { backgroundColor: colors.primary }]}
+                >
+                    <Text style={styles.retryText}>
+                        Try Again
                     </Text>
                 </Pressable>
             </View>
@@ -78,12 +94,21 @@ export default function Accreditation({ componentKey = "accreditation", refreshT
     if (!data || (data.length === 0 && !loading)) {
         return (
             <View style={[styles.container, styles.centerContainer]}>
+                <View style={styles.emptyIcon}>
+                    <Text style={{ fontSize: 48, color: colors.textSecondary }}>🏆</Text>
+                </View>
                 <Text style={[styles.noDataText, { color: colors.textSecondary }]}>
-                    No accreditation data available
+                    No accreditations available
                 </Text>
-                <Pressable onPress={fetchData} style={styles.retryButton}>
-                    <Text style={[styles.retryText, { color: colors.primary }]}>
-                        Tap to retry
+                <Text style={[styles.noDataSubtext, { color: colors.textTertiary }]}>
+                    Check back later for updates
+                </Text>
+                <Pressable 
+                    onPress={fetchData} 
+                    style={[styles.retryButton, { backgroundColor: colors.primary }]}
+                >
+                    <Text style={styles.retryText}>
+                        Refresh
                     </Text>
                 </Pressable>
             </View>
@@ -91,121 +116,171 @@ export default function Accreditation({ componentKey = "accreditation", refreshT
     }
 
     return (
-        <ScrollView 
-            style={styles.container}
-            contentContainerStyle={styles.contentContainer}
-            showsVerticalScrollIndicator={false}
-        >
-            <View style={styles.content}>
-                <Text style={styles.pageTitle}>Accreditation, Ranking, and Memberships</Text>
+        <View style={styles.container}>
+            {/* Header */}
+            <View style={styles.header}>
+                <Text style={styles.pageTitle}>Accreditations & Memberships</Text>
+                <Text style={styles.pageSubtitle}>
+                    {data.length} recognized achievement{data.length !== 1 ? 's' : ''}
+                </Text>
+            </View>
 
+            {/* Grid Layout */}
+            <ScrollView 
+                style={styles.scrollView}
+                contentContainerStyle={styles.gridContainer}
+                showsVerticalScrollIndicator={false}
+            >
                 {data.map((item, index) => (
                     <AccreditationCard
                         key={item.id || index}
                         title={item.name}
-                        message={item.message}
                         logo={item.logo}
+                        index={index}
                     />
                 ))}
-            </View>
-        </ScrollView>
+            </ScrollView>
+        </View>
     );
 }
 
 const createStyle = (colors) => {
+    const cardWidth = (screenWidth - 60) / 2; // 2 columns with padding
+    
     return StyleSheet.create({
         container: {
             flex: 1,
             backgroundColor: colors.bg,
         },
-        contentContainer: {
-            paddingVertical: 20,
+        scrollView: {
+            flex: 1,
         },
         centerContainer: {
+            flex: 1,
             justifyContent: "center",
             alignItems: "center",
-            padding: 20,
+            padding: 40,
         },
-        errorText: {
-            fontSize: 16,
-            marginBottom: 10,
-            textAlign: 'center',
-        },
-        noDataText: {
-            fontSize: 16,
-            textAlign: 'center',
-            marginBottom: 10,
-        },
-        retryButton: {
-            marginTop: 10,
-        },
-        retryText: {
-            fontSize: 16,
-            fontWeight: "bold",
-        },
-        content: {
+        
+        // Header Styles
+        header: {
             paddingHorizontal: 20,
+            paddingTop: 20,
+            paddingBottom: 10,
+            backgroundColor: colors.bg,
         },
         pageTitle: {
-            fontSize: 18,
+            fontSize: 24,
             fontWeight: 'bold',
             color: colors.primary,
-            marginBottom: 20,
+            marginBottom: 4,
         },
-        card: {
-            backgroundColor: colors.surface,
-            borderRadius: 10,
-            padding: 15,
-            borderWidth: 1,
-            borderColor: colors.border,
-            marginBottom: 20,
+        pageSubtitle: {
+            fontSize: 14,
+            color: colors.textMuted,
+            fontWeight: '500',
         },
-        cardHeader: {
+        
+        // Grid Layout
+        gridContainer: {
             flexDirection: 'row',
+            flexWrap: 'wrap',
             justifyContent: 'space-between',
-            alignItems: 'flex-start',
+            paddingHorizontal: 20,
+            paddingBottom: 20,
         },
-        cardTitleContainer: {
-            flex: 1,
-            marginRight: 10,
+        
+        // Card Styles
+        card: {
+            width: cardWidth,
+            backgroundColor: colors.surface,
+            borderRadius: 16,
+            padding: 16,
+            marginBottom: 16,
+            alignItems: 'center',
+            shadowColor: colors.shadow || '#000',
+            shadowOffset: {
+                width: 0,
+                height: 2,
+            },
+            shadowOpacity: 0.1,
+            shadowRadius: 3.84,
+            elevation: 5,
+            borderWidth: 1,
+            borderColor: colors.border + '20', // semi-transparent
+        },
+        logoContainer: {
+            width: cardWidth - 32,
+            height: 80,
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginBottom: 12,
+            backgroundColor: colors.bg, // Fallback background for transparent logos
+            borderRadius: 8,
+            padding: 8,
+        },
+        logo: {
+            width: '100%',
+            height: '100%',
         },
         cardTitle: {
-            fontSize: 14,
+            fontSize: 13,
+            fontWeight: '600',
+            color: colors.text,
+            textAlign: 'center',
+            lineHeight: 18,
+            marginBottom: 12,
+            minHeight: 36, // Ensure consistent height for 2 lines
+        },
+        accentLine: {
+            width: 30,
+            height: 3,
+            borderRadius: 2,
+            opacity: 0.7,
+        },
+        
+        // Error & Empty States
+        errorIcon: {
+            marginBottom: 16,
+        },
+        emptyIcon: {
+            marginBottom: 16,
+        },
+        errorText: {
+            fontSize: 18,
             fontWeight: 'bold',
-            color: colors.primary,
-            marginBottom: 5,
+            marginBottom: 8,
+            textAlign: 'center',
         },
-        cardLogo: {
-            width: 100,
-            height: 100,
-            borderRadius: 10,
-            borderWidth: 1,
-            borderColor: colors.border,
-        },
-        cardText: {
-            fontSize: 12,
-            lineHeight: 20,
-            color: colors.text,
-        },
-        list: {
-            marginTop: 5,
-            marginLeft: 10,
-        },
-        listItem: {
-            flexDirection: 'row',
-            alignItems: 'flex-start',
-            marginBottom: 5,
-        },
-        bulletPoint: {
+        errorSubtext: {
             fontSize: 14,
-            marginRight: 5,
-            color: colors.primary,
-        },
-        listItemText: {
-            flex: 1,
-            fontSize: 14,
+            textAlign: 'center',
+            marginBottom: 24,
             lineHeight: 20,
-            color: colors.text,
+        },
+        noDataText: {
+            fontSize: 18,
+            fontWeight: 'bold',
+            marginBottom: 8,
+            textAlign: 'center',
+        },
+        noDataSubtext: {
+            fontSize: 14,
+            textAlign: 'center',
+            marginBottom: 24,
+            lineHeight: 20,
+        },
+        retryButton: {
+            paddingHorizontal: 24,
+            paddingVertical: 12,
+            borderRadius: 25,
+            minWidth: 120,
+        },
+        retryText: {
+            color: '#FFFFFF',
+            fontSize: 16,
+            fontWeight: '600',
+            textAlign: 'center',
         },
     });
 };

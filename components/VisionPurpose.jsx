@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { getVisionAndMission } from '../apis/visionMissionApi';
 import { useGlobalLoading } from '../hooks/useGlobalLoading';
 
-const SectionCard = ({ title, icon, contentText, listPoints }) => {
+const SectionCard = ({ title, icon, content }) => {
   const { colors } = useTheme();
   const styles = createStyle(colors);
 
@@ -17,17 +17,7 @@ const SectionCard = ({ title, icon, contentText, listPoints }) => {
         <Text style={styles.sectionTitle}>{title}</Text>
       </View>
       <View style={styles.card}>
-        <Text style={styles.contentText}>{contentText}</Text>
-        {listPoints && listPoints.length > 0 && (
-          <View style={styles.list}>
-            {listPoints.map((point, index) => (
-              <View key={index} style={styles.listItem}>
-                <Text style={styles.bulletPoint}>•</Text>
-                <Text style={styles.listItemText}>{point}</Text>
-              </View>
-            ))}
-          </View>
-        )}
+        <Text style={styles.contentText}>{content}</Text>
       </View>
     </View>
   );
@@ -48,6 +38,7 @@ export default function VisionPurpose({ componentKey = "vision-purpose", refresh
       setLoading(true);
       setError(null);
       const result = await getVisionAndMission();
+      
       if (result.success && result.data) {
         setData(result.data);
       } else {
@@ -55,6 +46,7 @@ export default function VisionPurpose({ componentKey = "vision-purpose", refresh
       }
     } catch (err) {
       setError(err.message);
+      console.error('Error fetching vision and mission:', err);
     } finally {
       setLoading(false);
     }
@@ -69,7 +61,10 @@ export default function VisionPurpose({ componentKey = "vision-purpose", refresh
     return (
       <View style={[styles.container, styles.centerContainer]}>
         <Text style={[styles.errorText, { color: colors.danger }]}>
-          Error: {error}
+          Error loading data
+        </Text>
+        <Text style={[styles.errorSubtext, { color: colors.textSecondary }]}>
+          {error}
         </Text>
         <Pressable onPress={fetchData} style={styles.retryButton}>
           <Text style={[styles.retryText, { color: colors.primary }]}>
@@ -86,6 +81,11 @@ export default function VisionPurpose({ componentKey = "vision-purpose", refresh
         <Text style={[styles.noDataText, { color: colors.textSecondary }]}>
           No vision and mission data available
         </Text>
+        <Pressable onPress={fetchData} style={styles.retryButton}>
+          <Text style={[styles.retryText, { color: colors.primary }]}>
+            Try again
+          </Text>
+        </Pressable>
       </View>
     );
   }
@@ -97,25 +97,41 @@ export default function VisionPurpose({ componentKey = "vision-purpose", refresh
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.content}>
-        <SectionCard title="Vision" icon="🎯" contentText={data?.vision} />
-        <SectionCard
-          title="Mission"
-          icon="🚀"
-          contentText={data?.mission?.text}
-          listPoints={data?.mission?.points}
-        />
-        <SectionCard
-          title="Guiding Principles"
-          icon="🧭"
-          contentText={data?.guidingPrinciples?.text}
-          listPoints={data?.guidingPrinciples?.points}
-        />
-        <SectionCard
-          title="Core Values"
-          icon="💎"
-          contentText={data?.coreValues?.text}
-          listPoints={data?.coreValues?.points}
-        />
+        {/* Vision Section */}
+        {data?.vision && (
+          <SectionCard 
+            title="Vision" 
+            icon="🎯" 
+            content={data.vision} 
+          />
+        )}
+        
+        {/* Mission Section */}
+        {data?.mission && (
+          <SectionCard 
+            title="Mission" 
+            icon="🚀" 
+            content={data.mission} 
+          />
+        )}
+        
+        {/* Guiding Principles Section */}
+        {data?.guidingPrinciples && (
+          <SectionCard 
+            title="Guiding Principles" 
+            icon="🧭" 
+            content={data.guidingPrinciples} 
+          />
+        )}
+        
+        {/* Core Values Section */}
+        {data?.coreValues && (
+          <SectionCard 
+            title="Core Values" 
+            icon="💎" 
+            content={data.coreValues} 
+          />
+        )}
       </View>
     </ScrollView>
   );
@@ -134,84 +150,86 @@ const createStyle = (colors) =>
       paddingHorizontal: 20,
     },
     centerContainer: {
+      flex: 1,
       justifyContent: "center",
       alignItems: "center",
       padding: 20,
     },
     errorText: {
-      fontSize: 16,
-      marginBottom: 10,
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 8,
       textAlign: 'center',
+    },
+    errorSubtext: {
+      fontSize: 14,
+      textAlign: 'center',
+      marginBottom: 20,
+      lineHeight: 20,
     },
     noDataText: {
       fontSize: 16,
       textAlign: 'center',
+      marginBottom: 20,
     },
     retryButton: {
-      marginTop: 10,
+      paddingHorizontal: 20,
+      paddingVertical: 10,
+      backgroundColor: colors.primary + '20',
+      borderRadius: 8,
     },
     retryText: {
       fontSize: 16,
-      fontWeight: "bold",
+      fontWeight: "600",
     },
     sectionContainer: {
-      marginBottom: 20,
+      marginBottom: 24,
     },
     sectionHeader: {
       flexDirection: 'row',
       alignItems: 'center',
-      marginBottom: 10,
+      marginBottom: 12,
     },
     iconContainer: {
-      width: 30,
-      height: 30,
-      borderRadius: 15,
-      backgroundColor: colors.surface,
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: colors.primary + '15',
       justifyContent: 'center',
       alignItems: 'center',
-      marginRight: 10,
+      marginRight: 12,
+      borderWidth: 1,
+      borderColor: colors.primary + '30',
     },
     icon: {
       fontSize: 18,
     },
     sectionTitle: {
-      fontSize: 20,
+      fontSize: 22,
       fontWeight: 'bold',
-      color: colors.text,
+      color: colors.primary,
     },
     card: {
       backgroundColor: colors.surface,
-      borderRadius: 10,
-      padding: 15,
+      borderRadius: 12,
+      padding: 18,
       borderWidth: 1,
-      borderColor: colors.border,
-      borderLeftWidth: 5,
-      borderLeftColor: colors.border,
-      marginBottom: 10,
-      marginLeft: 20,
+      borderColor: colors.border + '30',
+      shadowColor: colors.shadow || '#000',
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.1,
+      shadowRadius: 3.84,
+      elevation: 3,
+      borderLeftWidth: 4,
+      borderLeftColor: colors.primary,
     },
     contentText: {
-      fontSize: 14,
-      lineHeight: 20,
+      fontSize: 15,
+      lineHeight: 24,
       color: colors.text,
-    },
-    list: {
-      marginTop: 10,
-    },
-    listItem: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-      marginBottom: 5,
-    },
-    bulletPoint: {
-      fontSize: 14,
-      marginRight: 5,
-      color: colors.primary,
-    },
-    listItemText: {
-      flex: 1,
-      fontSize: 14,
-      lineHeight: 20,
-      color: colors.text,
+      textAlign: 'justify',
     },
   });
